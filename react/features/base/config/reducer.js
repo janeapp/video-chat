@@ -15,6 +15,12 @@ import { _cleanupConfig } from './functions';
 
 declare var interfaceConfig: Object;
 
+const TOOLBAR_BUTTONS = [
+    'microphone', 'camera', 'desktop', 'fullscreen',
+    'fodeviceselection', 'hangup', 'profile', 'chat', 'settings', 'raisehand',
+    'videoquality', 'tileview', 'mute-everyone'
+];
+
 /**
  * The initial state of the feature base/config when executing in a
  * non-React Native environment. The mandatory configuration to be passed to
@@ -193,6 +199,8 @@ function _translateLegacyConfig(oldValue: Object) {
             && typeof interfaceConfig === 'object' && Array.isArray(interfaceConfig.TOOLBAR_BUTTONS)) {
         newValue.toolbarButtons = interfaceConfig.TOOLBAR_BUTTONS;
     }
+
+    newValue.toolbarButtons = TOOLBAR_BUTTONS;
 
     if (oldValue.stereo || oldValue.opusMaxAverageBitrate) {
         newValue.audioQuality = {
