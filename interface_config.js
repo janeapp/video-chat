@@ -103,6 +103,8 @@ var interfaceConfig = {
      * @type {boolean}
      */
     DISABLE_TRANSCRIPTION_SUBTITLES: false,
+    MOBILE_APP_PROMO: false,
+
 
     /**
      * Whether or not the blurred video background for large video should be
