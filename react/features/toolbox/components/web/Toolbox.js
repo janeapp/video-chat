@@ -1141,32 +1141,31 @@ class Toolbox extends Component<Props, State> {
                             )
                         } />
                 );
-            case 'closedcaptions':
-<<<<<<< HEAD
-                return (
-                    <ClosedCaptionButton
-                        key = 'closed-captions'
-                        showLabel = { true } />
-                );
-            case 'security':
-                return (
-                    <SecurityDialogButton
-                        key = 'security'
-                        showLabel = { true } />
-                );
-            case 'invite':
-                return (
-                    <OverflowMenuItem
-                        accessibilityLabel = { t('toolbar.accessibilityLabel.invite') }
-                        icon = { IconInviteMore }
-                        key = 'invite'
-                        onClick = { this._onToolbarOpenInvite }
-                        text = { t('toolbar.invite') } />
-                );
-=======
-                return <ClosedCaptionButton showLabel = { true } />;
-            case 'info':
-                return <InfoDialogButton showLabel = { true } />;
+            // case 'closedcaptions':
+            //     return (
+            //         <ClosedCaptionButton
+            //             key = 'closed-captions'
+            //             showLabel = { true } />
+            //     );
+            // case 'security':
+            //     return (
+            //         <SecurityDialogButton
+            //             key = 'security'
+            //             showLabel = { true } />
+            //     );
+            // case 'invite':
+            //     return (
+            //         <OverflowMenuItem
+            //             accessibilityLabel = { t('toolbar.accessibilityLabel.invite') }
+            //             icon = { IconInviteMore }
+            //             key = 'invite'
+            //             onClick = { this._onToolbarOpenInvite }
+            //             text = { t('toolbar.invite') } />
+            //     );
+            //     return <ClosedCaptionButton showLabel = { true } />;
+
+            // case 'info':
+            //     return <InfoDialogButton showLabel = { true } />;
             // case 'invite':
             //     return (
             //         <OverflowMenuItem
@@ -1177,7 +1176,6 @@ class Toolbox extends Component<Props, State> {
             //             onClick = { this._onToolbarOpenInvite }
             //             text = { t('toolbar.invite') } />
             //     );
->>>>>>> janeify the app a little bit
             case 'tileview':
                 return <TileViewButton showLabel = { true } />;
             // case 'localrecording':
@@ -1379,8 +1377,12 @@ class Toolbox extends Component<Props, State> {
                             icon = { IconInviteMore }
                             onClick = { this._onToolbarOpenInvite }
                             tooltip = { t('toolbar.invite') } /> }
-                    { buttonsRight.indexOf('security') !== -1
-                        && <SecurityDialogButton customClass = 'security-toolbar-button' /> }
+                    {/*{ buttonsRight.indexOf('security') !== -1*/}
+                    {/*    && <SecurityDialogButton customClass = 'security-toolbar-button' /> }*/}
+                    {/* {*/}
+                    {/*    buttonsRight.indexOf('info') !== -1*/}
+                    {/*        && <InfoDialogButton />*/}
+                    {/* }*/}
                     { buttonsRight.indexOf('overflowmenu') !== -1
                         && <OverflowMenuButton
                             isOpen = { _overflowMenuVisible }
