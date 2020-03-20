@@ -912,8 +912,9 @@ class Toolbox extends Component<Props, State> {
             _desktopSharingEnabled,
             _desktopSharingDisabledTooltipKey
         } = this.props;
+        const showDesktopSharingButton = this.state.windowWidth > 475;
 
-        return _desktopSharingEnabled || _desktopSharingDisabledTooltipKey;
+        return _desktopSharingEnabled || _desktopSharingDisabledTooltipKey || showDesktopSharingButton;
     }
 
     /**
@@ -1319,6 +1320,15 @@ class Toolbox extends Component<Props, State> {
         return (
             <div className = 'toolbox-content'>
                 <div className = 'button-group-left'>
+                    { buttonsLeft.indexOf('desktop') !== -1
+                        && this._renderDesktopSharingButton() }
+                    { buttonsLeft.indexOf('raisehand') !== -1
+                        && <ToolbarButton
+                            accessibilityLabel = { t('toolbar.accessibilityLabel.raiseHand') }
+                            icon = { IconRaisedHand }
+                            onClick = { this._onToolbarToggleRaiseHand }
+                            toggled = { _raisedHand }
+                            tooltip = { t('toolbar.raiseHand') } /> }
                     { buttonsLeft.indexOf('chat') !== -1
                         && <div className = 'toolbar-button-with-badge'>
                             <ToolbarButton
@@ -1329,15 +1339,6 @@ class Toolbox extends Component<Props, State> {
                                 tooltip = { t('toolbar.chat') } />
                             <ChatCounter />
                         </div> }
-                    { buttonsLeft.indexOf('desktop') !== -1
-                        && this._renderDesktopSharingButton() }
-                    { buttonsLeft.indexOf('raisehand') !== -1
-                        && <ToolbarButton
-                            accessibilityLabel = { t('toolbar.accessibilityLabel.raiseHand') }
-                            icon = { IconRaisedHand }
-                            onClick = { this._onToolbarToggleRaiseHand }
-                            toggled = { _raisedHand }
-                            tooltip = { t('toolbar.raiseHand') } /> }
                     {
                         buttonsLeft.indexOf('closedcaptions') !== -1
                             && <ClosedCaptionButton />
