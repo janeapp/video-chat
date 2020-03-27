@@ -4,7 +4,9 @@ import { StyleSheet } from 'react-native';
 
 import { BoxModel, ColorPalette } from '../../base/styles';
 
-export const PLACEHOLDER_TEXT_COLOR = 'rgba(255, 255, 255, 0.5)';
+import { JaneWeb } from '../../base/styles';
+
+export const PLACEHOLDER_TEXT_COLOR = 'rgba(255, 255, 255, 0.3)';
 
 export const SIDEBAR_AVATAR_SIZE = 100;
 
@@ -65,6 +67,14 @@ export default {
     },
 
     /**
+     * Renders the button visually disabled.
+     */
+    buttonDisabled: {
+        backgroundColor: '#cccccc',
+        borderColor: '#999999'
+    },
+
+    /**
      * Join button text style.
      */
     buttonText: {
@@ -81,12 +91,6 @@ export default {
         fontSize: 16,
         marginTop: BoxModel.margin,
         textAlign: 'center'
-    },
-
-    enterRoomText: {
-        color: TEXT_COLOR,
-        fontSize: 18,
-        marginBottom: BoxModel.margin
     },
 
     /**
@@ -108,8 +112,15 @@ export default {
      * Container for the hint box.
      */
     hintContainer: {
+        backgroundColor: ColorPalette.white,
+        borderColor: ColorPalette.white,
+        borderRadius: 4,
+        borderWidth: 1,
         flexDirection: 'column',
-        overflow: 'hidden'
+        marginVertical: 5,
+        overflow: 'hidden',
+        paddingHorizontal: BoxModel.padding,
+        paddingVertical: 2 * BoxModel.padding
     },
 
     /**
@@ -139,16 +150,6 @@ export default {
      */
     joinControls: {
         padding: BoxModel.padding
-    },
-
-    messageContainer: {
-        backgroundColor: ColorPalette.white,
-        borderColor: ColorPalette.white,
-        borderRadius: 4,
-        borderWidth: 1,
-        marginVertical: 5,
-        paddingHorizontal: BoxModel.padding,
-        paddingVertical: 2 * BoxModel.padding
     },
 
     /**
@@ -283,28 +284,41 @@ export default {
         textAlign: 'center'
     },
 
-    insecureRoomNameWarningContainer: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        paddingHorizontal: 5
-    },
-
-    insecureRoomNameWarningIcon: {
-        color: ColorPalette.warning,
-        fontSize: 24,
-        marginRight: 10
-    },
-
-    insecureRoomNameWarningText: {
-        color: ColorPalette.warning,
-        flex: 1
-    },
-
     /**
      * The style of the top-level container of {@code WelcomePage}.
      */
     welcomePage: {
-        backgroundColor: ColorPalette.blue,
+        backgroundColor: ColorPalette.jane,
         overflow: 'hidden'
-    }
+    },
+
+    logo: {
+        marginBottom: 4 * BoxModel.margin
+    },
+
+    bigText: {
+        ...JaneWeb.h3,
+        color: TEXT_COLOR,
+        textAlign: 'center'
+    },
+
+
+
+    row: {
+        marginTop: 4 * BoxModel.margin,
+        paddingHorizontal: 4 * BoxModel.padding,
+        flexDirection: 'row',
+    },
+    column: {
+        color: TEXT_COLOR,
+        flex: 1,
+        flexWrap: 'wrap',
+        paddingHorizontal: BoxModel.padding,
+    },
+    columnText: {
+        flex: 4,
+    },
+
+
+
 };
