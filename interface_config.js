@@ -248,6 +248,11 @@ var interfaceConfig = {
      * @type {boolean}
      */
     VIDEO_QUALITY_LABEL_DISABLED: false,
+    * Decides whether the chrome extension banner should be rendered on the landing page and during the meeting.
+    * If this is set to false, the banner will not be rendered at all. If set to true, the check for extension(s)
+    * being already installed is done before rendering.
+    */
+    SHOW_CHROME_EXTENSION_BANNER: false,
 
     /**
      * When enabled, the kick participant button will not be presented for users without a JWT
@@ -284,7 +289,7 @@ var interfaceConfig = {
     /**
      * Specify mobile app scheme for opening the app from the mobile browser.
      */
-    // APP_SCHEME: 'org.jitsi.meet',
+    APP_SCHEME: 'com.janeapp'
 
     /**
      * Specify the Android app package name.
