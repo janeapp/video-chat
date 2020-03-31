@@ -129,18 +129,24 @@ class OverflowMenu extends PureComponent<Props, State> {
                 <AudioRouteButton { ...buttonProps } />
                 <InviteButton { ...buttonProps } />
                 <AudioOnlyButton { ...buttonProps } />
-                <RaiseHandButton { ...buttonProps } />
-                <LobbyModeButton { ...buttonProps } />
-                <MoreOptionsButton { ...moreOptionsButtonProps } />
-                <Collapsible collapsed = { !showMore }>
-                    <ToggleCameraButton { ...buttonProps } />
+                {/*<RaiseHandButton { ...buttonProps } />*/}
+                {/*<LobbyModeButton { ...buttonProps } />*/}
+                {/*<MoreOptionsButton { ...moreOptionsButtonProps } />*/}
+                {/*<Collapsible collapsed = { !showMore }>*/}
+                {/*    <ToggleCameraButton { ...buttonProps } />*/}
+                {/*    <TileViewButton { ...buttonProps } />*/}
+                {/*    <RecordButton { ...buttonProps } />*/}
+                {/*    <LiveStreamButton { ...buttonProps } />*/}
+                {/*    <VideoShareButton { ...buttonProps } />*/}
+                {/*    <RoomLockButton { ...buttonProps } />*/}
+                {/*    <ClosedCaptionButton { ...buttonProps } />*/}
+                {/*    <SharedDocumentButton { ...buttonProps } />*/}
+                {/*</Collapsible>*/}
+                <MoreOptionsButton
+                    { ...moreOptionsButtonProps }
+                    visible = { false } />
+                <Collapsible collapsed = { false }>
                     <TileViewButton { ...buttonProps } />
-                    <RecordButton { ...buttonProps } />
-                    <LiveStreamButton { ...buttonProps } />
-                    <VideoShareButton { ...buttonProps } />
-                    <RoomLockButton { ...buttonProps } />
-                    <ClosedCaptionButton { ...buttonProps } />
-                    <SharedDocumentButton { ...buttonProps } />
                     <HelpButton { ...buttonProps } />
                 </Collapsible>
             </BottomSheet>
