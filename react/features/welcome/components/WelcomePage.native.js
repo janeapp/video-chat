@@ -10,12 +10,14 @@ import {
     View
 } from 'react-native';
 
-import { getName } from '../../app/functions';
-import { ColorSchemeRegistry } from '../../base/color-scheme';
-import { translate } from '../../base/i18n';
-import { Icon, IconMenu, IconWarning } from '../../base/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faUserMd, faUser } from '@fortawesome/free-solid-svg-icons'
+
+import { getName } from '../../app';
+
+import { ColorSchemeRegistry } from '../../base/color-scheme';
+import { translate } from '../../base/i18n';
+import { IconMenu } from '../../base/icons';
 import { MEDIA_TYPE } from '../../base/media';
 import { Header, LoadingIndicator, Text } from '../../base/react';
 import { connect } from '../../base/redux';
@@ -24,9 +26,9 @@ import {
     createDesiredLocalTracks,
     destroyLocalTracks
 } from '../../base/tracks';
-import { HelpView } from '../../help';
 import { DialInSummary } from '../../invite';
 import { SettingsView } from '../../settings';
+
 import { setSideBarVisible } from '../actions';
 
 import {
@@ -34,10 +36,53 @@ import {
     _mapStateToProps as _abstractMapStateToProps
 } from './AbstractWelcomePage';
 import LocalVideoTrackUnderlay from './LocalVideoTrackUnderlay';
+import styles, { PLACEHOLDER_TEXT_COLOR } from './styles';
 import VideoSwitch from './VideoSwitch';
 import WelcomePageLists from './WelcomePageLists';
 import WelcomePageSideBar from './WelcomePageSideBar';
-import styles, { PLACEHOLDER_TEXT_COLOR } from './styles';
+
+const WelcomePageLayout = ({_headerStyles}) => {
+    return (
+        <LocalVideoTrackUnderlay>
+            <View style = { _headerStyles.page }>
+                <SafeAreaView style = { [ styles.blankPageWrapper, styles.welcomePage ] }>     
+                    <View style={styles.welcomePageContainer}>
+
+                        <Image 
+                            style = { styles.logo } 
+                            source={require('../../../../images/logo-janechat-white.png')}
+                        />
+                        <Text style = { styles.bigText }>
+                            Welcome to
+                            {'\n'}
+                            Jane Online Appointments
+                        </Text>
+
+                        <View style = { styles.row }>
+                            <View style={styles.column}>
+                                <FontAwesomeIcon icon={ faUserMd } size={45} color='white' />
+                            </View>
+                            <View style={[styles.column, styles.columnText]}>
+                                <Text style={styles.whiteText}>Please go into the appointment in your schedule and click Begin.</Text>
+                            </View>
+                        </View>
+                        
+                        <View style={styles.row}>
+                            <View style={styles.column}>
+                                <FontAwesomeIcon icon={ faUser } size={45} color='white' />
+                            </View>
+                            <View style={[styles.column, styles.columnText]}>
+                                <Text style={styles.whiteText}>Please go into your 'My Account' and click Begin.</Text>
+                            </View>
+                        </View>
+
+                    </View>
+                </SafeAreaView>
+            </View>
+        </LocalVideoTrackUnderlay>
+    )
+}
+
 
 /**
  * The native container rendering the welcome page.
@@ -77,8 +122,6 @@ class WelcomePage extends AbstractWelcomePage {
     componentDidMount() {
         super.componentDidMount();
 
-        this._updateRoomname();
-
         const { dispatch } = this.props;
 
         if (this.props._settings.startAudioOnly) {
@@ -116,65 +159,7 @@ class WelcomePage extends AbstractWelcomePage {
             return this._renderReducedUI();
         }
         */
-        if (true) {
-            const { _headerStyles } = this.props;
-
-            return (
-                <LocalVideoTrackUnderlay style = { styles.welcomePage }>
-                    <View style = { _headerStyles.page }>
-                        <SafeAreaView style = { [ styles.blankPageWrapper, styles.welcomePage ] } >
-                            <Image
-                                style = { styles.logo }
-                                source={require('../../../../images/logo-janechat-white.png')}
-                            />
-
-
-                            <Text style = { styles.bigText }>
-                                Welcome to
-                                {'\n'}
-                                Jane Online Appointments
-                            </Text>
-                            <View style = { styles.row }>
-                                <Text style={styles.column}>
-                                    <FontAwesomeIcon icon={ faUserMd } size={35} color='white' />
-                                </Text>
-                                <Text style={[styles.column, styles.columnText]}>Please go into the appointment in your schedule and click Begin.</Text>
-                            </View>
-                            <View style={styles.row}>
-                                <Text style={styles.column}>
-                                    <FontAwesomeIcon icon={ faUser } size={35} color='white' />
-                                </Text>
-                                <Text style={[styles.column, styles.columnText]}>Please go into your 'My Account' and click Begin.</Text>
-                            </View>
-                        </SafeAreaView>
-                    </View>
-                </LocalVideoTrackUnderlay>
-            )
-        }
-
-        return this._renderFullUI();
-    }
-
-    /**
-     * Renders the insecure room name warning.
-     *
-     * @inheritdoc
-     */
-    _doRenderInsecureRoomNameWarning() {
-        return (
-            <View
-                style = { [
-                    styles.messageContainer,
-                    styles.insecureRoomNameWarningContainer
-                ] }>
-                <Icon
-                    src = { IconWarning }
-                    style = { styles.insecureRoomNameWarningIcon } />
-                <Text style = { styles.insecureRoomNameWarningText }>
-                    { this.props.t('security.insecureRoomNameWarning') }
-                </Text>
-            </View>
-        );
+        return <WelcomePageLayout _headerStyles={this.props._headerStyles} />
     }
 
     /**
@@ -185,7 +170,6 @@ class WelcomePage extends AbstractWelcomePage {
      */
     _getHintBoxStyle() {
         return [
-            styles.messageContainer,
             styles.hintContainer,
             {
                 opacity: this.state.hintBoxAnimation
@@ -289,12 +273,19 @@ class WelcomePage extends AbstractWelcomePage {
             );
         }
 
+
+        const buttonDisabled = this._isJoinDisabled();
+
         return (
             <TouchableHighlight
                 accessibilityLabel =
                     { t('welcomepage.accessibilityLabel.join') }
+                disabled = { buttonDisabled }
                 onPress = { this._onJoin }
-                style = { styles.button }
+                style = { [
+                    styles.button,
+                    buttonDisabled ? styles.buttonDisabled : null
+                ] }
                 underlayColor = { ColorPalette.white }>
                 { children }
             </TouchableHighlight>
@@ -323,9 +314,6 @@ class WelcomePage extends AbstractWelcomePage {
                     </Header>
                     <SafeAreaView style = { styles.roomContainer } >
                         <View style = { styles.joinControls } >
-                            <Text style = { styles.enterRoomText }>
-                                { t('welcomepage.roomname') }
-                            </Text>
                             <TextInput
                                 accessibilityLabel = { t(roomnameAccLabel) }
                                 autoCapitalize = 'none'
@@ -336,24 +324,24 @@ class WelcomePage extends AbstractWelcomePage {
                                 onChangeText = { this._onRoomChange }
                                 onFocus = { this._onFieldFocus }
                                 onSubmitEditing = { this._onJoin }
-                                placeholder = { this.state.roomPlaceholder }
-                                placeholderTextColor = { PLACEHOLDER_TEXT_COLOR }
+                                placeholder = { t('welcomepage.roomname') }
+                                placeholderTextColor = {
+                                    PLACEHOLDER_TEXT_COLOR
+                                }
                                 returnKeyType = { 'go' }
                                 style = { styles.textInput }
                                 underlineColorAndroid = 'transparent'
                                 value = { this.state.room } />
-                            {
-                                this._renderInsecureRoomNameWarning()
-                            }
                             {
                                 this._renderHintBox()
                             }
                         </View>
                     </SafeAreaView>
                     <WelcomePageLists disabled = { this.state._fieldFocused } />
+                    <SettingsView />
+                    <DialInSummary />
                 </View>
                 <WelcomePageSideBar />
-                { this._renderWelcomePageModals() }
             </LocalVideoTrackUnderlay>
         );
     }
@@ -373,19 +361,6 @@ class WelcomePage extends AbstractWelcomePage {
                 </Text>
             </View>
         );
-    }
-
-    /**
-     * Renders JitsiModals that are supposed to be on the welcome page.
-     *
-     * @returns {Array<ReactElement>}
-     */
-    _renderWelcomePageModals() {
-        return [
-            <HelpView key = 'helpView' />,
-            <DialInSummary key = 'dialInSummary' />,
-            <SettingsView key = 'settings' />
-        ];
     }
 }
 
