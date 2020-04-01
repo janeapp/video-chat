@@ -1,3 +1,6 @@
+
+import { faUserMd, faUser } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import {
     Animated,
@@ -10,11 +13,7 @@ import {
     View
 } from 'react-native';
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faUserMd, faUser } from '@fortawesome/free-solid-svg-icons'
-
 import { getName } from '../../app';
-
 import { ColorSchemeRegistry } from '../../base/color-scheme';
 import { translate } from '../../base/i18n';
 import { IconMenu } from '../../base/icons';
@@ -28,7 +27,6 @@ import {
 } from '../../base/tracks';
 import { DialInSummary } from '../../invite';
 import { SettingsView } from '../../settings';
-
 import { setSideBarVisible } from '../actions';
 
 import {
@@ -36,52 +34,55 @@ import {
     _mapStateToProps as _abstractMapStateToProps
 } from './AbstractWelcomePage';
 import LocalVideoTrackUnderlay from './LocalVideoTrackUnderlay';
-import styles, { PLACEHOLDER_TEXT_COLOR } from './styles';
 import VideoSwitch from './VideoSwitch';
 import WelcomePageLists from './WelcomePageLists';
 import WelcomePageSideBar from './WelcomePageSideBar';
+import styles, { PLACEHOLDER_TEXT_COLOR } from './styles';
 
-const WelcomePageLayout = ({_headerStyles}) => {
-    return (
-        <LocalVideoTrackUnderlay>
-            <View style = { _headerStyles.page }>
-                <SafeAreaView style = { [ styles.blankPageWrapper, styles.welcomePage ] }>     
-                    <View style={styles.welcomePageContainer}>
+const WelcomePageLayout = ({ _headerStyles }) => (
+    <LocalVideoTrackUnderlay>
+        <View style = { _headerStyles.page }>
+            <SafeAreaView style = { [ styles.blankPageWrapper, styles.welcomePage ] }>
+                <View style = { styles.welcomePageContainer }>
 
-                        <Image 
-                            style = { styles.logo } 
-                            source={require('../../../../images/jane-video-logo.png')}
-                        />
-                        <Text style = { styles.bigText }>
+                    <Image
+                        style = { styles.logo }
+                        source = { require('../../../../images/jane-video-logo.png') } />
+                    <Text style = { styles.bigText }>
                             Welcome to
-                            {'\n'}
+                        {'\n'}
                             Jane Online Appointments
-                        </Text>
+                    </Text>
 
-                        <View style = { styles.row }>
-                            <View style={styles.column}>
-                                <FontAwesomeIcon icon={ faUserMd } size={45} color='white' />
-                            </View>
-                            <View style={[styles.column, styles.columnText]}>
-                                <Text style={styles.whiteText}>Please go into the appointment in your schedule and click Begin.</Text>
-                            </View>
+                    <View style = { styles.row }>
+                        <View style = { styles.column }>
+                            <FontAwesomeIcon
+                                icon = { faUserMd }
+                                size = { 45 }
+                                color = 'white' />
                         </View>
-                        
-                        <View style={styles.row}>
-                            <View style={styles.column}>
-                                <FontAwesomeIcon icon={ faUser } size={45} color='white' />
-                            </View>
-                            <View style={[styles.column, styles.columnText]}>
-                                <Text style={styles.whiteText}>Please go into your 'My Account' and click Begin.</Text>
-                            </View>
+                        <View style = { [ styles.column, styles.columnText ] }>
+                            <Text style = { styles.whiteText }>Please go into the appointment in your schedule and click Begin.</Text>
                         </View>
-
                     </View>
-                </SafeAreaView>
-            </View>
-        </LocalVideoTrackUnderlay>
-    )
-}
+
+                    <View style = { styles.row }>
+                        <View style = { styles.column }>
+                            <FontAwesomeIcon
+                                icon = { faUser }
+                                size = { 45 }
+                                color = 'white' />
+                        </View>
+                        <View style = { [ styles.column, styles.columnText ] }>
+                            <Text style = { styles.whiteText }>Please go into your 'My Account' and click Begin.</Text>
+                        </View>
+                    </View>
+
+                </View>
+            </SafeAreaView>
+        </View>
+    </LocalVideoTrackUnderlay>
+);
 
 
 /**
@@ -159,7 +160,7 @@ class WelcomePage extends AbstractWelcomePage {
             return this._renderReducedUI();
         }
         */
-        return <WelcomePageLayout _headerStyles={this.props._headerStyles} />
+        return <WelcomePageLayout _headerStyles = { this.props._headerStyles } />;
     }
 
     /**
