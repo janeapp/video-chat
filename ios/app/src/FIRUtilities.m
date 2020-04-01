@@ -16,7 +16,12 @@
 
 #import "FIRUtilities.h"
 
-@import JitsiMeet;
+// Plist file name.
+NSString *const kGoogleServiceInfoFileName = @"GoogleService-Info";
+// Plist file type.
+NSString *const kGoogleServiceInfoFileType = @"plist";
+NSString *const kGoogleAppIDPlistKey = @"GOOGLE_APP_ID";
+
 
 @implementation FIRUtilities
 
@@ -25,24 +30,50 @@
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     NSBundle *bundle = [NSBundle mainBundle];
-    containsRealServiceInfoPlist = [InfoPlistUtil containsRealServiceInfoPlistInBundle:bundle];
+    containsRealServiceInfoPlist = [self containsRealServiceInfoPlistInBundle:bundle];
   });
   return containsRealServiceInfoPlist;
 }
 
-+ (NSURL *)extractURL: (FIRDynamicLink*)dynamicLink {
-  NSURL *url = nil;
-  if (dynamicLink != nil) {
-    NSURL *dynamicLinkURL = dynamicLink.url;
-    if (dynamicLinkURL != nil
-        && (dynamicLink.matchType == FIRDLMatchTypeUnique
-            || dynamicLink.matchType == FIRDLMatchTypeDefault)) {
-          // Strong match, process it.
-          url = dynamicLinkURL;
-        }
++ (BOOL)containsRealServiceInfoPlistInBundle:(NSBundle *)bundle {
+  NSString *bundlePath = bundle.bundlePath;
+  if (!bundlePath.length) {
+    return NO;
   }
 
-  return url;
+  NSString *plistFilePath = [bundle pathForResource:kGoogleServiceInfoFileName
+                                             ofType:kGoogleServiceInfoFileType];
+  if (!plistFilePath.length) {
+    return NO;
+  }
+
+  NSDictionary *plist = [NSDictionary dictionaryWithContentsOfFile:plistFilePath];
+  if (!plist) {
+    return NO;
+  }
+
+  // Perform a very naive validation by checking to see if the plist has the dummy google app id
+  NSString *googleAppID = plist[kGoogleAppIDPlistKey];
+  if (!googleAppID.length) {
+    return NO;
+  }
+
+  return YES;
 }
+
+//+ (NSURL *)extractURL: (FIRDynamicLink*)dynamicLink {
+//  NSURL *url = nil;
+//  if (dynamicLink != nil) {
+//    NSURL *dynamicLinkURL = dynamicLink.url;
+//    if (dynamicLinkURL != nil
+//        && (dynamicLink.matchType == FIRDLMatchTypeUnique
+//            || dynamicLink.matchType == FIRDLMatchTypeDefault)) {
+//          // Strong match, process it.
+//          url = dynamicLinkURL;
+//        }
+//  }
+//
+//  return url;
+//}
 
 @end
