@@ -18,14 +18,15 @@ import { fullScreenChanged, setToolboxAlwaysVisible, showToolbox } from '../../.
 import { Toolbox } from '../../../toolbox/components/web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
 import { maybeShowSuboptimalExperienceNotification } from '../../functions';
+import Labels from './Labels';
+import { default as Notice } from './Notice';
+import { default as Subject } from './Subject';
+import { default as RefreshButton } from './RefreshButton';
 import {
     AbstractConference,
     abstractMapStateToProps
 } from '../AbstractConference';
 import type { AbstractProps } from '../AbstractConference';
-
-import Labels from './Labels';
-import { default as Notice } from './Notice';
 
 declare var APP: Object;
 declare var config: Object;
@@ -195,6 +196,8 @@ class Conference extends AbstractConference<Props, *> {
                 onMouseMove = { this._onShowToolbar }>
 
                 <Notice />
+                <RefreshButton />
+                <Subject />
                 <div id = 'videospace'>
                     <LargeVideo />
                     <KnockingParticipantList />
