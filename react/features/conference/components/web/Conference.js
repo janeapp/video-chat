@@ -18,6 +18,7 @@ import { fullScreenChanged, setToolboxAlwaysVisible, showToolbox } from '../../.
 import { Toolbox } from '../../../toolbox/components/web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
 import { maybeShowSuboptimalExperienceNotification } from '../../functions';
+import { default as RefreshButton } from './RefreshButton';
 import {
     AbstractConference,
     abstractMapStateToProps
@@ -195,6 +196,7 @@ class Conference extends AbstractConference<Props, *> {
                 onMouseMove = { this._onShowToolbar }>
 
                 <Notice />
+                <RefreshButton />
                 <div id = 'videospace'>
                     <LargeVideo />
                     <KnockingParticipantList />
