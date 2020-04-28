@@ -202,9 +202,9 @@ export function getConferenceNameForTitle(stateful: Function | Object) {
 */
 export function getConferenceTimestamp(stateful: Function | Object): number {
     const state = toState(stateful);
-    const { conferenceTimestamp } = getConferenceState(state);
+    const { conferenceTimestamp, conferenceStartedTime } = getConferenceState(state);
 
-    return conferenceTimestamp;
+    return conferenceTimestamp || conferenceStartedTime;
 }
 
 /**
