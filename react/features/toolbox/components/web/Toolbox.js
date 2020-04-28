@@ -49,6 +49,7 @@ import {
     RecordButton
 } from '../../../recording';
 import { SecurityDialogButton } from '../../../security';
+import { Platform } from '../../../base/react';
 import {
     SETTINGS_TABS,
     SettingsButton,
@@ -913,8 +914,9 @@ class Toolbox extends Component<Props, State> {
             _desktopSharingDisabledTooltipKey
         } = this.props;
         const showDesktopSharingButton = this.state.windowWidth > 475;
+        const isAndroid = Platform.OS === 'android';
 
-        return _desktopSharingEnabled || _desktopSharingDisabledTooltipKey || showDesktopSharingButton;
+        return (_desktopSharingEnabled || _desktopSharingDisabledTooltipKey || showDesktopSharingButton) && !isAndroid;
     }
 
     /**
