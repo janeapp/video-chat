@@ -33,6 +33,7 @@ import {
     getParticipants,
     participantUpdated
 } from '../../../base/participants';
+import { Platform } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { OverflowMenuItem } from '../../../base/toolbox/components';
 import { getLocalVideoTrack, toggleScreensharing } from '../../../base/tracks';
@@ -976,11 +977,13 @@ class Toolbox extends Component<Props> {
             _desktopSharingEnabled,
             _desktopSharingDisabledTooltipKey
         } = this.props;
+        const isAndroid = Platform.OS === 'android';
 
         return (
             (_desktopSharingEnabled
             || _desktopSharingDisabledTooltipKey)
             && this.props._shouldShowButton('desktop')
+            && !isAndroid
         );
     }
 
