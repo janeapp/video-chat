@@ -189,9 +189,7 @@ class Watermarks extends Component<Props, State> {
         //         );
         //     }
         // }
-        //
-        // return reactElement;
-        return <div className = 'watermark leftwatermark' />;
+        return <div className = 'watermark leftwatermark' />;;
     }
 
     /**
