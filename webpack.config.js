@@ -193,7 +193,7 @@ const config = {
             appBundle: `libs/app.bundle.min.js?v=${cacheVersionNumber}`,
             css: `css/all.css?v=${cacheVersionNumber}`,
             template: 'index.html',
-            minify: true,
+            minify: false,
             inject: false
         })
     ].filter(Boolean),
