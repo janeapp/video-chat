@@ -1,6 +1,5 @@
 /* global $, APP, config, interfaceConfig */
-
-/* eslint-disable no-unused-vars */
+/* eslint-disable */
 import { AtlasKitThemeProvider } from '@atlaskit/theme';
 import Logger from 'jitsi-meet-logger';
 import React from 'react';
@@ -332,7 +331,7 @@ export default class SmallVideo {
         const audioLevelContainer = this._getAudioLevelContainer();
 
         if (audioLevelContainer) {
-            ReactDOM.render(<AudioLevelIndicator audioLevel = { lvl }/>, audioLevelContainer);
+            ReactDOM.render(<AudioLevelIndicator audioLevel = { lvl } />, audioLevelContainer);
         }
     }
 
