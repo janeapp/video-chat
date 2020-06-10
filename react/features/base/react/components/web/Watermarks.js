@@ -1,10 +1,11 @@
 /* @flow */
+/* eslint-disable */
+import React, { Component } from 'react';
 
-import React, {Component} from 'react';
-import {translate} from '../../../i18n';
-import {connect} from '../../../redux';
-import {getParticipantCount} from '../../../participants';
-import {getRemoteTracks} from '../../../tracks';
+import { translate } from '../../../i18n';
+import { connect } from '../../../redux';
+import { getParticipantCount } from '../../../participants';
+import { getRemoteTracks } from '../../../tracks';
 import WaitingMessage from './WaitingMessage';
 
 
@@ -43,7 +44,9 @@ type Props = {
      * The default value for the Jitsi logo URL.
      */
     defaultJitsiLogoURL: ?string,
-
+    _isGuest: boolean,
+    conferenceHasStarted: boolean,
+    isWelcomePage: boolean,
     /**
      * Invoked to obtain translated strings.
      */
@@ -124,15 +127,16 @@ class Watermarks extends Component<Props, State> {
      * @returns {ReactElement|null}
      */
     _renderWatermark() {
-        const {conferenceHasStarted, isWelcomePage} = this.props;
-        return <div className="watermark ">
+        const { conferenceHasStarted, isWelcomePage } = this.props;
+
+
+        return (<div className = 'watermark '>
             <div
-                className={`leftwatermark ${(conferenceHasStarted || isWelcomePage) ? '' : 'animate-flicker'}`}>
-            </div>
+                className = { `leftwatermark ${conferenceHasStarted || isWelcomePage ? '' : 'animate-flicker'}` } />
             {
                 !isWelcomePage && <WaitingMessage />
             }
-        </div>;
+        </div>);
     }
 }
 
@@ -145,9 +149,11 @@ class Watermarks extends Component<Props, State> {
  */
 
 function _mapStateToProps(state) {
-    const {isGuest} = state['features/base/jwt'];
+    const { isGuest } = state['features/base/jwt'];
     const participantCount = getParticipantCount(state);
     const remoteTracks = getRemoteTracks(state['features/base/tracks']);
+
+
     return {
         _isGuest: isGuest,
         conferenceHasStarted: participantCount > 1 && remoteTracks.length > 0
