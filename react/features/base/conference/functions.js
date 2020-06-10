@@ -1,5 +1,4 @@
 // @flow
-
 import _ from 'lodash';
 
 import { JitsiTrackErrors } from '../lib-jitsi-meet';
