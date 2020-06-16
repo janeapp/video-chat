@@ -916,8 +916,9 @@ class Toolbox extends Component<Props, State> {
         } = this.props;
         const showDesktopSharingButton = this.state.windowWidth > 475;
         const isAndroid = Platform.OS === 'android';
+        const isElectron = JitsiMeetJS.util.browser.isElectron();
 
-        return (_desktopSharingEnabled || _desktopSharingDisabledTooltipKey || showDesktopSharingButton) && !isAndroid;
+        return (_desktopSharingEnabled || _desktopSharingDisabledTooltipKey || showDesktopSharingButton) && !isAndroid && !isElectron;
     }
 
     /**
