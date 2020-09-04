@@ -62,8 +62,7 @@ class WaitingMessage extends Component<Props, State> {
         const jwtPayload = jwt && jwtDecode(jwt);
         if (jwtPayload && jwtPayload.context && !conferenceHasStarted) {
             const { start_at } = jwtPayload.context || 0;
-            // const appointmentStartTimeStamp = new Date(start_at).getTime();
-            const appointmentStartTimeStamp = moment(moment(start_at, 'YYYY-MM-DD HH:mm:ss')).valueOf()
+            const appointmentStartTimeStamp = moment(start_at, 'YYYY-MM-DD HH:mm:ss').valueOf()
             const now = new Date().getTime();
             if (now < appointmentStartTimeStamp) {
                 this.setState({
