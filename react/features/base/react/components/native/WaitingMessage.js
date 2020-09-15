@@ -11,13 +11,14 @@ import jwtDecode from 'jwt-decode';
 import View from 'react-native-webrtc/RTCView';
 import moment from 'moment';
 
-const watermarkImg = require('../../../../../../images/watermark.png')
+const watermarkImg = require('../../../../../../images/watermark.png');
 
 type Props = {
     _isGuest: boolean,
     jwt: Object,
     conferenceHasStarted: boolean,
-    isWelcomePage: boolean
+    stopAnimation: boolean,
+    waitingMessageFromProps: string
 };
 
 type State = {
@@ -37,12 +38,12 @@ class WaitingMessage extends Component<Props, State> {
             appointmentStartAt: '',
             fadeAnim: new Animated.Value(0)
         };
-        this.animatedValue = new Animated.Value(0)
+        this.animatedValue = new Animated.Value(0);
     }
 
     componentDidMount() {
         this._startTimer();
-        this._animate()
+        this._animate();
     }
 
     _animate() {
@@ -54,7 +55,8 @@ class WaitingMessage extends Component<Props, State> {
                 duration: 2000,
                 easing: Easing.linear
             }
-        ).start(() => this._animate())
+        )
+            .start(() => this._animate());
     }
 
     _startTimer() {
@@ -62,12 +64,13 @@ class WaitingMessage extends Component<Props, State> {
         const jwtPayload = jwt && jwtDecode(jwt);
         if (jwtPayload && jwtPayload.context && !conferenceHasStarted) {
             const { start_at } = jwtPayload.context || 0;
-            const appointmentStartTimeStamp = moment(start_at, 'YYYY-MM-DD HH:mm:ss').valueOf()
+            const appointmentStartTimeStamp = moment(start_at, 'YYYY-MM-DD HH:mm:ss')
+                .valueOf();
             const now = new Date().getTime();
             if (now < appointmentStartTimeStamp) {
                 this.setState({
                     beforeAppointmentStart: true,
-                    appointmentStartAt: start_at,
+                    appointmentStartAt: start_at
                 }, () => {
                     this._setInterval(appointmentStartTimeStamp);
                 });
@@ -96,53 +99,76 @@ class WaitingMessage extends Component<Props, State> {
         }
     }
 
-    render() {
-        const { conferenceHasStarted } = this.props;
-
-        if (conferenceHasStarted) {
-            return null;
-        }
-
-        return (
-            <SafeAreaView>
-                {
-                    this._renderWaitingMessage()
-                }
-            </SafeAreaView>
-        );
-    }
-
-    _renderWaitingMessage() {
+    getWaitingMessage() {
+        const { waitingMessageFromProps } = this.props;
         const { beforeAppointmentStart, appointmentStartAt } = this.state;
-        const animate = this.animatedValue.interpolate({
-            inputRange: [0, .5, 1],
-            outputRange: [.1, 1, .1]
-        });
+        let header, text;
 
-        let header = <Text style={styles.waitingMessageHeader}>Waiting for the other participant to join...</Text>;
-        const image = <Image style={styles.watermark}
-                             source={watermarkImg}/>;
-        if (beforeAppointmentStart && appointmentStartAt) {
-            const time = moment(appointmentStartAt, "YYYY-MM-DD HH:mm").format("YYYY-MM-DD HH:mm");
-            header = (<Text style={styles.waitingMessageHeader}>Your appointment will begin
-                at {getLocalizedDateFormatter(time).format('hh:mm A')}</Text>);
+        header = waitingMessageFromProps ? waitingMessageFromProps.header : 'Waiting for the other participant to join...';
+
+        text = waitingMessageFromProps ? waitingMessageFromProps.text : 'Sit back, relax and take a moment for yourself.';
+
+        if (beforeAppointmentStart && appointmentStartAt && !waitingMessageFromProps) {
+            const time = moment(appointmentStartAt, 'YYYY-MM-DD HH:mm')
+                .format('YYYY-MM-DD HH:mm');
+            header = `Your appointment will begin at ${getLocalizedDateFormatter(time)
+                .format('hh:mm A')}`;
         }
 
-        return (<View style={[styles.waitingMessageContainer]}>
-            <Animated.View className = 'waitingMessage' style={[styles.waitingMessageImage,{
-                opacity: animate
-            }]}>
-                {
-                    image
-                }
-            </Animated.View>
-            <View style={{backgroundColor:'transparent'}}>
+        if (this._isTestMode()) {
+            header = 'Testing your audio and video...';
+            text = 'This is just a test area. Begin your online appointment from your Upcoming Appointments page.';
+        }
+
+        return <View style={{ backgroundColor: 'transparent' }}>
+            <Text style={styles.waitingMessageHeader}>
                 {
                     header
                 }
-                <Text style={styles.waitingMessageText}>Sit back, relax and take a moment for yourself.</Text>
+            </Text>
+            <Text style={styles.waitingMessageText}>
+                {
+                    text
+                }
+            </Text>
+        </View>;
+    }
+
+    _isTestMode() {
+        const { jwt } = this.props;
+        const jwtPayload = jwt && jwtDecode(jwt) || null;
+        const participantId = jwtPayload && jwtPayload.context && jwtPayload.context.user && jwtPayload.context.user.participant_id;
+        const videoChatSessionId = jwtPayload && jwtPayload.context && jwtPayload.context.video_chat_session_id;
+        const participantEmail = jwtPayload && jwtPayload.context && jwtPayload.context.user && jwtPayload.context.user.email;
+
+        return jwtPayload && participantId === 0 && videoChatSessionId === 0 && participantEmail === 'test@test.com';
+    }
+
+    render() {
+        const { stopAnimation, conferenceHasStarted } = this.props;
+        const animate = (stopAnimation || conferenceHasStarted) ? null : this.animatedValue.interpolate({
+            inputRange: [ 0, .5, 1 ],
+            outputRange: [ .1, 1, .1 ]
+        });
+
+        const image = <Image style={styles.watermark}
+                             source={watermarkImg}/>;
+
+        return <SafeAreaView>
+            <View style={[ styles.waitingMessageContainer ]}>
+                <Animated.View className='waitingMessage'
+                               style={[ styles.waitingMessageImage, {
+                                   opacity: animate
+                               } ]}>
+                    {
+                        image
+                    }
+                </Animated.View>
+                {
+                    !conferenceHasStarted && this.getWaitingMessage()
+                }
             </View>
-        </View>);
+        </SafeAreaView>;
     }
 }
 

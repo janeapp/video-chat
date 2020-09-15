@@ -226,6 +226,7 @@ const WATING_MESSAGE_STYLES = {
 
     waitingMessageText: {
         marginTop: 5,
+        maxWidth: 300,
         fontSize: 12,
         color: ColorPalette.janeDarkColor,
         textAlign: 'left',
