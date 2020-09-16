@@ -6,7 +6,7 @@ import {
     checkOtherParticipantsReady,
     updateParticipantReadyStatus
 } from '../functions';
-import {Sockets} from '../../../../service/Websocket/socket';
+import {Socket} from '../../../../service/Websocket/socket';
 import jwtDecode from 'jwt-decode';
 
 type Props = {
@@ -21,6 +21,7 @@ class SocketConnection extends Component<Props, State> {
     constructor(props) {
         super(props);
         this.socket = null;
+        this.pollingInterval = null;
         this._onMessageUpdate = this._onMessageUpdate.bind(this);
     }
 
@@ -44,6 +45,19 @@ class SocketConnection extends Component<Props, State> {
         }
     }
 
+    async _polling() {
+        const { jwt, jwtPayload } = this.props;
+        const otherParticipantsReady = await checkOtherParticipantsReady(jwt, jwtPayload);
+
+        if (otherParticipantsReady) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { localParticipantCanJoin: true } }));
+        }
+    }
+
+    usePolling() {
+        this.pollingInterval = setInterval(this._polling.bind(this), 20000);
+    }
+
     _connectionStatusListener = (status) => {
         window.ReactNativeWebView.postMessage(JSON.stringify({ message: status }));
     };
@@ -57,10 +71,11 @@ class SocketConnection extends Component<Props, State> {
                 window.ReactNativeWebView.postMessage(JSON.stringify({ message: { localParticipantCanJoin: true } }));
             } else {
                 if (socketJwtPayload) {
-                    this.socket = new Sockets({
+                    this.socket = new Socket({
                         socket_host: jwtPayload.context.ws_host,
                         ws_token: jwtPayload.context.ws_token,
-                        connectionStatusListener: this._connectionStatusListener
+                        connectionStatusListener: this._connectionStatusListener,
+                        usePolling: this.usePolling.bind(this)
                     });
                     this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
                 }

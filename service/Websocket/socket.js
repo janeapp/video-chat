@@ -1,15 +1,17 @@
 /* eslint-disable */
 import io from 'socket.io-client';
 
-export class Sockets {
+export class Socket {
     constructor(options) {
         this.unauthorized_count = 0;
         this.options = options || {};
         this.socket_host = options.socket_host || '';
         this.ws_token = this.options.ws_token || '';
+        this.usePolling = options.usePolling || null;
         this.connectionStatusListener = options.connectionStatusListener || null;
+        this.totalRetries = 0;
         this.socketio = io(this.socket_host, {
-            transports: [ 'websocket' ],
+            transports: ['websocket'],
             autoConnect: false,
             reconnection: true,
             reconnectionDelay: 10000,
@@ -19,7 +21,7 @@ export class Sockets {
                 connection_attempts: 0
             }
         });
-        this.connect(this.connectionStatusListener);
+        this.connect(this.usePolling, this.connectionStatusListener);
     }
 
     auth_and_connect() {
@@ -28,14 +30,12 @@ export class Sockets {
 
     }
 
-    connect(connectionStatusListener) {
+    connect(usePolling, connectionStatusListener) {
         if (this.reauthorizing) {
             return console.warn('cannot connect websocket while reauthorizing');
         }
 
         if (!this.ws_token) {
-            connectionStatusListener && connectionStatusListener('no websocket token present');
-
             return console.warn('no websocket token present');
         }
 
@@ -54,6 +54,10 @@ export class Sockets {
             console.info('websocket reconnect attempt');
             connectionStatusListener && connectionStatusListener('websocket reconnect attempt');
             this.unauthorized_count = 0;
+            this.totalRetries++;
+            if (this.totalRetries === 5) {
+                usePolling();
+            }
             this.socket.io.opts.query.token = this.ws_token;
             this.socket.io.opts.query.connection_attempts = this.unauthorized_count;
         });
@@ -73,10 +77,10 @@ export class Sockets {
                     console.info(
                         'socket unauthorized on second attempt. user needs to sign in again'
                     );
-                    connectionStatusListener && connectionStatusListener('socket unauthorized on second attempt. user needs to sign in again');
                     this.unauthorized_count = 0;
                     this.socket.disconnect();
                     console.error('Unable to connect Socket.IO', reason);
+                    connectionStatusListener && connectionStatusListener('Unable to connect Socket.IO');
                     if (window.bugsnagClient) {
                         bugsnagClient.notify(
                             'Socket error: unauthorized on second attempt. user needs to sign in again',
@@ -88,7 +92,6 @@ export class Sockets {
                 }
             } else {
                 console.error('Unable to connect Socket.IO', reason);
-                connectionStatusListener && connectionStatusListener('Unable to connect Socket.IO');
                 if (window.bugsnagClient) {
                     bugsnagClient.notify(`Socket error: ${reason}`, {
                         severity: 'error'
@@ -98,7 +101,7 @@ export class Sockets {
 
         });
 
-        this.socket.on('connect', function() {
+        this.socket.on('connect', function () {
             console.info('websocket connected');
             connectionStatusListener && connectionStatusListener('websocket connected');
             this.unauthorized_count = 0;
@@ -111,10 +114,6 @@ export class Sockets {
 
         this.socket.on('message', payload => {
             const event_object = JSON.parse(payload);
-
-            const current_session_is_originator = this.currentSessionIsOriginator(
-                event_object.browser_session_id
-            );
 
             this.onMessageUpdateListener(event_object);
         });
@@ -136,13 +135,7 @@ export class Sockets {
         this.socket.disconnect();
     }
 
-    currentSessionIsOriginator(id) {
-        return id === this.browser_session_id;
-    }
 
-    publishToStore(store, model_name) {
-
-    }
 }
 
 

@@ -1,10 +1,10 @@
 /* eslint-disable */
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
     joinConference as joinConferenceAction
 } from '../actions';
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
+import {translate} from '../../base/i18n';
+import {connect} from '../../base/redux';
 import {
     isDeviceStatusVisible,
     checkOtherParticipantsReady,
@@ -13,9 +13,9 @@ import {
 } from '../functions';
 import DeviceStatus from './preview/DeviceStatus';
 import Preview from './preview/Preview';
-import { Sockets } from '../../../../service/Websocket/socket';
+import {Socket} from '../../../../service/Websocket/socket';
 import jwtDecode from 'jwt-decode';
-import { Watermarks } from '../../base/react/components/web';
+import {Watermarks} from '../../base/react/components/web';
 import JaneDialog from './dialogs/JaneDialog';
 
 type Props = {
@@ -39,6 +39,7 @@ class JaneWaitingArea extends Component<Props, State> {
             localParticipantCanJoin: false
         };
         this.socket = null;
+        this.pollingInterval = null;
         this._joinConference = this._joinConference.bind(this);
         this._onMessageUpdate = this._onMessageUpdate.bind(this);
     }
@@ -52,6 +53,7 @@ class JaneWaitingArea extends Component<Props, State> {
     }
 
     componentWillUnmount() {
+        this.pollingInterval && clearInterval(this.pollingInterval);
         this.socket && this.socket.disconnect();
     }
 
@@ -78,6 +80,21 @@ class JaneWaitingArea extends Component<Props, State> {
         joinConference();
     }
 
+    async _polling() {
+        const { jwt, jwtPayload } = this.props;
+        const otherParticipantsReady = await checkOtherParticipantsReady(jwt, jwtPayload);
+
+        if (otherParticipantsReady) {
+            this.setState({
+                localParticipantCanJoin: true
+            });
+        }
+    }
+
+    usePolling() {
+        this.pollingInterval = setInterval(this._polling.bind(this), 10000);
+    }
+
     async _connectSocket() {
         const { jwt, jwtPayload } = this.props;
         const socketJwtPayload = jwtDecode(jwtPayload.context.ws_token);
@@ -90,11 +107,12 @@ class JaneWaitingArea extends Component<Props, State> {
                     localParticipantCanJoin: true
                 });
             } else if (socketJwtPayload) {
-                this.socket = new Sockets({
+                this.socketConnection = new Socket({
                     socket_host: jwtPayload.context.ws_host,
-                    ws_token: jwtPayload.context.ws_token
+                    ws_token: jwtPayload.context.ws_token,
+                    usePolling: this.usePolling.bind(this)
                 });
-                this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
+                this.socketConnection.onMessageUpdateListener = this._onMessageUpdate.bind(this);
             }
         } catch (e) {
             console.log(e);
@@ -114,15 +132,15 @@ class JaneWaitingArea extends Component<Props, State> {
 
 
         return (
-            <div className = 'jane-waiting-area-full-page'>
+            <div className='jane-waiting-area-full-page'>
                 <Watermarks
-                    stopAnimation = { stopAnimation || localParticipantCanJoin }
-                    waitingMessageHeader = { waitingMessageHeader } />
-                <Preview name = { name } />
+                    stopAnimation={stopAnimation || localParticipantCanJoin}
+                    waitingMessageHeader={waitingMessageHeader}/>
+                <Preview name={name}/>
                 <JaneDialog
-                    localParticipantCanJoin = { localParticipantCanJoin }
-                    joinConference = { this._joinConference } />
-                {deviceStatusVisible && <DeviceStatus />}
+                    localParticipantCanJoin={localParticipantCanJoin}
+                    joinConference={this._joinConference}/>
+                {deviceStatusVisible && <DeviceStatus/>}
             </div>
         );
     }
