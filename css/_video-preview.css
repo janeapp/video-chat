@@ -1,6 +1,6 @@
 .video-preview {
     max-height: 290px;
-    overflow: auto;
+    /*overflow: auto;*/
 
     &-entry {
         cursor: pointer;

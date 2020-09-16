@@ -21,7 +21,7 @@ import {
     setToolboxAlwaysVisible,
     showToolbox
 } from '../../../toolbox';
-
+import { JaneWaitingArea, isPrejoinPageVisible } from '../../../jane-waiting-area';
 import { maybeShowSuboptimalExperienceNotification } from '../../functions';
 
 import Labels from './Labels';
@@ -178,6 +178,9 @@ class Conference extends AbstractConference<Props, *> {
             // interfaceConfig is obsolete but legacy support is required.
             filmStripOnly: filmstripOnly
         } = interfaceConfig;
+        const {
+            _showJaneWaitingArea
+        } = this.props;
         const hideVideoQualityLabel
             = filmstripOnly
                 || VIDEO_QUALITY_LABEL_DISABLED
@@ -197,10 +200,11 @@ class Conference extends AbstractConference<Props, *> {
                     <Filmstrip filmstripOnly = { filmstripOnly } />
                 </div>
 
-                { filmstripOnly || <Toolbox /> }
+                { filmstripOnly || _showJaneWaitingArea || <Toolbox /> }
                 { filmstripOnly || <Chat /> }
 
                 { this.renderNotificationsContainer() }
+                { !filmstripOnly && _showJaneWaitingArea && <JaneWaitingArea />}
 
                 <CalleeInfoContainer />
             </div>
@@ -271,7 +275,8 @@ function _mapStateToProps(state) {
         ...abstractMapStateToProps(state),
         _iAmRecorder: state['features/base/config'].iAmRecorder,
         _layoutClassName: LAYOUT_CLASSNAMES[currentLayout],
-        _roomName: roomName
+        _roomName: roomName,
+        _showJaneWaitingArea: isPrejoinPageVisible(state)
     };
 }
 
