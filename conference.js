@@ -30,7 +30,10 @@ import {
 } from './react/features/app';
 import {
     initPrejoin,
-    isPrejoinPageEnabled
+    isPrejoinPageEnabled,
+    isPrejoinPageVisible,
+    replacePrejoinAudioTrack,
+    replacePrejoinVideoTrack
 } from './react/features/jane-waiting-area';
 
 import EventEmitter from 'events';
@@ -1477,6 +1480,14 @@ export default {
     useVideoStream(newStream) {
         return new Promise((resolve, reject) => {
             _replaceLocalVideoTrackQueue.enqueue(onFinish => {
+
+                if (isPrejoinPageVisible(APP.store.getState())) {
+                    return APP.store.dispatch(replacePrejoinVideoTrack(newStream))
+                        .then(resolve)
+                        .catch(reject)
+                        .then(onFinish);
+                }
+
                 APP.store.dispatch(
                 replaceLocalTrack(this.localVideo, newStream, room))
                     .then(() => {
@@ -1530,6 +1541,14 @@ export default {
     useAudioStream(newStream) {
         return new Promise((resolve, reject) => {
             _replaceLocalAudioTrackQueue.enqueue(onFinish => {
+
+                if (isPrejoinPageVisible(APP.store.getState())) {
+                    return APP.store.dispatch(replacePrejoinAudioTrack(newStream))
+                        .then(resolve)
+                        .catch(reject)
+                        .then(onFinish);
+                }
+
                 APP.store.dispatch(
                 replaceLocalTrack(this.localAudio, newStream, room))
                     .then(() => {

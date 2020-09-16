@@ -3,7 +3,7 @@
 import React, {Component} from 'react';
 import {connect} from '../../base/redux';
 import {
-    checkOtherParticipantsReady,
+    checkOtherParticipantsReadyStatus,
     updateParticipantReadyStatus
 } from '../functions';
 import {Socket} from '../../../../service/Websocket/socket';
@@ -35,6 +35,7 @@ class SocketConnection extends Component<Props, State> {
     }
 
     componentWillUnmount() {
+        this.pollingInterval && clearInterval(this.pollingInterval);
         this.socket && this.socket.disconnect();
     }
 
@@ -47,15 +48,15 @@ class SocketConnection extends Component<Props, State> {
 
     async _polling() {
         const { jwt, jwtPayload } = this.props;
-        const otherParticipantsReady = await checkOtherParticipantsReady(jwt, jwtPayload);
+        const otherParticipantsReady = await checkOtherParticipantsReadyStatus(jwt, jwtPayload);
 
         if (otherParticipantsReady) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ message: { localParticipantCanJoin: true } }));
         }
     }
 
-    usePolling() {
-        this.pollingInterval = setInterval(this._polling.bind(this), 20000);
+    _pollForReadyStatus() {
+        this.pollingInterval = setInterval(this._polling.bind(this), 10000);
     }
 
     _connectionStatusListener = (status) => {
@@ -66,18 +67,19 @@ class SocketConnection extends Component<Props, State> {
         const { jwt, jwtPayload } = this.props;
         const socketJwtPayload = jwtDecode(jwtPayload.context.ws_token);
         try {
-            const otherParticipantsReady = await checkOtherParticipantsReady(jwt, jwtPayload);
+            const otherParticipantsReady = await checkOtherParticipantsReadyStatus(jwt, jwtPayload);
             if (otherParticipantsReady) {
                 window.ReactNativeWebView.postMessage(JSON.stringify({ message: { localParticipantCanJoin: true } }));
             } else {
                 if (socketJwtPayload) {
                     this.socket = new Socket({
                         socket_host: jwtPayload.context.ws_host,
-                        ws_token: jwtPayload.context.ws_token,
-                        connectionStatusListener: this._connectionStatusListener,
-                        usePolling: this.usePolling.bind(this)
+                        ws_token: jwtPayload.context.ws_token
                     });
                     this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
+                    this.socket.connectionStatusListener = this._connectionStatusListener.bind(this);
+                    this.socket.pollForReadyStatus = this._pollForReadyStatus.bind(this);
+                    this.socket.connect();
                 }
             }
         } catch (e) {

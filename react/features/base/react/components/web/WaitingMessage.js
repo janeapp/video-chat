@@ -1,18 +1,18 @@
 // @flow
 /* eslint-disable */
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 
-import { getLocalizedDateFormatter, translate } from '../../../i18n';
-import { connect } from '../../../redux';
-import { getParticipantCount } from '../../../participants';
-import { getRemoteTracks } from '../../../tracks';
+import {getLocalizedDateFormatter, translate} from '../../../i18n';
+import {connect} from '../../../redux';
+import {getParticipantCount} from '../../../participants';
+import {getRemoteTracks} from '../../../tracks';
 import jwtDecode from 'jwt-decode';
 
 type Props = {
     _isGuest: boolean,
     jwt: Object,
     conferenceHasStarted: boolean,
-    isWelcomePage: boolean
+    stopAnimation: boolean
 };
 
 type State = {
@@ -97,6 +97,7 @@ class WaitingMessage extends Component<Props, State> {
 
     _renderWaitingMessage() {
         const { beforeAppointmentStart, appointmentStartAt } = this.state;
+        const { waitingMessageHeader } = this.props;
 
         let header = <p>Waiting for the other participant to join...</p>;
 
@@ -105,7 +106,11 @@ class WaitingMessage extends Component<Props, State> {
                 at {getLocalizedDateFormatter(appointmentStartAt).format('hh:mm A')}</p>);
         }
 
-        return (<div className = 'waitingMessage'>
+        if (waitingMessageHeader) {
+            header = <p>{waitingMessageHeader}</p>;
+        }
+
+        return (<div className='waitingMessage'>
             {
                 header
             }
@@ -118,7 +123,6 @@ function _mapStateToProps(state) {
     const { jwt } = state['features/base/jwt'];
     const participantCount = getParticipantCount(state);
     const remoteTracks = getRemoteTracks(state['features/base/tracks']);
-
 
     return {
         jwt,

@@ -5,6 +5,7 @@ import {
     ADD_PREJOIN_CONTENT_SHARING_TRACK,
     ADD_PREJOIN_VIDEO_TRACK,
     PREJOIN_START_CONFERENCE,
+    SET_DEVICE_STATUS,
     SET_PREJOIN_AUDIO_DISABLED,
     SET_PREJOIN_AUDIO_MUTED,
     SET_PREJOIN_DEVICE_ERRORS,
@@ -13,6 +14,13 @@ import {
     SET_PREJOIN_VIDEO_MUTED,
     CONNECT_JANE_SOCKET_SERVER
 } from './actionTypes';
+import { createLocalTrack } from '../base/lib-jitsi-meet';
+import logger from './logger';
+
+import {
+    getAudioTrack,
+    getVideoTrack,
+} from './functions';
 
 export function addPrejoinAudioTrack(value: Object) {
     return {
@@ -68,6 +76,50 @@ export function joinConference() {
     };
 }
 
+export function replacePrejoinAudioTrack(track: Object) {
+    return async (dispatch: Function, getState: Function) => {
+        const oldTrack = getAudioTrack(getState());
+
+        oldTrack && await oldTrack.dispose();
+        dispatch(addPrejoinAudioTrack(track));
+    };
+}
+
+export function replaceAudioTrackById(deviceId: string) {
+    return async (dispatch: Function) => {
+        try {
+            const track = await createLocalTrack('audio', deviceId);
+
+            dispatch(replacePrejoinAudioTrack(track));
+        } catch (err) {
+            dispatch(setDeviceStatusWarning('prejoin.audioTrackError'));
+            logger.log('Error replacing audio track', err);
+        }
+    };
+}
+
+export function replacePrejoinVideoTrack(track: Object) {
+    return async (dispatch: Function, getState: Function) => {
+        const oldTrack = getVideoTrack(getState());
+
+        oldTrack && await oldTrack.dispose();
+        dispatch(addPrejoinVideoTrack(track));
+    };
+}
+
+export function replaceVideoTrackById(deviceId: Object) {
+    return async (dispatch: Function) => {
+        try {
+            const track = await createLocalTrack('video', deviceId);
+
+            dispatch(replacePrejoinVideoTrack(track));
+        } catch (err) {
+            dispatch(setDeviceStatusWarning('prejoin.videoTrackError'));
+            logger.log('Error replacing video track', err);
+        }
+    };
+}
+
 export function setPrejoinAudioMuted(value: boolean) {
     return {
         type: SET_PREJOIN_AUDIO_MUTED,
@@ -82,7 +134,6 @@ export function setPrejoinVideoDisabled(value: boolean) {
     };
 }
 
-
 export function setPrejoinVideoMuted(value: boolean) {
     return {
         type: SET_PREJOIN_VIDEO_MUTED,
@@ -93,6 +144,26 @@ export function setPrejoinVideoMuted(value: boolean) {
 export function setAudioDisabled() {
     return {
         type: SET_PREJOIN_AUDIO_DISABLED
+    };
+}
+
+export function setDeviceStatusOk(deviceStatusText: string) {
+    return {
+        type: SET_DEVICE_STATUS,
+        value: {
+            deviceStatusText,
+            deviceStatusType: 'ok'
+        }
+    };
+}
+
+export function setDeviceStatusWarning(deviceStatusText: string) {
+    return {
+        type: SET_DEVICE_STATUS,
+        value: {
+            deviceStatusText,
+            deviceStatusType: 'warning'
+        }
     };
 }
 

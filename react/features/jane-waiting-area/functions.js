@@ -108,7 +108,7 @@ export function isPrejoinPageVisible(state: Object): boolean {
     return isPrejoinPageEnabled(state) && state['features/jane-waiting-area']?.showPrejoin;
 }
 
-export async function checkOtherParticipantsReady(jwt, jwtPayload) {
+export async function checkOtherParticipantsReadyStatus(jwt, jwtPayload) {
     const url = new URL(jwtPayload.context.check_ready_status_url);
 
     const params = { jwt };
@@ -116,15 +116,16 @@ export async function checkOtherParticipantsReady(jwt, jwtPayload) {
     url.search = new URLSearchParams(params).toString();
 
     return fetch(url).then(response => response.json())
-.then(res => res.other_participants_ready);
+        .then(res => res.other_participants_ready);
 }
 
-export function updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant) {
+export function updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, readyStatus) {
     if (jwt && jwtPayload) {
         const wsUpdateUrl = jwtPayload.context.participant_ready_url;
+        const info = { participant_ready: readyStatus }
         const obj = {
             jwt,
-            info: participantType === 'StaffMember' ? 'practitioner_ready' : 'patient_ready',
+            info,
             participant_type: participantType === 'StaffMember' ? 'staff_member' : 'patient',
             participant_id: participant.participant_id,
             participant_name: participant.name,
