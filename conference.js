@@ -30,10 +30,7 @@ import {
 } from './react/features/app';
 import {
     initPrejoin,
-    isPrejoinPageEnabled,
-    isPrejoinPageVisible,
-    replacePrejoinAudioTrack,
-    replacePrejoinVideoTrack
+    isPrejoinPageEnabled
 } from './react/features/jane-waiting-area';
 
 import EventEmitter from 'events';

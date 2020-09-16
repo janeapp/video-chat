@@ -20,7 +20,7 @@ const DEFAULT_STATE = {
     audioTrack: null,
     contentSharingTrack: null,
     country: '',
-    deviceStatusText: 'prejoin.configuringDevices',
+    deviceStatusText: 'janeWaitingArea.configuringDevices',
     deviceStatusType: 'ok',
     dialOutCountry: {
         name: 'United States',
@@ -28,7 +28,7 @@ const DEFAULT_STATE = {
         code: 'us'
     },
     dialOutNumber: '',
-    dialOutStatus: 'prejoin.dialing',
+    dialOutStatus: 'janeWaitingArea.dialing',
     name: '',
     rawError: '',
     showPrejoin: true,
@@ -40,10 +40,10 @@ const DEFAULT_STATE = {
 };
 
 /**
- * Listen for actions that mutate the prejoin state
+ * Listen for actions that mutate the jane waiting area state
  */
 ReducerRegistry.register(
-    'features/janeWaitingArea', (state = DEFAULT_STATE, action) => {
+    'features/jane-waiting-area', (state = DEFAULT_STATE, action) => {
         switch (action.type) {
         case ADD_PREJOIN_AUDIO_TRACK: {
             return {
@@ -142,28 +142,28 @@ function getStatusFromErrors(errors) {
             if (videoOnlyError) {
                 return {
                     deviceStatusType: 'warning',
-                    deviceStatusText: 'prejoin.audioAndVideoError',
+                    deviceStatusText: 'janeWaitingArea.audioAndVideoError',
                     rawError: audioAndVideoError.message
                 };
             }
 
             return {
                 deviceStatusType: 'warning',
-                deviceStatusText: 'prejoin.audioOnlyError',
+                deviceStatusText: 'janeWaitingArea.audioOnlyError',
                 rawError: audioOnlyError.message
             };
         }
 
         return {
             deviceStatusType: 'warning',
-            deviceStatusText: 'prejoin.videoOnlyError',
+            deviceStatusText: 'janeWaitingArea.videoOnlyError',
             rawError: audioAndVideoError.message
         };
     }
 
     return {
         deviceStatusType: 'ok',
-        deviceStatusText: 'prejoin.lookGood',
+        deviceStatusText: 'janeWaitingArea.lookGood',
         rawError: ''
     };
 }

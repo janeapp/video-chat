@@ -1,20 +1,19 @@
-// @flow
-
-import React, {Component} from 'react';
+/* eslint-disable */
+import React, { Component } from 'react';
 import {
     joinConference as joinConferenceAction
 } from '../actions';
-import {translate} from '../../base/i18n';
-import {connect} from '../../base/redux';
+import { translate } from '../../base/i18n';
+import { connect } from '../../base/redux';
 import {
     isDeviceStatusVisible,
-    checkOtherParticipantsReady
+    checkOtherParticipantsReady, updateParticipantReadyStatus
 } from '../functions';
 import DeviceStatus from './preview/DeviceStatus';
 import Preview from './preview/Preview';
-import {Sockets} from '../../../../service/Websocket/socket';
+import { Sockets } from '../../../../service/Websocket/socket';
 import jwtDecode from 'jwt-decode';
-import {Watermarks} from '../../base/react/components/web';
+import { Watermarks } from '../../base/react/components/web';
 import JaneDialog from './dialogs/JaneDialog';
 
 type Props = {
@@ -43,9 +42,9 @@ class JaneWaitingArea extends Component<Props, State> {
     }
 
     componentDidMount() {
-        const {participantType} = this.props;
+        const { jwt, jwtPayload, participant, participantType } = this.props;
         if (participantType === 'Patient') {
-            this._sendBeacon();
+            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant);
         }
         this._connectSocket();
     }
@@ -55,7 +54,8 @@ class JaneWaitingArea extends Component<Props, State> {
     }
 
     _onMessageUpdate(event) {
-        const {participantType} = this.props;
+        const { participantType } = this.props;
+
         if (event.info === 'practitioner_ready' && participantType === 'Patient') {
             this.setState({
                 localParticipantCanJoin: true
@@ -69,55 +69,33 @@ class JaneWaitingArea extends Component<Props, State> {
     }
 
     _joinConference() {
-        const {
-            joinConference
-        } = this.props;
-        const {participantType} = this.props;
+        const { jwt, jwtPayload, joinConference, participant, participantType } = this.props;
         if (participantType === 'StaffMember') {
-            this._sendBeacon();
+            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant);
         }
         joinConference();
     }
 
     async _connectSocket() {
-        const {jwt, jwtPayload} = this.props;
+        const { jwt, jwtPayload } = this.props;
         const socketJwtPayload = jwtDecode(jwtPayload.context.ws_token);
+
         try {
             const otherParticipantsReady = await checkOtherParticipantsReady(jwt, jwtPayload);
+
             if (otherParticipantsReady) {
                 this.setState({
                     localParticipantCanJoin: true
                 });
-            } else {
-                if (socketJwtPayload) {
-                    this.socket = new Sockets({
-                        socket_host: jwtPayload.context.ws_host,
-                        ws_token: jwtPayload.context.ws_token
-                    });
-                    this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
-                }
+            } else if (socketJwtPayload) {
+                this.socket = new Sockets({
+                    socket_host: jwtPayload.context.ws_host,
+                    ws_token: jwtPayload.context.ws_token
+                });
+                this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
             }
         } catch (e) {
             console.log(e);
-        }
-    }
-
-    _sendBeacon() {
-        const {jwt, jwtPayload, participantType, participant} = this.props;
-        if (jwt && jwtPayload) {
-            const wsUpdateUrl = jwtPayload.context.participant_ready_url;
-            const obj = {
-                jwt,
-                // eslint-disable-next-line camelcase
-                info: participantType === 'StaffMember' ? 'practitioner_ready' : 'patient_ready',
-                participant_type: participantType === 'StaffMember' ? 'staff_member' : 'patient',
-                participant_id: participant.participant_id,
-                participant_name: participant.name,
-                room_name: jwtPayload.room
-            };
-            const data = new Blob([JSON.stringify(obj, null, 2)], {type: 'text/plain; charset=UTF-8'});
-            // eslint-disable-next-line no-mixed-operators
-            navigator.sendBeacon(wsUpdateUrl, data);
         }
     }
 
@@ -128,32 +106,38 @@ class JaneWaitingArea extends Component<Props, State> {
             deviceStatusVisible
         } = this.props;
 
-        const {localParticipantCanJoin} = this.state;
+        const { localParticipantCanJoin } = this.state;
         const stopAnimation = participantType === 'StaffMember';
         const waitingMessageHeader = participantType === 'StaffMember' ? '' : 'Waiting for the practitioner...';
+
+
         return (
-            <div className='jane-waiting-area-full-page'>
+            <div className = 'jane-waiting-area-full-page'>
                 <Watermarks
-                    stopAnimation={stopAnimation || localParticipantCanJoin}
-                    waitingMessageHeader={waitingMessageHeader}/>
-                <Preview name={name}/>
-                <JaneDialog localParticipantCanJoin={localParticipantCanJoin}
-                            joinConference={this._joinConference}/>
-                {deviceStatusVisible && <DeviceStatus/>}
+                    stopAnimation = { stopAnimation || localParticipantCanJoin }
+                    waitingMessageHeader = { waitingMessageHeader } />
+                <Preview name = { name } />
+                <JaneDialog
+                    localParticipantCanJoin = { localParticipantCanJoin }
+                    joinConference = { this._joinConference } />
+                {deviceStatusVisible && <DeviceStatus />}
             </div>
         );
     }
 }
 
 function mapStateToProps(state): Object {
-    const {jwt} = state['features/base/jwt'];
+    const { jwt } = state['features/base/jwt'];
     const jwtPayload = jwt && jwtDecode(jwt) || null;
     const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
     const participantType = participant && participant.participant_type || null;
 
     return {
         deviceStatusVisible: isDeviceStatusVisible(state),
-        jwt, jwtPayload, participantType, participant
+        jwt,
+        jwtPayload,
+        participantType,
+        participant
     };
 }
 

@@ -83,7 +83,7 @@ type Props = AbstractProps & {
      * Name for this conference room.
      */
     _roomName: string,
-
+    _showJaneWaitingArea: boolean,
     dispatch: Function,
     t: Function
 }

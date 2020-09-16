@@ -1,3 +1,4 @@
+/* eslint-disable */
 import io from 'socket.io-client';
 
 export class Sockets {
@@ -6,9 +7,9 @@ export class Sockets {
         this.options = options || {};
         this.socket_host = options.socket_host || '';
         this.ws_token = this.options.ws_token || '';
-        this.connectionStatusListener = options.connectionStatusListener || null
+        this.connectionStatusListener = options.connectionStatusListener || null;
         this.socketio = io(this.socket_host, {
-            transports: ['websocket'],
+            transports: [ 'websocket' ],
             autoConnect: false,
             reconnection: true,
             reconnectionDelay: 10000,
@@ -34,6 +35,7 @@ export class Sockets {
 
         if (!this.ws_token) {
             connectionStatusListener && connectionStatusListener('no websocket token present');
+
             return console.warn('no websocket token present');
         }
 
@@ -41,6 +43,7 @@ export class Sockets {
         if (this.socket) {
             this.socket.io.opts.query.token = this.ws_token;
             this.socket.io.opts.query.connection_attempts = this.unauthorized_count;
+
             return this.socket.connect();
         }
 
@@ -55,7 +58,7 @@ export class Sockets {
             this.socket.io.opts.query.connection_attempts = this.unauthorized_count;
         });
 
-        this.socket.on('error', (reason) => {
+        this.socket.on('error', reason => {
             if (reason == 'jwt_expired') {
                 if (this.unauthorized_count == 0) {
                     console.info(
@@ -76,7 +79,7 @@ export class Sockets {
                     console.error('Unable to connect Socket.IO', reason);
                     if (window.bugsnagClient) {
                         bugsnagClient.notify(
-                            `Socket error: unauthorized on second attempt. user needs to sign in again`,
+                            'Socket error: unauthorized on second attempt. user needs to sign in again',
                             {
                                 severity: 'error'
                             }
@@ -95,21 +98,21 @@ export class Sockets {
 
         });
 
-        this.socket.on('connect', function () {
+        this.socket.on('connect', function() {
             console.info('websocket connected');
             connectionStatusListener && connectionStatusListener('websocket connected');
             this.unauthorized_count = 0;
         });
 
-        this.socket.on('disconnect', function () {
+        this.socket.on('disconnect', () => {
             console.info('websocket disconnect');
             connectionStatusListener && connectionStatusListener('websocket disconnect');
         });
 
-        this.socket.on('message', (payload) => {
-            let event_object = JSON.parse(payload);
+        this.socket.on('message', payload => {
+            const event_object = JSON.parse(payload);
 
-            let current_session_is_originator = this.currentSessionIsOriginator(
+            const current_session_is_originator = this.currentSessionIsOriginator(
                 event_object.browser_session_id
             );
 

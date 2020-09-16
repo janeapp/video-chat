@@ -5,11 +5,11 @@ import {
     ADD_PREJOIN_VIDEO_TRACK,
     PREJOIN_START_CONFERENCE
 } from './actionTypes';
-import { setPrejoinAudioMuted, setPrejoinVideoMuted } from './actions';
-import { updateSettings } from '../base/settings';
-import { SET_AUDIO_MUTED, SET_VIDEO_MUTED } from '../base/media';
-import { MiddlewareRegistry } from '../base/redux';
-import { getAllPrejoinConfiguredTracks } from './functions';
+import {setPrejoinAudioMuted, setPrejoinVideoMuted} from './actions';
+import {updateSettings} from '../base/settings';
+import {SET_AUDIO_MUTED, SET_VIDEO_MUTED} from '../base/media';
+import {MiddlewareRegistry} from '../base/redux';
+import {getAllPrejoinConfiguredTracks} from './functions';
 
 declare var APP: Object;
 
@@ -21,60 +21,60 @@ declare var APP: Object;
  */
 MiddlewareRegistry.register(store => next => async action => {
     switch (action.type) {
-    case ADD_PREJOIN_AUDIO_TRACK: {
-        const { value: audioTrack } = action;
+        case ADD_PREJOIN_AUDIO_TRACK: {
+            const { value: audioTrack } = action;
 
-        if (audioTrack) {
-            store.dispatch(
+            if (audioTrack) {
+                store.dispatch(
                     updateSettings({
                         micDeviceId: audioTrack.getDeviceId()
-                    }),
-            );
+                    })
+                );
+            }
+
+            break;
         }
 
-        break;
-    }
+        case ADD_PREJOIN_VIDEO_TRACK: {
+            const { value: videoTrack } = action;
 
-    case ADD_PREJOIN_VIDEO_TRACK: {
-        const { value: videoTrack } = action;
-
-        if (videoTrack) {
-            store.dispatch(
+            if (videoTrack) {
+                store.dispatch(
                     updateSettings({
                         cameraDeviceId: videoTrack.getDeviceId()
-                    }),
-            );
+                    })
+                );
+            }
+
+            break;
         }
 
-        break;
-    }
+        case PREJOIN_START_CONFERENCE: {
+            const { getState, dispatch } = store;
+            const state = getState();
+            const { userSelectedSkipPrejoin } = state['features/jane-waiting-area'];
 
-    case PREJOIN_START_CONFERENCE: {
-        const { getState, dispatch } = store;
-        const state = getState();
-        const { userSelectedSkipPrejoin } = state['features/janeWaitingArea'];
-
-        userSelectedSkipPrejoin && dispatch(updateSettings({
-            userSelectedSkipPrejoin
-        }));
+            userSelectedSkipPrejoin && dispatch(updateSettings({
+                userSelectedSkipPrejoin
+            }));
 
 
-        const tracks = await getAllPrejoinConfiguredTracks(state);
+            const tracks = await getAllPrejoinConfiguredTracks(state);
 
-        APP.conference.prejoinStart(tracks);
+            APP.conference.prejoinStart(tracks);
 
-        break;
-    }
+            break;
+        }
 
-    case SET_AUDIO_MUTED: {
-        store.dispatch(setPrejoinAudioMuted(Boolean(action.muted)));
-        break;
-    }
+        case SET_AUDIO_MUTED: {
+            store.dispatch(setPrejoinAudioMuted(Boolean(action.muted)));
+            break;
+        }
 
-    case SET_VIDEO_MUTED: {
-        store.dispatch(setPrejoinVideoMuted(Boolean(action.muted)));
-        break;
-    }
+        case SET_VIDEO_MUTED: {
+            store.dispatch(setPrejoinVideoMuted(Boolean(action.muted)));
+            break;
+        }
 
     }
 

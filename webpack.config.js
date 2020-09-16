@@ -27,7 +27,7 @@ const generateIndexHtml = new HtmlWebpackPlugin({
     template: 'index.html',
     minify: false,
     inject: false
-})
+});
 
 /**
  * Build a Performance configuration object for the given size.
@@ -187,7 +187,8 @@ const config = {
     }
 };
 
-const appBundleConfig = {...config, plugins: [...config.plugins, generateIndexHtml]};
+const appBundleConfig = { ...config,
+    plugins: [ ...config.plugins, generateIndexHtml ] };
 
 module.exports = [
     Object.assign({}, appBundleConfig, {

@@ -1,8 +1,8 @@
-// @flow
+/* eslint-disable */
 
-import React, {Component} from 'react';
-import {getLocalizedDateFormatter, translate} from '../../../base/i18n';
-import {connect} from '../../../base/redux';
+import React, { Component } from 'react';
+import { getLocalizedDateFormatter, translate } from '../../../base/i18n';
+import { connect } from '../../../base/redux';
 import ActionButton from '../buttons/ActionButton';
 import AudioSettingsButton from '../../../toolbox/components/web/AudioSettingsButton';
 import VideoSettingsButton from '../../../toolbox/components/web/VideoSettingsButton';
@@ -30,84 +30,92 @@ class JaneDialog extends Component<Props> {
         const {
             joinConference
         } = this.props;
+
         joinConference();
     }
 
     _getDialogTitleMsg() {
-        const {t, participantType, localParticipantCanJoin} = this.props;
+        const { participantType, localParticipantCanJoin } = this.props;
         let title;
-        if (!localParticipantCanJoin) {
-            title = 'Test your audio and video while you wait.';
+
+        if (localParticipantCanJoin) {
+            title = '';
+        } else if (participantType === 'StaffMember') {
+            title = 'When you are ready to begin, click on button below to admit your client into the video session.';
         } else {
-            if (participantType === 'StaffMember') {
-                title = 'When you are ready to begin, click on button below to admit your client into the video session.';
-            } else {
-                title = '';
-            }
+            title = 'Test your audio and video while you wait.';
         }
-        return <div className='jane-waiting-area-info-title-msg'>{title}</div>;
+
+        return <div className = 'jane-waiting-area-info-title-msg'>{title}</div>;
     }
 
     _getDialogTitle() {
-        const {t, participantType, localParticipantCanJoin} = this.props;
+        const { participantType, localParticipantCanJoin } = this.props;
         let header;
+
         if (participantType === 'StaffMember') {
-            if (!localParticipantCanJoin) {
+            if (localParticipantCanJoin) {
+                header = 'The patient is ready to begin your session';
+            } else {
                 header = 'Waiting for the client...';
-            } else {
-                header = ('The patient is ready to begin your session');
             }
+        } else if (localParticipantCanJoin) {
+            header = 'The pratitioner is ready to begin your session';
         } else {
-            if (!localParticipantCanJoin) {
-                header = ('The pratitioner will let you into the session when they are ready...');
-            } else {
-                header = ('The pratitioner is ready to begin your session');
-            }
+            header = 'The pratitioner will let you into the session when they are ready...';
         }
-        return <div className='jane-waiting-area-info-title'>{header}</div>;
+
+        return <div className = 'jane-waiting-area-info-title'>{header}</div>;
     }
 
     _getStartDate() {
-        const {jwtPayload} = this.props;
+        const { jwtPayload } = this.props;
         const startAt = jwtPayload && jwtPayload.context && jwtPayload.context.start_at || '';
+
         if (startAt) {
-            return <p>
+            return (<p>
                 {
                     getLocalizedDateFormatter(startAt).format('MMMM D, YYYY')
                 }
-            </p>;
+            </p>);
         }
+
         return null;
     }
 
     _getStartTimeAndEndTime() {
-        const {jwtPayload} = this.props;
+        const { jwtPayload } = this.props;
         const startAt = jwtPayload && jwtPayload.context && jwtPayload.context.start_at || '';
         const endAt = jwtPayload && jwtPayload.context && jwtPayload.context.end_at || '';
+
         if (!startAt || !endAt) {
             return null;
         }
-        return <p>
+
+        return (<p>
             {
                 `${getLocalizedDateFormatter(startAt).format('h:mm')} -
             ${getLocalizedDateFormatter(endAt).format('h:mm A')}`
             }
-        </p>;
+        </p>);
     }
 
     _getDuration() {
-        const {jwtPayload} = this.props;
+        const { jwtPayload } = this.props;
         const startAt = jwtPayload && jwtPayload.context && jwtPayload.context.start_at || '';
         const endAt = jwtPayload && jwtPayload.context && jwtPayload.context.end_at || '';
+
         if (!startAt || !endAt) {
             return null;
         }
         const duration = getLocalizedDateFormatter(endAt).valueOf() - getLocalizedDateFormatter(startAt).valueOf();
-        return <p>
+
+
+        return (<p>
             {
                 `${moment.duration(duration).asMinutes()} Minutes`
             }
-        </p>;
+        </p>);
     }
 
     _closeWindow() {
@@ -115,7 +123,8 @@ class JaneDialog extends Component<Props> {
     }
 
     _getBtnText() {
-        const {participantType} = this.props;
+        const { participantType } = this.props;
+
         return participantType === 'StaffMember' ? 'Admit Client' : 'Begin';
     }
 
@@ -127,88 +136,92 @@ class JaneDialog extends Component<Props> {
             localParticipantCanJoin
         } = this.props;
 
-        const {_onCheckboxChange, _joinConference, _closeWindow} = this;
-        return (<div className='jane-waiting-area-info-area-container'>
-                <div className='jane-waiting-area-info-area'>
-                    <div className='jane-waiting-area-info'>
-                        <div className='jane-waiting-area-info-logo-wrapper'>
-                            <div className='jane-waiting-area-info-logo'>
-                            </div>
-                        </div>
-                        <div className='jane-waiting-area-info-text-wrapper'>
+        const { _onCheckboxChange, _joinConference, _closeWindow } = this;
+
+
+        return (<div className = 'jane-waiting-area-info-area-container'>
+            <div className = 'jane-waiting-area-info-area'>
+                <div className = 'jane-waiting-area-info'>
+                    <div className = 'jane-waiting-area-info-logo-wrapper'>
+                        <div className = 'jane-waiting-area-info-logo' />
+                    </div>
+                    <div className = 'jane-waiting-area-info-text-wrapper'>
+                        {
+                            this._getDialogTitle()
+                        }
+                        {
+                            this._getDialogTitleMsg()
+                        }
+                        <div className = 'jane-waiting-area-info-detail'>
+                            <p>
+                                {
+                                    jwtPayload && jwtPayload.context && jwtPayload.context.treatment
+                                }
+                            </p>
+                            <p>
+                                {
+                                    jwtPayload && jwtPayload.context && jwtPayload.context.practitioner_name
+                                }
+                            </p>
                             {
-                                this._getDialogTitle()
+                                this._getStartDate()
                             }
                             {
-                                this._getDialogTitleMsg()
+                                this._getStartTimeAndEndTime()
                             }
-                            <div className='jane-waiting-area-info-detail'>
-                                <p>
-                                    {
-                                        jwtPayload && jwtPayload.context && jwtPayload.context.treatment
-                                    }
-                                </p>
-                                <p>
-                                    {
-                                        jwtPayload && jwtPayload.context && jwtPayload.context.practitioner_name
-                                    }
-                                </p>
-                                {
-                                    this._getStartDate()
-                                }
-                                {
-                                    this._getStartTimeAndEndTime()
-                                }
-                                {
-                                    this._getDuration()
-                                }
-                            </div>
+                            {
+                                this._getDuration()
+                            }
                         </div>
                     </div>
-                    {
-                        <div className='jane-waiting-area-preview-join-btn-container'>
-                            {
-                                localParticipantCanJoin && <ActionButton
-                                    onClick={_joinConference}
-                                    type='primary'>
-                                    {this._getBtnText()}
-                                </ActionButton>
-                            }
-                            {
-                                !localParticipantCanJoin && participantType === 'StaffMember' &&
-                                <ActionButton
-                                    onClick={_closeWindow}
-                                    type='close'>
+                </div>
+                {
+                    <div className = 'jane-waiting-area-preview-join-btn-container'>
+                        {
+                            localParticipantCanJoin && <ActionButton
+                                onClick = { _joinConference }
+                                type = 'primary'>
+                                {this._getBtnText()}
+                            </ActionButton>
+                        }
+                        {
+                            !localParticipantCanJoin && participantType === 'StaffMember'
+                                && <ActionButton
+                                    onClick = { _closeWindow }
+                                    type = 'close'>
                                     Close
                                 </ActionButton>
-                            }
-                        </div>
-                    }
-                </div>
-                <div className='jane-waiting-area-preview-btn-container'>
-                    <AudioSettingsButton visible={true}/>
-                    <VideoSettingsButton visible={true}/>
-                </div>
-                <div className='jane-waiting-area-checkbox-container'>
-                    <input
-                        className='jane-waiting-area-checkbox'
-                        onChange={_onCheckboxChange}
-                        type='checkbox'/>
-                    <span>{t('prejoin.doNotShow')}</span>
-                </div>
+                        }
+                    </div>
+                }
             </div>
+            <div className = 'jane-waiting-area-preview-btn-container'>
+                <AudioSettingsButton visible = { true } />
+                <VideoSettingsButton visible = { true } />
+            </div>
+            <div className = 'jane-waiting-area-checkbox-container'>
+                <input
+                    className = 'jane-waiting-area-checkbox'
+                    onChange = { _onCheckboxChange }
+                    type = 'checkbox' />
+                <span>{t('janeWaitingArea.doNotShow')}</span>
+            </div>
+        </div>
         );
     }
 }
 
 function mapStateToProps(state): Object {
-    const {jwt} = state['features/base/jwt'];
+    const { jwt } = state['features/base/jwt'];
     const jwtPayload = jwt && jwtDecode(jwt) || null;
     const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
     const participantType = participant && participant.participant_type || null;
 
     return {
-        jwt, jwtPayload, participantType, participant
+        jwt,
+        jwtPayload,
+        participantType,
+        participant
     };
 }
 
