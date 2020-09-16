@@ -35,34 +35,34 @@ class JaneDialog extends Component<Props> {
     }
 
     _getDialogTitleMsg() {
-        const { participantType, localParticipantCanJoin } = this.props;
+        const { participantType, localParticipantCanJoin, t } = this.props;
         let title;
 
         if (localParticipantCanJoin) {
             title = '';
         } else if (participantType === 'StaffMember') {
-            title = 'When you are ready to begin, click on button below to admit your client into the video session.';
+            title = t('janeWaitingArea.whenYouAreReady');
         } else {
-            title = 'Test your audio and video while you wait.';
+            title = t('janeWaitingArea.testYourDevice');
         }
 
         return <div className = 'jane-waiting-area-info-title-msg'>{title}</div>;
     }
 
     _getDialogTitle() {
-        const { participantType, localParticipantCanJoin } = this.props;
+        const { participantType, localParticipantCanJoin, t } = this.props;
         let header;
 
         if (participantType === 'StaffMember') {
             if (localParticipantCanJoin) {
-                header = 'The patient is ready to begin your session';
+                header = t('janeWaitingArea.patientIsReady');
             } else {
-                header = 'Waiting for the client...';
+                header = t('janeWaitingArea.waitClient');
             }
         } else if (localParticipantCanJoin) {
-            header = 'The pratitioner is ready to begin your session';
+            header = t('janeWaitingArea.practitionerIsReady');
         } else {
-            header = 'The pratitioner will let you into the session when they are ready...';
+            header = t('janeWaitingArea.waitPractitioner');
         }
 
         return <div className = 'jane-waiting-area-info-title'>{header}</div>;

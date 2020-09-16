@@ -92,6 +92,10 @@ export function isPrejoinVideoDisabled(state: Object): Object {
     return state['features/jane-waiting-area']?.videoDisabled;
 }
 
+export function getPreJoinPageDisplayName(state: Object): string {
+    return state['features/base/participants'][0].name || '';
+}
+
 export function isPrejoinPageEnabled(state: Object): boolean {
     const { jwt } = state['features/base/jwt'];
     const jwtPayload = jwt && jwtDecode(jwt) || null;

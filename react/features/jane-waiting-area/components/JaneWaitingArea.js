@@ -7,7 +7,9 @@ import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import {
     isDeviceStatusVisible,
-    checkOtherParticipantsReady, updateParticipantReadyStatus
+    checkOtherParticipantsReady,
+    updateParticipantReadyStatus,
+    getPreJoinPageDisplayName
 } from '../functions';
 import DeviceStatus from './preview/DeviceStatus';
 import Preview from './preview/Preview';
@@ -137,7 +139,8 @@ function mapStateToProps(state): Object {
         jwt,
         jwtPayload,
         participantType,
-        participant
+        participant,
+        name: getPreJoinPageDisplayName(state)
     };
 }
 
