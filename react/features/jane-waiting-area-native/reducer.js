@@ -36,7 +36,7 @@ const DEFAULT_STATE = {
  * Listen for actions that mutate the prejoin state
  */
 ReducerRegistry.register(
-    'features/prejoin', (state = DEFAULT_STATE, action) => {
+    'features/jane-waiting-area-native', (state = DEFAULT_STATE, action) => {
         switch (action.type) {
 
         case SET_SKIP_PREJOIN: {

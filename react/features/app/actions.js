@@ -1,9 +1,8 @@
 // @flow
 
 import type { Dispatch } from 'redux';
-
-import { API_ID } from '../../../modules/API/constants';
 import { setRoom } from '../base/conference';
+import { enablePreJoinPage, isPrejoinPageEnabled } from '../jane-waiting-area-native';
 import {
     configWillLoad,
     createFakeConfig,
@@ -14,18 +13,14 @@ import {
 } from '../base/config';
 import { connect, disconnect, setLocationURL } from '../base/connection';
 import { loadConfig } from '../base/lib-jitsi-meet';
-import { MEDIA_TYPE } from '../base/media';
-import { toState } from '../base/redux';
-import { createDesiredLocalTracks, isLocalVideoTrackMuted, isLocalTrackMuted } from '../base/tracks';
+import { createDesiredLocalTracks } from '../base/tracks';
 import {
-    addHashParamsToURL,
     getBackendSafeRoomName,
     getLocationContextRoot,
     parseURIString,
     toURLString
 } from '../base/util';
-import { isVpaasMeeting } from '../billing-counter/functions';
-import { clearNotifications, showNotification } from '../notifications';
+import { showNotification } from '../notifications';
 import { setFatalError } from '../overlay';
 
 import {
@@ -80,10 +75,6 @@ export function appNavigate(uri: ?string) {
         if (navigator.product === 'ReactNative') {
             dispatch(disconnect());
         }
-
-        // There are notifications now that gets displayed after we technically left
-        // the conference, but we're still on the conference screen.
-        dispatch(clearNotifications());
 
         dispatch(configWillLoad(locationURL, room));
 
@@ -140,7 +131,11 @@ export function appNavigate(uri: ?string) {
         // FIXME: unify with web, currently the connection and track creation happens in conference.js.
         if (room && navigator.product === 'ReactNative') {
             dispatch(createDesiredLocalTracks());
-            dispatch(connect());
+            if (isPrejoinPageEnabled(getState())) {
+                dispatch(enablePreJoinPage(true));
+            } else {
+                dispatch(connect());
+            }
         }
     };
 }
@@ -170,11 +165,9 @@ export function redirectWithStoredParams(pathname: string) {
  * window.location.pathname. If the specified pathname is relative, the context
  * root of the Web app will be prepended to the specified pathname before
  * assigning it to window.location.pathname.
- * @param {string} hashParam - Optional hash param to assign to
- * window.location.hash.
  * @returns {Function}
  */
-export function redirectToStaticPage(pathname: string, hashParam: ?string) {
+export function redirectToStaticPage(pathname: string) {
     return () => {
         const windowLocation = window.location;
         let newPathname = pathname;
@@ -186,10 +179,6 @@ export function redirectToStaticPage(pathname: string, hashParam: ?string) {
             newPathname.startsWith('./')
                 && (newPathname = newPathname.substring(2));
             newPathname = getLocationContextRoot(windowLocation) + newPathname;
-        }
-
-        if (hashParam) {
-            windowLocation.hash = hashParam;
         }
 
         windowLocation.pathname = newPathname;
@@ -206,40 +195,16 @@ export function reloadNow() {
     return (dispatch: Dispatch<Function>, getState: Function) => {
         dispatch(setFatalError(undefined));
 
-        const state = getState();
-        const { locationURL } = state['features/base/connection'];
-
-        // Preserve the local tracks muted state after the reload.
-        const newURL = addTrackStateToURL(locationURL, state);
+        const { locationURL } = getState()['features/base/connection'];
 
         logger.info(`Reloading the conference using URL: ${locationURL}`);
 
         if (navigator.product === 'ReactNative') {
-            dispatch(appNavigate(toURLString(newURL)));
+            dispatch(appNavigate(toURLString(locationURL)));
         } else {
             dispatch(reloadWithStoredParams());
         }
     };
-}
-
-/**
- * Adds the current track state to the passed URL.
- *
- * @param {URL} url - The URL that will be modified.
- * @param {Function|Object} stateful - The redux store or {@code getState} function.
- * @returns {URL} - Returns the modified URL.
- */
-function addTrackStateToURL(url, stateful) {
-    const state = toState(stateful);
-    const tracks = state['features/base/tracks'];
-    const isVideoMuted = isLocalVideoTrackMuted(tracks);
-    const isAudioMuted = isLocalTrackMuted(tracks, MEDIA_TYPE.AUDIO);
-
-    return addHashParamsToURL(new URL(url), { // use new URL object in order to not pollute the passed parameter.
-        'config.startWithAudioMuted': isAudioMuted,
-        'config.startWithVideoMuted': isVideoMuted
-    });
-
 }
 
 /**
@@ -249,20 +214,17 @@ function addTrackStateToURL(url, stateful) {
  */
 export function reloadWithStoredParams() {
     return (dispatch: Dispatch<any>, getState: Function) => {
-        const state = getState();
-        const { locationURL } = state['features/base/connection'];
-
-        // Preserve the local tracks muted states.
-        const newURL = addTrackStateToURL(locationURL, state);
+        const { locationURL } = getState()['features/base/connection'];
         const windowLocation = window.location;
         const oldSearchString = windowLocation.search;
 
-        windowLocation.replace(newURL.toString());
+        windowLocation.replace(locationURL.toString());
 
-        if (newURL.search === oldSearchString) {
+        if (window.self !== window.top
+            && locationURL.search === oldSearchString) {
             // NOTE: Assuming that only the hash or search part of the URL will
             // be changed!
-            // location.replace will not trigger redirect/reload when
+            // location.reload will not trigger redirect/reload for iframe when
             // only the hash params are changed. That's why we need to call
             // reload in addition to replace.
             windowLocation.reload();
@@ -292,31 +254,21 @@ export function maybeRedirectToWelcomePage(options: Object = {}) {
 
         // if close page is enabled redirect to it, without further action
         if (enableClosePage) {
-            if (isVpaasMeeting(getState())) {
-                redirectToStaticPage('/');
-            }
+            const { isGuest } = getState()['features/base/jwt'];
 
-            const { isGuest, jwt } = getState()['features/base/jwt'];
-
-            let hashParam;
-
-            // save whether current user is guest or not, and pass auth token,
-            // before navigating to close page
+            // save whether current user is guest or not, before navigating
+            // to close page
             window.sessionStorage.setItem('guest', isGuest);
-            window.sessionStorage.setItem('jwt', jwt);
 
             let path = 'close.html';
 
             if (interfaceConfig.SHOW_PROMOTIONAL_CLOSE_PAGE) {
-                if (Number(API_ID) === API_ID) {
-                    hashParam = `#jitsi_meet_external_api_id=${API_ID}`;
-                }
                 path = 'close3.html';
             } else if (!options.feedbackSubmitted) {
                 path = 'close2.html';
             }
 
-            dispatch(redirectToStaticPage(`static/${path}`, hashParam));
+            dispatch(redirectToStaticPage(`static/${path}`));
 
             return;
         }

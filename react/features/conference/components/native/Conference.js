@@ -21,6 +21,7 @@ import {
     TileView
 } from '../../../filmstrip';
 import { AddPeopleDialog, CalleeInfoContainer } from '../../../invite';
+import Prejoin from '../../../jane-waiting-area-native/components/Prejoin.native';
 import { LargeVideo } from '../../../large-video';
 import { KnockingParticipantList } from '../../../lobby';
 import { BackButtonRegistry } from '../../../mobile/back-button';
@@ -92,7 +93,8 @@ type Props = AbstractProps & {
     /**
      * The redux {@code dispatch} function.
      */
-    dispatch: Function
+    dispatch: Function,
+    enablePreJoinPage: boolean
 };
 
 /**
@@ -249,7 +251,8 @@ class Conference extends AbstractConference<Props, *> {
             _largeVideoParticipantId,
             _reducedUI,
             _shouldDisplayTileView,
-            _toolboxVisible
+            _toolboxVisible,
+            _enablePreJoinPage
         } = this.props;
         const showGradient = _toolboxVisible;
         const applyGradientStretching
@@ -315,6 +318,7 @@ class Conference extends AbstractConference<Props, *> {
 
                     <LonelyMeetingExperience />
 
+                    {_enablePreJoinPage && <Prejoin />}
                     {/*
                       * The Toolbox is in a stacking layer below the Filmstrip.
                       */}
@@ -340,7 +344,7 @@ class Conference extends AbstractConference<Props, *> {
                     <KnockingParticipantList />
                 </SafeAreaView>
 
-                <TestConnectionInfo />
+                {/* <TestConnectionInfo />*/}
 
                 { this._renderConferenceNotification() }
 
@@ -436,6 +440,9 @@ function _mapStateToProps(state) {
         leaving
     } = state['features/base/conference'];
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
+    const {
+        enablePreJoinPage
+    } = state['features/jane-waiting-area-native'];
 
     // XXX There is a window of time between the successful establishment of the
     // XMPP connection and the subsequent commencement of joining the MUC during
@@ -458,7 +465,15 @@ function _mapStateToProps(state) {
         _largeVideoParticipantId: state['features/large-video'].participantId,
         _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),
         _reducedUI: reducedUI,
-        _toolboxVisible: isToolboxVisible(state)
+
+        /**
+         * The indicator which determines whether the Toolbox is visible.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _toolboxVisible: isToolboxVisible(state),
+        _enablePreJoinPage: enablePreJoinPage
     };
 }
 
