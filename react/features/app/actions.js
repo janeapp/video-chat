@@ -3,7 +3,7 @@
 import type { Dispatch } from 'redux';
 import { API_ID } from '../../../modules/API/constants';
 import { setRoom } from '../base/conference';
-import { enablePreJoinPage, isPrejoinPageEnabled } from '../prejoin';
+import { enablePreJoinPage, isPrejoinPageEnabled } from '../jane-waiting-area-native';
 import {
     configWillLoad,
     createFakeConfig,

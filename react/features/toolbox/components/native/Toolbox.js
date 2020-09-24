@@ -1,25 +1,33 @@
 // @flow
 
 import React, { PureComponent } from 'react';
-import { View } from 'react-native';
+import { View, Button } from 'react-native';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
+import { CHAT_ENABLED, getFeatureFlag } from '../../../base/flags';
 import { Container } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { ChatButton } from '../../../chat';
+import { InfoDialogButton } from '../../../invite';
+
 import { isToolboxVisible } from '../../functions';
+
 import AudioMuteButton from '../AudioMuteButton';
 import HangupButton from '../HangupButton';
-import VideoMuteButton from '../VideoMuteButton';
-
 import OverflowMenuButton from './OverflowMenuButton';
 import styles from './styles';
+import VideoMuteButton from '../VideoMuteButton';
 
 /**
  * The type of {@link Toolbox}'s React {@code Component} props.
  */
 type Props = {
+
+    /**
+     * Whether the chat feature has been enabled. The meeting info button will be displayed in its place when disabled.
+     */
+    _chatEnabled: boolean,
 
     /**
      * The color-schemed stylesheet of the feature.
@@ -96,28 +104,40 @@ class Toolbox extends PureComponent<Props> {
      * @returns {React$Node}
      */
     _renderToolbar() {
-        const { _styles } = this.props;
+        const { _chatEnabled, _styles, _enablePreJoinPage, _startConference } = this.props;
         const { buttonStyles, buttonStylesBorderless, hangupButtonStyles, toggledButtonStyles } = _styles;
 
         return (
             <View
-                accessibilityRole = 'toolbar'
                 pointerEvents = 'box-none'
                 style = { styles.toolbar }>
-                <ChatButton
-                    styles = { buttonStylesBorderless }
-                    toggledStyles = { this._getChatButtonToggledStyle(toggledButtonStyles) } />
+                {
+                    _chatEnabled && !_enablePreJoinPage
+                        && <ChatButton
+                            styles = { buttonStylesBorderless }
+                            toggledStyles = {
+                                this._getChatButtonToggledStyle(toggledButtonStyles)
+                            } />
+                }
+                {
+                    !_chatEnabled
+                        && <InfoDialogButton
+                            styles = { buttonStyles }
+                            toggledStyles = { toggledButtonStyles } />
+                }
                 <AudioMuteButton
                     styles = { buttonStyles }
                     toggledStyles = { toggledButtonStyles } />
-                <HangupButton
-                    styles = { hangupButtonStyles } />
+                {
+                    !_enablePreJoinPage && <HangupButton
+                        styles = { hangupButtonStyles } />
+                }
                 <VideoMuteButton
                     styles = { buttonStyles }
                     toggledStyles = { toggledButtonStyles } />
-                <OverflowMenuButton
-                    styles = { buttonStylesBorderless }
-                    toggledStyles = { toggledButtonStyles } />
+                {!_enablePreJoinPage && <OverflowMenuButton
+                    styles={buttonStylesBorderless}
+                    toggledStyles={toggledButtonStyles}/>}
             </View>
         );
     }
@@ -130,12 +150,19 @@ class Toolbox extends PureComponent<Props> {
  * @param {Object} state - The redux state of which parts are to be mapped to
  * {@code Toolbox} props.
  * @private
- * @returns {Props}
+ * @returns {{
+ *     _chatEnabled: boolean,
+ *     _styles: StyleType,
+ *     _visible: boolean
+ * }}
  */
 function _mapStateToProps(state: Object): Object {
+    const { enablePreJoinPage } = state['features/jane-waiting-area-native'];
     return {
+        _chatEnabled: getFeatureFlag(state, CHAT_ENABLED, true),
         _styles: ColorSchemeRegistry.get(state, 'Toolbox'),
-        _visible: isToolboxVisible(state)
+        _visible: isToolboxVisible(state),
+        _enablePreJoinPage: enablePreJoinPage
     };
 }
 

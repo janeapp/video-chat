@@ -7,7 +7,10 @@ import { ParticipantView } from '../../base/participants';
 import { connect } from '../../base/redux';
 import { StyleType } from '../../base/styles';
 
+import WaitingMessage from '../../base/react/components/native/WaitingMessage.js';
 import { AVATAR_SIZE } from './styles';
+import jwtDecode from 'jwt-decode';
+import { DimensionsDetector } from '../../base/responsive-ui';
 
 /**
  * The type of the React {@link Component} props of {@link LargeVideo}.
@@ -40,6 +43,7 @@ type Props = {
      * Callback to invoke when the {@code LargeVideo} is clicked/pressed.
      */
     onClick: Function,
+    _participantType: string
 };
 
 /**
@@ -114,19 +118,33 @@ class LargeVideo extends PureComponent<Props, State> {
         const {
             _participantId,
             _styles,
-            onClick
+            onClick,
+            _participantType
         } = this.props;
+        const stopAnimation = _participantType === 'StaffMember';
+        const waitingMessage = _participantType === 'StaffMember' ? {
+            header: '',
+            text: ''
+        } : {
+            header: 'Waiting for the practitioner...',
+            text: 'Sit back, relax and take a moment for yourself.'
+        };
 
         return (
-            <ParticipantView
-                avatarSize = { avatarSize }
-                onPress = { onClick }
-                participantId = { _participantId }
-                style = { _styles.largeVideo }
-                testHintId = 'org.jitsi.meet.LargeVideo'
-                useConnectivityInfoLabel = { useConnectivityInfoLabel }
-                zOrder = { 0 }
-                zoomEnabled = { true } />
+            <DimensionsDetector>
+                <ParticipantView
+                    avatarSize = { avatarSize }
+                    onPress = { onClick }
+                    participantId = { _participantId }
+                    style = { _styles.largeVideo }
+                    testHintId = 'org.jitsi.meet.LargeVideo'
+                    useConnectivityInfoLabel = { useConnectivityInfoLabel }
+                    zOrder = { 0 }
+                    zoomEnabled = { true } />
+                <WaitingMessage
+                    stopAnimation = { stopAnimation }
+                    waitingMessageFromProps = { waitingMessage } />
+            </DimensionsDetector>
         );
     }
 }
@@ -140,12 +158,17 @@ class LargeVideo extends PureComponent<Props, State> {
  */
 function _mapStateToProps(state) {
     const { clientHeight: height, clientWidth: width } = state['features/base/responsive-ui'];
+    const { jwt } = state['features/base/jwt'];
+    const jwtPayload = jwt && jwtDecode(jwt) || null;
+    const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
+    const participantType = participant && participant.participant_type || null;
 
     return {
         _height: height,
         _participantId: state['features/large-video'].participantId,
         _styles: ColorSchemeRegistry.get(state, 'LargeVideo'),
-        _width: width
+        _width: width,
+        _participantType: participantType
     };
 }
 
