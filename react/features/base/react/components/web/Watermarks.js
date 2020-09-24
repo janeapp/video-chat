@@ -141,7 +141,8 @@ class Watermarks extends Component<Props, State> {
     _renderWatermark() {
         const { conferenceHasStarted, stopAnimation, waitingMessageHeader } = this.props;
 
-        return (<div className='watermark '>
+        return (<div
+            className={`watermark ${stopAnimation ? 'watermark-without-background' : ''}`}>
             <div
                 className={`leftwatermark ${conferenceHasStarted || stopAnimation ? '' : 'animate-flicker'}`}/>
             {

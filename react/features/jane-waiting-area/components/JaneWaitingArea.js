@@ -25,18 +25,18 @@ type Props = {
     participantType: string,
     participant: Object,
     deviceStatusVisible: boolean,
-    joinConference: Function
+    joinConference: Function,
 };
 
 type State = {
-    localParticipantCanJoin: boolean
+    otherParticipantsStatus: string
 }
 
 class JaneWaitingArea extends Component<Props, State> {
     constructor(props) {
         super(props);
         this.state = {
-            localParticipantCanJoin: false
+            otherParticipantsStatus: ''
         };
         this.socket = null;
         this.pollingInterval = null;
@@ -46,12 +46,12 @@ class JaneWaitingArea extends Component<Props, State> {
 
     componentDidMount() {
         const { jwt, jwtPayload, participant, participantType } = this.props;
+        window.onunload = window.onbeforeunload = function () {
+            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'left');
+        };
         if (participantType === 'Patient') {
-            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, true);
+            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'waiting');
         }
-        window.addEventListener('beforeunload', function (event) {
-            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, false);
-        });
         this._connectSocket();
     }
 
@@ -61,29 +61,28 @@ class JaneWaitingArea extends Component<Props, State> {
     }
 
     _onMessageUpdate(event) {
-        const { participant } = this.props;
-        const otherParticipantsAreReady = event.info.participant_ready && (event.info.participant_id !== participant.id);
-        this.setState({
-            localParticipantCanJoin: otherParticipantsAreReady
-        });
+        const { participantType } = this.props;
+        if (event && event.info && event.info.status && event.participant_type && (event.participant_type !== participantType)) {
+            this.setState({
+                otherParticipantsStatus: event.info.status
+            });
+        }
     }
 
     _joinConference() {
         const { jwt, jwtPayload, joinConference, participant, participantType } = this.props;
-        if (participantType === 'StaffMember') {
-            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, true);
-        }
+        updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'joined');
         joinConference();
     }
 
     async _polling() {
         try {
-            const { jwt, jwtPayload } = this.props;
-            const otherParticipantsReady = await checkOtherParticipantsReadyStatus(jwt, jwtPayload);
-
-            if (otherParticipantsReady) {
+            const { jwt, jwtPayload, participantType } = this.props;
+            const otherParticipantsStatus = await checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType);
+            const status = otherParticipantsStatus && otherParticipantsStatus.info && otherParticipantsStatus.info.status;
+            if (status) {
                 this.setState({
-                    localParticipantCanJoin: true
+                    otherParticipantsStatus: status
                 });
             }
         } catch (e) {
@@ -100,13 +99,10 @@ class JaneWaitingArea extends Component<Props, State> {
         const socketJwtPayload = jwtDecode(jwtPayload.context.ws_token);
 
         try {
-            const otherParticipantsStatus = await checkOtherParticipantsReadyStatus(jwt, jwtPayload);
-            const localParticipantCanJoin = participantType === 'StaffMember' ? otherParticipantsStatus.length : otherParticipantsStatus;
-            if (localParticipantCanJoin) {
-                this.setState({
-                    localParticipantCanJoin: true
-                });
-            }
+            const otherParticipantsStatus = await checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType);
+            this.setState({
+                otherParticipantsStatus: otherParticipantsStatus && otherParticipantsStatus.info && otherParticipantsStatus.info.status
+            });
             if (socketJwtPayload) {
                 this.socket = new Socket({
                     socket_host: jwtPayload.context.ws_host,
@@ -128,18 +124,18 @@ class JaneWaitingArea extends Component<Props, State> {
             deviceStatusVisible
         } = this.props;
 
-        const { localParticipantCanJoin } = this.state;
-        const stopAnimation = participantType === 'StaffMember';
+        const { otherParticipantsStatus } = this.state;
+        const stopAnimation = participantType === 'StaffMember' || otherParticipantsStatus && otherParticipantsStatus !== 'left';
         const waitingMessageHeader = participantType === 'StaffMember' ? '' : 'Waiting for the practitioner...';
 
         return (
             <div className='jane-waiting-area-full-page'>
                 <Watermarks
-                    stopAnimation={stopAnimation || localParticipantCanJoin}
+                    stopAnimation={stopAnimation}
                     waitingMessageHeader={waitingMessageHeader}/>
                 <Preview name={name}/>
                 <JaneDialog
-                    localParticipantCanJoin={localParticipantCanJoin}
+                    otherParticipantsStatus={otherParticipantsStatus}
                     joinConference={this._joinConference}/>
                 {deviceStatusVisible && <DeviceStatus/>}
             </div>

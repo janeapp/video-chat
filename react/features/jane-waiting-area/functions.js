@@ -108,21 +108,29 @@ export function isPrejoinPageVisible(state: Object): boolean {
     return isPrejoinPageEnabled(state) && state['features/jane-waiting-area']?.showPrejoin;
 }
 
-export async function checkOtherParticipantsReadyStatus(jwt, jwtPayload) {
-    const url = new URL(jwtPayload.context.check_ready_status_url);
+export async function getParticipantsStatus(jwt, jwtPayload) {
+    const url = new URL(jwtPayload.context.check_participants_status_url);
 
     const params = { jwt };
 
     url.search = new URLSearchParams(params).toString();
 
     return fetch(url).then(response => response.json())
-        .then(res => res.other_participants_ready);
+        .then(res => res.participants_status);
 }
 
-export function updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, readyStatus) {
+export async function checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType) {
+    const otherParticipantsStatus = await getParticipantsStatus(jwt, jwtPayload);
+    const otherParticipantType = participantType === 'StaffMember' ? 'Patient' : 'StaffMember';
+    return otherParticipantsStatus && otherParticipantsStatus.find((v) => {
+        return v.participant_type === otherParticipantType;
+    });
+}
+
+export function updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, status) {
     if (jwt && jwtPayload) {
-        const wsUpdateUrl = jwtPayload.context.participant_ready_url;
-        const info = { participant_ready: readyStatus }
+        const updateParticipantStatusUrl = jwtPayload.context.update_participant_status_url;
+        const info = { status };
         const obj = {
             jwt,
             info,
@@ -133,6 +141,6 @@ export function updateParticipantReadyStatus(jwt, jwtPayload, participantType, p
         };
         const data = new Blob([JSON.stringify(obj, null, 2)], { type: 'text/plain; charset=UTF-8' });
 
-        navigator.sendBeacon(wsUpdateUrl, data);
+        navigator.sendBeacon(updateParticipantStatusUrl, data);
     }
 }

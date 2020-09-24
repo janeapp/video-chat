@@ -13,8 +13,8 @@ export class Socket {
             transports: ['websocket'],
             autoConnect: false,
             reconnection: true,
-            reconnectionDelay: 10000,
-            reconnectionDelayMax: 60000,
+            reconnectionDelay: 2000,
+            reconnectionDelayMax: 2000,
             query: {
                 token: this.ws_token,
                 connection_attempts: 0

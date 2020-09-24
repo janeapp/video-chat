@@ -28,7 +28,7 @@ class SocketConnection extends Component<Props, State> {
     componentDidMount() {
         const { jwt, jwtPayload, participant, participantType } = this.props;
         if (participantType === 'Patient') {
-            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant);
+            updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'waiting');
         }
         window.ReactNativeWebView.postMessage(JSON.stringify({ message: 'webview page is ready' }));
         this._connectSocket();
@@ -41,17 +41,18 @@ class SocketConnection extends Component<Props, State> {
 
     _onMessageUpdate(event) {
         const { participantType } = this.props;
-        if ((event.info === 'practitioner_ready' && participantType === 'Patient') || (event.info === 'patient_ready' && participantType === 'StaffMember')) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { localParticipantCanJoin: true } }));
+        if (event.info && event.info.status && event.participant_type && (event.participant_type !== participantType)) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { otherParticipantsStatus: event.info.status } }));
         }
     }
 
     async _polling() {
-        const { jwt, jwtPayload } = this.props;
-        const otherParticipantsReady = await checkOtherParticipantsReadyStatus(jwt, jwtPayload);
+        const { jwt, jwtPayload, participantType } = this.props;
+        const otherParticipantsStatus = await checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType);
 
-        if (otherParticipantsReady) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { localParticipantCanJoin: true } }));
+        const status = otherParticipantsStatus && otherParticipantsStatus.info && otherParticipantsStatus.info.status;
+        if (status) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { otherParticipantsStatus: status } }));
         }
     }
 
@@ -59,28 +60,30 @@ class SocketConnection extends Component<Props, State> {
         this.pollingInterval = setInterval(this._polling.bind(this), 10000);
     }
 
-    _connectionStatusListener = (status) => {
+    _connectionStatusListener(status) {
         window.ReactNativeWebView.postMessage(JSON.stringify({ message: status }));
     };
 
     async _connectSocket() {
-        const { jwt, jwtPayload } = this.props;
+        const { jwt, jwtPayload, participantType } = this.props;
         const socketJwtPayload = jwtDecode(jwtPayload.context.ws_token);
         try {
-            const otherParticipantsReady = await checkOtherParticipantsReadyStatus(jwt, jwtPayload);
-            if (otherParticipantsReady) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { localParticipantCanJoin: true } }));
-            } else {
-                if (socketJwtPayload) {
-                    this.socket = new Socket({
-                        socket_host: jwtPayload.context.ws_host,
-                        ws_token: jwtPayload.context.ws_token
-                    });
-                    this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
-                    this.socket.connectionStatusListener = this._connectionStatusListener.bind(this);
-                    this.socket.pollForReadyStatus = this._pollForReadyStatus.bind(this);
-                    this.socket.connect();
-                }
+            const otherParticipantsStatus = await checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType);
+            if (otherParticipantsStatus
+                && otherParticipantsStatus.info
+                && otherParticipantsStatus.info.status) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { otherParticipantsStatus: otherParticipantsStatus.info.status } }));
+            }
+
+            if (socketJwtPayload) {
+                this.socket = new Socket({
+                    socket_host: jwtPayload.context.ws_host + '22',
+                    ws_token: jwtPayload.context.ws_token
+                });
+                this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
+                this.socket.connectionStatusListener = this._connectionStatusListener.bind(this);
+                this.socket.pollForReadyStatus = this._pollForReadyStatus.bind(this);
+                this.socket.connect();
             }
         } catch (e) {
             console.log(e);

@@ -167,12 +167,19 @@ form {
 }
 
 .watermark {
-    position: relative;
-    top: 32px;
-    left: 32px;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.2);
     min-width: 120px;
-    height: 74px;
+    padding-left: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 100%;
     z-index: 2;
+
+    &-without-background{
+        background: none;
+    }
 }
 
 .leftwatermark {
@@ -190,7 +197,7 @@ form {
     padding-left: 120px;
     padding-top: 5px;
     text-align: left;
-    color: $defaultDarkColor !important;
+    color: $defaultColor !important;
 
     p {
         font-family: "ProximaNovaLtLight";
