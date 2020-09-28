@@ -1,17 +1,17 @@
-import { ReducerRegistry } from '../base/redux';
+import {ReducerRegistry} from '../base/redux';
 
 import {
     ADD_PREJOIN_AUDIO_TRACK,
     ADD_PREJOIN_CONTENT_SHARING_TRACK,
     ADD_PREJOIN_VIDEO_TRACK,
     SET_DEVICE_STATUS,
-    SET_JOIN_BY_PHONE_DIALOG_VISIBLITY,
     SET_PREJOIN_AUDIO_DISABLED,
     SET_PREJOIN_AUDIO_MUTED,
     SET_PREJOIN_DEVICE_ERRORS,
     SET_PREJOIN_PAGE_VISIBILITY,
     SET_PREJOIN_VIDEO_DISABLED,
-    SET_PREJOIN_VIDEO_MUTED
+    SET_PREJOIN_VIDEO_MUTED,
+    UPDATE_REMOTE_PARTICIPANTS_STATUS
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -36,7 +36,8 @@ const DEFAULT_STATE = {
     userSelectedSkipPrejoin: false,
     videoTrack: null,
     videoDisabled: false,
-    videoMuted: false
+    videoMuted: false,
+    remoteParticipantsStatus: []
 };
 
 /**
@@ -45,87 +46,87 @@ const DEFAULT_STATE = {
 ReducerRegistry.register(
     'features/jane-waiting-area', (state = DEFAULT_STATE, action) => {
         switch (action.type) {
-        case ADD_PREJOIN_AUDIO_TRACK: {
-            return {
-                ...state,
-                audioTrack: action.value
-            };
+            case ADD_PREJOIN_AUDIO_TRACK: {
+                return {
+                    ...state,
+                    audioTrack: action.value
+                };
+            }
+
+            case ADD_PREJOIN_CONTENT_SHARING_TRACK: {
+                return {
+                    ...state,
+                    contentSharingTrack: action.value
+                };
+            }
+
+            case ADD_PREJOIN_VIDEO_TRACK: {
+                return {
+                    ...state,
+                    videoTrack: action.value
+                };
+            }
+
+            case SET_PREJOIN_PAGE_VISIBILITY:
+                return {
+                    ...state,
+                    showPrejoin: action.value
+                };
+
+            case SET_PREJOIN_VIDEO_DISABLED: {
+                return {
+                    ...state,
+                    videoDisabled: action.value
+                };
+            }
+
+            case SET_PREJOIN_VIDEO_MUTED:
+                return {
+                    ...state,
+                    videoMuted: action.value
+                };
+
+            case SET_PREJOIN_AUDIO_MUTED:
+                return {
+                    ...state,
+                    audioMuted: action.value
+                };
+
+            case SET_PREJOIN_DEVICE_ERRORS: {
+                const status = getStatusFromErrors(action.value);
+
+                return {
+                    ...state,
+                    ...status
+                };
+            }
+
+            case SET_DEVICE_STATUS: {
+                return {
+                    ...state,
+                    deviceStatusText: action.text,
+                    deviceStatusType: action.type
+                };
+            }
+
+            case SET_PREJOIN_AUDIO_DISABLED: {
+                return {
+                    ...state,
+                    audioDisabled: true
+                };
+            }
+
+            case UPDATE_REMOTE_PARTICIPANTS_STATUS: {
+                return {
+                    ...state,
+                    remoteParticipantsStatus: action.value
+                };
+            }
+
+            default:
+                return state;
         }
-
-        case ADD_PREJOIN_CONTENT_SHARING_TRACK: {
-            return {
-                ...state,
-                contentSharingTrack: action.value
-            };
-        }
-
-        case ADD_PREJOIN_VIDEO_TRACK: {
-            return {
-                ...state,
-                videoTrack: action.value
-            };
-        }
-
-        case SET_PREJOIN_PAGE_VISIBILITY:
-            return {
-                ...state,
-                showPrejoin: action.value
-            };
-
-        case SET_PREJOIN_VIDEO_DISABLED: {
-            return {
-                ...state,
-                videoDisabled: action.value
-            };
-        }
-
-        case SET_PREJOIN_VIDEO_MUTED:
-            return {
-                ...state,
-                videoMuted: action.value
-            };
-
-        case SET_PREJOIN_AUDIO_MUTED:
-            return {
-                ...state,
-                audioMuted: action.value
-            };
-
-        case SET_PREJOIN_DEVICE_ERRORS: {
-            const status = getStatusFromErrors(action.value);
-
-            return {
-                ...state,
-                ...status
-            };
-        }
-
-        case SET_DEVICE_STATUS: {
-            return {
-                ...state,
-                deviceStatusText: action.text,
-                deviceStatusType: action.type
-            };
-        }
-
-        case SET_PREJOIN_AUDIO_DISABLED: {
-            return {
-                ...state,
-                audioDisabled: true
-            };
-        }
-
-        case SET_JOIN_BY_PHONE_DIALOG_VISIBLITY: {
-            return {
-                ...state,
-                showJoinByPhoneDialog: action.value
-            };
-        }
-
-        default:
-            return state;
-        }
-    },
+    }
 );
 
 /**

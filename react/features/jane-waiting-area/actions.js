@@ -12,14 +12,14 @@ import {
     SET_PREJOIN_PAGE_VISIBILITY,
     SET_PREJOIN_VIDEO_DISABLED,
     SET_PREJOIN_VIDEO_MUTED,
-    CONNECT_JANE_SOCKET_SERVER
+    CONNECT_JANE_SOCKET_SERVER, UPDATE_REMOTE_PARTICIPANTS_STATUS
 } from './actionTypes';
-import { createLocalTrack } from '../base/lib-jitsi-meet';
+import {createLocalTrack} from '../base/lib-jitsi-meet';
 import logger from './logger';
 
 import {
     getAudioTrack,
-    getVideoTrack,
+    getVideoTrack
 } from './functions';
 
 export function addPrejoinAudioTrack(value: Object) {
@@ -44,7 +44,7 @@ export function addPrejoinContentSharingTrack(value: Object) {
 }
 
 export function initPrejoin(tracks: Object[], errors: Object) {
-    return async function(dispatch: Function) {
+    return async function (dispatch: Function) {
         const audioTrack = tracks.find(t => t.isAudioTrack());
         const videoTrack = tracks.find(t => t.isVideoTrack());
 
@@ -70,7 +70,7 @@ export function initPrejoin(tracks: Object[], errors: Object) {
 }
 
 export function joinConference() {
-    return function(dispatch: Function) {
+    return function (dispatch: Function) {
         dispatch(setPrejoinPageVisibility(false));
         dispatch(startConference());
     };
@@ -187,8 +187,31 @@ function startConference() {
     };
 }
 
-function connectJaneSocketServer() {
+export function connectJaneSocketServer() {
     return {
         type: CONNECT_JANE_SOCKET_SERVER
+    };
+}
+
+export function updateRemoteParticipantsStatus(value) {
+    return {
+        type: UPDATE_REMOTE_PARTICIPANTS_STATUS,
+        value
+    };
+}
+
+export function updateRemoteParticipantsStatusFromSocket(value) {
+    return (dispatch: Function, getState: Function) => {
+        const { remoteParticipantsStatus } = getState()['features/jane-waiting-area'];
+        if (remoteParticipantsStatus.some(v => v.participant_id === value.participant_id)) {
+            remoteParticipantsStatus.forEach(v => {
+                if (v.participant_id === value.participant_id) {
+                    v.info = value.info;
+                }
+            });
+        } else {
+            remoteParticipantsStatus.push(value);
+        }
+        dispatch(updateRemoteParticipantsStatus(remoteParticipantsStatus));
     };
 }

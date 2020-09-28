@@ -10,7 +10,13 @@ import VideoSettingsButton
     from '../../../toolbox/components/web/VideoSettingsButton';
 import jwtDecode from 'jwt-decode';
 import moment from 'moment';
-import Tooltip from '@atlaskit/tooltip';
+import {
+    checkLocalParticipantCanJoin,
+    checkRemoteParticipantIsWaiting, updateParticipantReadyStatus
+} from '../../functions';
+import {
+    joinConference as joinConferenceAction,
+} from '../../actions';
 
 type Props = {
     joinConference: Function,
@@ -19,7 +25,7 @@ type Props = {
     jwtPayload: Object,
     participantType: string,
     participant: Object,
-    otherParticipantsStatus: string
+    remoteParticipantsStatus: string
 };
 
 class JaneDialog extends Component<Props> {
@@ -30,21 +36,19 @@ class JaneDialog extends Component<Props> {
     }
 
     _joinConference() {
-        const {
-            joinConference
-        } = this.props;
-
+        const { jwt, jwtPayload, joinConference, participant, participantType } = this.props;
+        updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'joined');
         joinConference();
     }
 
-    _getDialogTitleMsg() {
-        const { participantType, otherParticipantsStatus, t } = this.props;
+    _getDialogTitleMsg(localParticipantCanJoin) {
+        const { participantType, t } = this.props;
         let title;
-        const localParticipantCanJoin = otherParticipantsStatus && otherParticipantsStatus !== 'left';
         if (localParticipantCanJoin) {
             title = '';
-        } else if (participantType === 'StaffMember') {
-            title = t('janeWaitingArea.whenYouAreReady');
+            if (participantType === 'StaffMember') {
+                title = t('janeWaitingArea.whenYouAreReady');
+            }
         } else {
             title = t('janeWaitingArea.testYourDevice');
         }
@@ -52,10 +56,9 @@ class JaneDialog extends Component<Props> {
         return <div className='jane-waiting-area-info-title-msg'>{title}</div>;
     }
 
-    _getDialogTitle() {
-        const { participantType, otherParticipantsStatus, t } = this.props;
+    _getDialogTitle(localParticipantCanJoin) {
+        const { participantType, t } = this.props;
         let header;
-        const localParticipantCanJoin = otherParticipantsStatus && otherParticipantsStatus !== 'left';
         if (participantType === 'StaffMember') {
             if (localParticipantCanJoin) {
                 header = t('janeWaitingArea.patientIsReady');
@@ -113,7 +116,6 @@ class JaneDialog extends Component<Props> {
         }
         const duration = getLocalizedDateFormatter(endAt).valueOf() - getLocalizedDateFormatter(startAt).valueOf();
 
-
         return (<p>
             {
                 `${moment.duration(duration).asMinutes()} Minutes`
@@ -136,9 +138,9 @@ class JaneDialog extends Component<Props> {
             participantType,
             jwtPayload,
             t,
-            otherParticipantsStatus
+            remoteParticipantsStatus
         } = this.props;
-        const localParticipantCanJoin = otherParticipantsStatus && otherParticipantsStatus !== 'left';
+        const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatus);
         const { _onCheckboxChange, _joinConference, _closeWindow } = this;
 
         return (<div className='jane-waiting-area-info-area-container'>
@@ -146,16 +148,16 @@ class JaneDialog extends Component<Props> {
                     <div className='jane-waiting-area-info'>
                         <div className='jane-waiting-area-info-logo-wrapper'>
                             <div className='jane-waiting-area-info-logo'/>
-                            {otherParticipantsStatus === 'waiting' && participantType === 'StaffMember' &&
+                            {participantType === 'StaffMember' && checkRemoteParticipantIsWaiting(remoteParticipantsStatus) &&
                             <p className='jane-waiting-area-info-patient-waiting'>Client
                                 is waiting</p>}
                         </div>
                         <div className='jane-waiting-area-info-text-wrapper'>
                             {
-                                this._getDialogTitle()
+                                this._getDialogTitle(localParticipantCanJoin)
                             }
                             {
-                                this._getDialogTitleMsg()
+                                this._getDialogTitleMsg(localParticipantCanJoin)
                             }
                             <div className='jane-waiting-area-info-detail'>
                                 <p>
@@ -219,6 +221,7 @@ class JaneDialog extends Component<Props> {
 
 function mapStateToProps(state): Object {
     const { jwt } = state['features/base/jwt'];
+    const { remoteParticipantsStatus } = state['features/jane-waiting-area'];
     const jwtPayload = jwt && jwtDecode(jwt) || null;
     const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
     const participantType = participant && participant.participant_type || null;
@@ -227,8 +230,17 @@ function mapStateToProps(state): Object {
         jwt,
         jwtPayload,
         participantType,
-        participant
+        participant,
+        remoteParticipantsStatus
     };
 }
 
-export default connect(mapStateToProps)(translate(JaneDialog));
+function mapDispatchToProps(dispatch): Object {
+    return {
+        joinConference() {
+            dispatch(joinConferenceAction());
+        }
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(translate(JaneDialog));

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import jwtDecode from 'jwt-decode';
-
+import {RemoteParticipantStatus} from './RemoteParticipantStatus';
 
 function applyMuteOptionsToTrack(track, shouldMute) {
     if (track.isMuted() === shouldMute) {
@@ -108,7 +108,7 @@ export function isPrejoinPageVisible(state: Object): boolean {
     return isPrejoinPageEnabled(state) && state['features/jane-waiting-area']?.showPrejoin;
 }
 
-export async function getParticipantsStatus(jwt, jwtPayload) {
+export async function getAllParticipantsStatus(jwt, jwtPayload) {
     const url = new URL(jwtPayload.context.check_participants_status_url);
 
     const params = { jwt };
@@ -119,12 +119,16 @@ export async function getParticipantsStatus(jwt, jwtPayload) {
         .then(res => res.participants_status);
 }
 
-export async function checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType) {
-    const otherParticipantsStatus = await getParticipantsStatus(jwt, jwtPayload);
-    const otherParticipantType = participantType === 'StaffMember' ? 'Patient' : 'StaffMember';
-    return otherParticipantsStatus && otherParticipantsStatus.find((v) => {
-        return v.participant_type === otherParticipantType;
+export async function getRemoteParticipantsReadyStatus(jwt, jwtPayload, participantType) {
+    const allParticipantsStatus = await getAllParticipantsStatus(jwt, jwtPayload);
+    const remoteParticipantType = participantType === 'StaffMember' ? 'Patient' : 'StaffMember';
+    let remoteParticipantStatus = [];
+    allParticipantsStatus && allParticipantsStatus.forEach((v) => {
+        if (v.participant_type === remoteParticipantType) {
+            remoteParticipantStatus.push(new RemoteParticipantStatus(v));
+        }
     });
+    return remoteParticipantStatus;
 }
 
 export function updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, status) {
@@ -140,7 +144,24 @@ export function updateParticipantReadyStatus(jwt, jwtPayload, participantType, p
             room_name: jwtPayload.room
         };
         const data = new Blob([JSON.stringify(obj, null, 2)], { type: 'text/plain; charset=UTF-8' });
-
         navigator.sendBeacon(updateParticipantStatusUrl, data);
     }
+}
+
+export function isRNSocketWebView(locationURL) {
+    return String(locationURL.href).includes('RNsocket=true');
+}
+
+export function checkLocalParticipantCanJoin(remoteParticipantsStatus) {
+    // TODO: in future we will update the logic below for Group call
+    return remoteParticipantsStatus.length > 0 && remoteParticipantsStatus.some(v => {
+        return v.info && v.info.status !== 'left';
+    });
+}
+
+export function checkRemoteParticipantIsWaiting(remoteParticipantsStatus) {
+    // TODO: in future we will update the logic below for Group call
+    return remoteParticipantsStatus.length > 0 && remoteParticipantsStatus.some(v => {
+        return v.info && v.info.status === 'waiting';
+    });
 }

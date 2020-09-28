@@ -3,11 +3,16 @@
 import React, {Component} from 'react';
 import {connect} from '../../base/redux';
 import {
-    checkOtherParticipantsReadyStatus,
+    getRemoteParticipantsReadyStatus, isRNSocketWebView,
     updateParticipantReadyStatus
 } from '../functions';
+import {
+    updateRemoteParticipantsStatus,
+    updateRemoteParticipantsStatusFromSocket
+} from '../actions';
 import {Socket} from '../../../../service/Websocket/socket';
 import jwtDecode from 'jwt-decode';
+import {RemoteParticipantStatus} from '../RemoteParticipantStatus';
 
 type Props = {
     t: Function,
@@ -26,11 +31,17 @@ class SocketConnection extends Component<Props, State> {
     }
 
     componentDidMount() {
-        const { jwt, jwtPayload, participant, participantType } = this.props;
+        const { jwt, jwtPayload, participant, participantType, isRNWebViewPage } = this.props;
         if (participantType === 'Patient') {
             updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'waiting');
         }
-        window.ReactNativeWebView.postMessage(JSON.stringify({ message: 'webview page is ready' }));
+        if (isRNWebViewPage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ message: 'webview page is ready' }));
+        } else {
+            window.onunload = window.onbeforeunload = function () {
+                updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'left');
+            };
+        }
         this._connectSocket();
     }
 
@@ -40,19 +51,24 @@ class SocketConnection extends Component<Props, State> {
     }
 
     _onMessageUpdate(event) {
-        const { participantType } = this.props;
+        const { participantType, isRNWebViewPage, updateRemoteParticipantsStatusFromSocket } = this.props;
         if (event.info && event.info.status && event.participant_type && (event.participant_type !== participantType)) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { otherParticipantsStatus: event.info.status } }));
+            if (isRNWebViewPage) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { socketRemoteParticipantsEvent: event } }));
+            } else {
+                const status = new RemoteParticipantStatus(event);
+                updateRemoteParticipantsStatusFromSocket(status);
+            }
         }
     }
 
     async _polling() {
-        const { jwt, jwtPayload, participantType } = this.props;
-        const otherParticipantsStatus = await checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType);
-
-        const status = otherParticipantsStatus && otherParticipantsStatus.info && otherParticipantsStatus.info.status;
-        if (status) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { otherParticipantsStatus: status } }));
+        const { jwt, jwtPayload, participantType, isRNWebViewPage, updateRemoteParticipantsStatus } = this.props;
+        const remoteParticipantsStatus = await getRemoteParticipantsReadyStatus(jwt, jwtPayload, participantType);
+        if (isRNWebViewPage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ message: { remoteParticipantsStatus } }));
+        } else {
+            updateRemoteParticipantsStatus(remoteParticipantsStatus);
         }
     }
 
@@ -61,23 +77,28 @@ class SocketConnection extends Component<Props, State> {
     }
 
     _connectionStatusListener(status) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({ message: status }));
+        const { isRNWebViewPage } = this.props;
+        if (isRNWebViewPage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ message: status }));
+        } else {
+            console.log(status);
+        }
     };
 
     async _connectSocket() {
-        const { jwt, jwtPayload, participantType } = this.props;
+        const { jwt, jwtPayload, participantType, isRNWebViewPage, updateRemoteParticipantsStatus } = this.props;
         const socketJwtPayload = jwtDecode(jwtPayload.context.ws_token);
         try {
-            const otherParticipantsStatus = await checkOtherParticipantsReadyStatus(jwt, jwtPayload, participantType);
-            if (otherParticipantsStatus
-                && otherParticipantsStatus.info
-                && otherParticipantsStatus.info.status) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { otherParticipantsStatus: otherParticipantsStatus.info.status } }));
+            const remoteParticipantsStatus = await getRemoteParticipantsReadyStatus(jwt, jwtPayload, participantType);
+            if (isRNWebViewPage) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { remoteParticipantsStatus } }));
+            } else {
+                updateRemoteParticipantsStatus(remoteParticipantsStatus);
             }
 
             if (socketJwtPayload) {
                 this.socket = new Socket({
-                    socket_host: jwtPayload.context.ws_host + '22',
+                    socket_host: jwtPayload.context.ws_host,
                     ws_token: jwtPayload.context.ws_token
                 });
                 this.socket.onMessageUpdateListener = this._onMessageUpdate.bind(this);
@@ -100,10 +121,23 @@ function mapStateToProps(state): Object {
     const jwtPayload = jwt && jwtDecode(jwt) || null;
     const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
     const participantType = participant && participant.participant_type || null;
+    const { locationURL } = state['features/base/connection'];
+    const isRNWebViewPage = isRNSocketWebView(locationURL);
 
     return {
-        jwt, jwtPayload, participantType, participant
+        jwt, jwtPayload, participantType, participant, isRNWebViewPage
     };
 }
 
-export default connect(mapStateToProps)(SocketConnection);
+function mapDispatchToProps(dispatch) {
+    return {
+        updateRemoteParticipantsStatus(status) {
+            dispatch(updateRemoteParticipantsStatus(status));
+        },
+        updateRemoteParticipantsStatusFromSocket(status) {
+            dispatch(updateRemoteParticipantsStatusFromSocket(status));
+        }
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(SocketConnection);
