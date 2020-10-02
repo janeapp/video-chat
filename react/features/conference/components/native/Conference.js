@@ -28,7 +28,7 @@ import { Captions } from '../../../subtitles';
 import { setToolboxVisible } from '../../../toolbox/actions';
 import { Toolbox } from '../../../toolbox/components/native';
 import { isToolboxVisible } from '../../../toolbox/functions';
-import Prejoin from '../../../jane-waiting-area-native/components/Prejoin.native';
+import JaneWaitingArea from '../../../jane-waiting-area-native/components/JaneWaitingArea.native';
 
 import {
     AbstractConference,
@@ -95,7 +95,7 @@ type Props = AbstractProps & {
      * The redux {@code dispatch} function.
      */
     dispatch: Function,
-    enablePreJoinPage: boolean
+    enableJaneWaitingAreaPage: boolean
 };
 
 /**
@@ -253,7 +253,7 @@ class Conference extends AbstractConference<Props, *> {
             _reducedUI,
             _shouldDisplayTileView,
             _toolboxVisible,
-            _enablePreJoinPage
+            _enableJaneWaitingAreaPage
         } = this.props;
         const showGradient = _toolboxVisible;
         const applyGradientStretching
@@ -316,8 +316,8 @@ class Conference extends AbstractConference<Props, *> {
                     { _shouldDisplayTileView || <Container style = { styles.displayNameContainer }>
                         <DisplayNameLabel participantId = { _largeVideoParticipantId } />
                     </Container> }
+                    {_enableJaneWaitingAreaPage && <JaneWaitingArea />}
 
-                    {_enablePreJoinPage && <Prejoin />}
                     {/*
                       * The Toolbox is in a stacking layer below the Filmstrip.
                       */}
@@ -440,7 +440,7 @@ function _mapStateToProps(state) {
     } = state['features/base/conference'];
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
     const {
-        enablePreJoinPage
+        enableJaneWaitingAreaPage
     } = state['features/jane-waiting-area-native'];
 
     // XXX There is a window of time between the successful establishment of the
@@ -472,7 +472,7 @@ function _mapStateToProps(state) {
          * @type {boolean}
          */
         _toolboxVisible: isToolboxVisible(state),
-        _enablePreJoinPage: enablePreJoinPage
+        _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage
     };
 }
 
