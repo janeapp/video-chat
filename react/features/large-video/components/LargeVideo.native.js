@@ -10,7 +10,6 @@ import { connect } from '../../base/redux';
 import { DimensionsDetector } from '../../base/responsive-ui';
 import { StyleType } from '../../base/styles';
 
-
 import { AVATAR_SIZE } from './styles';
 
 /**
