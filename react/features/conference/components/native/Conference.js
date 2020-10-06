@@ -1,5 +1,6 @@
 // @flow
 
+import jwtDecode from 'jwt-decode';
 import React from 'react';
 import { Clipboard, NativeModules, SafeAreaView, StatusBar } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -21,8 +22,8 @@ import {
     TileView
 } from '../../../filmstrip';
 import { AddPeopleDialog, CalleeInfoContainer } from '../../../invite';
+import { updateParticipantReadyStatus } from '../../../jane-waiting-area-native';
 import JaneWaitingArea from '../../../jane-waiting-area-native/components/JaneWaitingArea.native';
-import Prejoin from '../../../jane-waiting-area-native/components/Prejoin.native';
 import { LargeVideo } from '../../../large-video';
 import { KnockingParticipantList } from '../../../lobby';
 import { BackButtonRegistry } from '../../../mobile/back-button';
@@ -34,10 +35,9 @@ import {
     AbstractConference,
     abstractMapStateToProps
 } from '../AbstractConference';
-import type { AbstractProps } from '../AbstractConference';
+import type { AbstractProps, AbstractProps } from '../AbstractConference';
 
 import Labels from './Labels';
-import LonelyMeetingExperience from './LonelyMeetingExperience';
 import NavigationBar from './NavigationBar';
 import styles, { NAVBAR_GRADIENT_COLORS } from './styles';
 
@@ -138,9 +138,28 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {void}
      */
     componentWillUnmount() {
+
         // Tear handling any hardware button presses for back navigation down.
         BackButtonRegistry.removeListener(this._onHardwareBackPress);
+
     }
+
+    /**
+     * Implements {@link Component#componentDidUpdate()}. Invoked immediately
+     * after this component is updated check app background state and update
+     * the participant's ready status if app state is 'inactive' or 'background'.
+     *
+     * @inheritdoc
+     * @returns {void}
+     */
+    componentDidUpdate(prevProps) {
+        const { _participantType, _jwt, _jwtPayload, _participant } = this.props;
+
+        if (prevProps._appstate !== this.props._appstate && prevProps._appstate.appState === 'active') {
+            updateParticipantReadyStatus(_jwt, _jwtPayload, _participantType, _participant, 'left');
+        }
+    }
+
 
     /**
      * Clear the video chat universal link copied from Jane here to
@@ -456,6 +475,11 @@ function _mapStateToProps(state) {
     //   are leaving one.
     const connecting_
         = connecting || (connection && (!membersOnly && (joining || (!conference && !leaving))));
+    const { jwt } = state['features/base/jwt'];
+    const jwtPayload = jwt && jwtDecode(jwt) || null;
+    const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
+    const participantType = participant && participant.participant_type || null;
+    const appstate = state['features/background'];
 
     return {
         ...abstractMapStateToProps(state),
@@ -474,7 +498,12 @@ function _mapStateToProps(state) {
          * @type {boolean}
          */
         _toolboxVisible: isToolboxVisible(state),
-        _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage
+        _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage,
+        _jwt: jwt,
+        _jwtPayload: jwtPayload,
+        _participantType: participantType,
+        _participant: participantType,
+        _appstate: appstate
     };
 }
 
