@@ -41,6 +41,9 @@ import LonelyMeetingExperience from './LonelyMeetingExperience';
 import NavigationBar from './NavigationBar';
 import styles, { NAVBAR_GRADIENT_COLORS } from './styles';
 
+import type { AbstractProps } from '../AbstractConference';
+import { updateParticipantReadyStatus } from '../../../jane-waiting-area-native';
+import jwtDecode from 'jwt-decode';
 
 /**
  * The type of the React {@code Component} props of {@link Conference}.
@@ -138,9 +141,28 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {void}
      */
     componentWillUnmount() {
+
         // Tear handling any hardware button presses for back navigation down.
         BackButtonRegistry.removeListener(this._onHardwareBackPress);
+
     }
+
+    /**
+     * Implements {@link Component#componentDidUpdate()}. Invoked immediately
+     * after this component is updated check app background state and update
+     * the participant's ready status if app state is 'inactive' or 'background'.
+     *
+     * @inheritdoc
+     * @returns {void}
+     */
+    componentDidUpdate(prevProps) {
+        const { _participantType, _jwt, _jwtPayload, _participant } = this.props;
+
+        if (prevProps._appstate !== this.props._appstate && prevProps._appstate.appState === 'active') {
+            updateParticipantReadyStatus(_jwt, _jwtPayload, _participantType, _participant, 'left');
+        }
+    }
+
 
     /**
      * Clear the video chat universal link copied from Jane here to
@@ -343,7 +365,7 @@ class Conference extends AbstractConference<Props, *> {
                     <KnockingParticipantList />
                 </SafeAreaView>
 
-                {/* <TestConnectionInfo />*/}
+                <TestConnectionInfo />
 
                 { this._renderConferenceNotification() }
 
@@ -455,6 +477,12 @@ function _mapStateToProps(state) {
     const connecting_
         = connecting || (connection && (!membersOnly && (joining || (!conference && !leaving))));
 
+    const { jwt } = state['features/base/jwt'];
+    const jwtPayload = jwt && jwtDecode(jwt) || null;
+    const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
+    const participantType = participant && participant.participant_type || null;
+    const appstate = state['features/background'];
+
     return {
         ...abstractMapStateToProps(state),
         _aspectRatio: aspectRatio,
@@ -472,7 +500,12 @@ function _mapStateToProps(state) {
          * @type {boolean}
          */
         _toolboxVisible: isToolboxVisible(state),
-        _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage
+        _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage,
+        _jwt: jwt,
+        _jwtPayload: jwtPayload,
+        _participantType: participantType,
+        _participant: participantType,
+        _appstate: appstate
     };
 }
 
