@@ -4,17 +4,17 @@ export const JaneWeb = {
         fontFamily: 'ProximaNova-Light',
         lineHeight: 26 // 1.1
     },
-    light: {
+    lightFont: {
         fontFamily: 'ProximaNova-Light'
     },
-    bold: {
+    boldFont: {
         fontFamily: 'ProximaNova-Bold'
     },
-    regular: {
+    regularFont: {
         fontFamily: 'ProximaNova-Bold',
         fontWeight: '400'
     },
-    semiBold: {
+    semiBoldFont: {
         fontFamily: 'ProximaNova-Bold',
         fontWeight: '600'
     }
