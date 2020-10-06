@@ -29,11 +29,11 @@ import {
     reloadWithStoredParams
 } from './react/features/app';
 import {
-    initPrejoin,
-    isPrejoinPageEnabled,
-    isPrejoinPageVisible,
-    replacePrejoinAudioTrack,
-    replacePrejoinVideoTrack
+    initJaneWaitingArea,
+    isJaneWaitingAreaPageEnabled,
+    isJaneWaitingAreaPageVisible,
+    replaceJaneWaitingAreaAudioTrack,
+    replaceJaneWaitingAreaVideoTrack
 } from './react/features/jane-waiting-area';
 
 import EventEmitter from 'events';
@@ -828,8 +828,8 @@ export default {
     },
 
     /**
-     * Open new connection and join the conference when prejoin page is not enabled.
-     * If prejoin page is enabled open an new connection in the background
+     * Open new connection and join the conference when JaneWaitingArea page is not enabled.
+     * If JaneWaitingArea page is enabled open an new connection in the background
      * and create local tracks.
      *
      * @param {{ roomName: string }} options
@@ -859,7 +859,7 @@ export default {
             logger.warn('initial device list initialization failed', error);
         }
 
-        if (isPrejoinPageEnabled(APP.store.getState())) {
+        if (isJaneWaitingAreaPageEnabled(APP.store.getState())) {
             _connectionPromise = connect(roomName);
 
             const { tryCreateLocalTracks, errors } = this.createInitialLocalTracks(initialOptions);
@@ -870,7 +870,7 @@ export default {
             // they may remain as empty strings.
             this._initDeviceList(true);
 
-            return APP.store.dispatch(initPrejoin(tracks, errors));
+            return APP.store.dispatch(initJaneWaitingArea(tracks, errors));
         }
 
         const [ tracks, con ] = await this.createInitialLocalTracksAndConnect(
@@ -882,12 +882,12 @@ export default {
     },
 
     /**
-     * Joins conference after the tracks have been configured in the prejoin screen.
+     * Joins conference after the tracks have been configured in the JaneWaitingArea screen.
      *
      * @param {Object[]} tracks - An array with the configured tracks
      * @returns {Promise}
      */
-    async prejoinStart(tracks) {
+    async janeWaitingAreaStart(tracks) {
         const con = await _connectionPromise;
 
         return this.startConference(con, tracks);
@@ -1481,8 +1481,8 @@ export default {
         return new Promise((resolve, reject) => {
             _replaceLocalVideoTrackQueue.enqueue(onFinish => {
 
-                if (isPrejoinPageVisible(APP.store.getState())) {
-                    return APP.store.dispatch(replacePrejoinVideoTrack(newStream))
+                if (isJaneWaitingAreaPageVisible(APP.store.getState())) {
+                    return APP.store.dispatch(replaceJaneWaitingAreaVideoTrack(newStream))
                         .then(resolve)
                         .catch(reject)
                         .then(onFinish);
@@ -1542,8 +1542,8 @@ export default {
         return new Promise((resolve, reject) => {
             _replaceLocalAudioTrackQueue.enqueue(onFinish => {
 
-                if (isPrejoinPageVisible(APP.store.getState())) {
-                    return APP.store.dispatch(replacePrejoinAudioTrack(newStream))
+                if (isJaneWaitingAreaPageVisible(APP.store.getState())) {
+                    return APP.store.dispatch(replaceJaneWaitingAreaAudioTrack(newStream))
                         .then(resolve)
                         .catch(reject)
                         .then(onFinish);

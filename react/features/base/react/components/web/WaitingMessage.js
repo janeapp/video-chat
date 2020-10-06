@@ -1,18 +1,20 @@
 // @flow
 /* eslint-disable */
-import React, {Component} from 'react';
 
-import {getLocalizedDateFormatter, translate} from '../../../i18n';
-import {connect} from '../../../redux';
-import {getParticipantCount} from '../../../participants';
-import {getRemoteTracks} from '../../../tracks';
+import React, { Component } from 'react';
+
+import { getLocalizedDateFormatter, translate } from '../../../i18n';
+import { connect } from '../../../redux';
+import { getParticipantCount } from '../../../participants';
+import { getRemoteTracks } from '../../../tracks';
 import jwtDecode from 'jwt-decode';
 
 type Props = {
     _isGuest: boolean,
     jwt: Object,
     conferenceHasStarted: boolean,
-    stopAnimation: boolean
+    stopAnimation: boolean,
+    waitingMessageHeader: string
 };
 
 type State = {
@@ -110,7 +112,7 @@ class WaitingMessage extends Component<Props, State> {
             header = <p>{waitingMessageHeader}</p>;
         }
 
-        return (<div className='waitingMessage'>
+        return (<div className = 'waitingMessage'>
             {
                 header
             }

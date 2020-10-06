@@ -23,7 +23,7 @@ import { updateSettings } from '../settings';
 import { formatDeviceLabel, setAudioOutputDeviceId } from './functions';
 import logger from './logger';
 import { replaceAudioTrackById, replaceVideoTrackById, setDeviceStatusWarning } from '../../jane-waiting-area/actions';
-import { isPrejoinPageVisible } from '../../jane-waiting-area/functions';
+import { isJaneWaitingAreaPageVisible } from '../../jane-waiting-area/functions';
 
 const JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP = {
     microphone: {
@@ -74,7 +74,7 @@ MiddlewareRegistry.register(store => next => action => {
             titleKey
         }));
 
-        if (isPrejoinPageVisible(store.getState())) {
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
             store.dispatch(setDeviceStatusWarning(titleKey));
         }
 
@@ -103,21 +103,21 @@ MiddlewareRegistry.register(store => next => action => {
             titleKey
         }));
 
-        if (isPrejoinPageVisible(store.getState())) {
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
             store.dispatch(setDeviceStatusWarning(titleKey));
         }
 
         break;
     }
     case SET_AUDIO_INPUT_DEVICE:
-        if (isPrejoinPageVisible(store.getState())) {
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
             store.dispatch(replaceAudioTrackById(action.deviceId));
         } else {
             APP.UI.emitEvent(UIEvents.AUDIO_DEVICE_CHANGED, action.deviceId);
         }
         break;
     case SET_VIDEO_INPUT_DEVICE:
-        if (isPrejoinPageVisible(store.getState())) {
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
             store.dispatch(replaceVideoTrackById(action.deviceId));
         } else {
             APP.UI.emitEvent(UIEvents.VIDEO_DEVICE_CHANGED, action.deviceId);

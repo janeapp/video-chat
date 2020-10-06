@@ -18,9 +18,9 @@ import { AbstractVideoMuteButton } from '../../base/toolbox';
 import type { AbstractButtonProps } from '../../base/toolbox';
 import { getLocalVideoType, isLocalVideoTrackMuted } from '../../base/tracks';
 import {
-    isPrejoinPageVisible,
-    isPrejoinVideoDisabled,
-    isPrejoinVideoMuted
+    isJaneWaitingAreaPageVisible,
+    isJaneWaitingAreaVideoDisabled,
+    isJaneWaitingAreaVideoMuted
 } from '../../jane-waiting-area/functions';
 import UIEvents from '../../../../service/UI/UIEvents';
 
@@ -178,9 +178,9 @@ function _mapStateToProps(state): Object {
     let _videoMuted = isLocalVideoTrackMuted(tracks);
     let _videoDisabled = false;
 
-    if (isPrejoinPageVisible(state)) {
-        _videoMuted = isPrejoinVideoMuted(state);
-        _videoDisabled = isPrejoinVideoDisabled(state);
+    if (isJaneWaitingAreaPageVisible(state)) {
+        _videoMuted = isJaneWaitingAreaVideoMuted(state);
+        _videoDisabled = isJaneWaitingAreaVideoDisabled(state);
     }
 
     return {

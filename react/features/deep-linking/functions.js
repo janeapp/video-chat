@@ -10,8 +10,8 @@ import {
     DeepLinkingMobilePage,
     NoMobileApp
 } from './components';
-import {isRNSocketWebView} from '../jane-waiting-area/functions'
-import SocketConnection from '../jane-waiting-area/components/SocketConnection.web'
+import { isRNSocketWebView } from '../jane-waiting-area/functions';
+import SocketConnection from '../jane-waiting-area/components/SocketConnection.web';
 import { _openDesktopApp } from './openDesktopApp';
 
 /**

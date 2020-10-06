@@ -21,7 +21,7 @@ import {
     setToolboxAlwaysVisible,
     showToolbox
 } from '../../../toolbox';
-import { JaneWaitingArea, isPrejoinPageVisible } from '../../../jane-waiting-area';
+import { JaneWaitingArea, isJaneWaitingAreaPageVisible } from '../../../jane-waiting-area';
 import { maybeShowSuboptimalExperienceNotification } from '../../functions';
 
 import Labels from './Labels';
@@ -276,7 +276,7 @@ function _mapStateToProps(state) {
         _iAmRecorder: state['features/base/config'].iAmRecorder,
         _layoutClassName: LAYOUT_CLASSNAMES[currentLayout],
         _roomName: roomName,
-        _showJaneWaitingArea: isPrejoinPageVisible(state)
+        _showJaneWaitingArea: isJaneWaitingAreaPageVisible(state)
     };
 }
 

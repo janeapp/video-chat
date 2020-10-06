@@ -13,9 +13,9 @@ import { AbstractAudioMuteButton } from '../../base/toolbox';
 import type { AbstractButtonProps } from '../../base/toolbox';
 import { isLocalTrackMuted } from '../../base/tracks';
 import {
-    isPrejoinAudioMuted,
+    isJaneWaitingAreaAudioMuted,
     isAudioDisabled,
-    isPrejoinPageVisible
+    isJaneWaitingAreaPageVisible
 } from '../../jane-waiting-area/functions';
 import { muteLocal } from '../../remote-video-menu/actions';
 
@@ -156,8 +156,8 @@ function _mapStateToProps(state): Object {
     let _audioMuted;
     let _disabled;
 
-    if (isPrejoinPageVisible(state)) {
-        _audioMuted = isPrejoinAudioMuted(state);
+    if (isJaneWaitingAreaPageVisible(state)) {
+        _audioMuted = isJaneWaitingAreaAudioMuted(state);
         _disabled = state['features/base/config'].startSilent;
     } else {
         const tracks = state['features/base/tracks'];

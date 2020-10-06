@@ -16,8 +16,8 @@ function applyMuteOptionsToTrack(track, shouldMute) {
 
 
 export function isDeviceStatusVisible(state: Object): boolean {
-    return !((isAudioDisabled(state) && isPrejoinVideoDisabled(state))
-        || (isPrejoinAudioMuted(state) && isPrejoinVideoMuted(state)));
+    return !((isAudioDisabled(state) && isJaneWaitingAreaVideoDisabled(state))
+        || (isJaneWaitingAreaAudioMuted(state) && isJaneWaitingAreaVideoMuted(state)));
 }
 
 export function getActiveVideoTrack(state: Object): Object {
@@ -30,7 +30,7 @@ export function getActiveVideoTrack(state: Object): Object {
     return null;
 }
 
-export async function getAllPrejoinConfiguredTracks(state: Object): Promise<Object[]> {
+export async function getAllJaneWaitingAreaConfiguredTracks(state: Object): Promise<Object[]> {
     const tracks = [];
     const audioTrack = getAudioTrack(state);
     const videoTrack = getVideoTrack(state);
@@ -39,13 +39,13 @@ export async function getAllPrejoinConfiguredTracks(state: Object): Promise<Obje
     if (csTrack) {
         tracks.push(csTrack);
     } else if (videoTrack) {
-        await applyMuteOptionsToTrack(videoTrack, isPrejoinVideoMuted(state));
+        await applyMuteOptionsToTrack(videoTrack, isJaneWaitingAreaVideoMuted(state));
         tracks.push(videoTrack);
     }
 
     if (audioTrack) {
-        await applyMuteOptionsToTrack(audioTrack, isPrejoinAudioMuted(state));
-        isPrejoinAudioMuted(state) && audioTrack.mute();
+        await applyMuteOptionsToTrack(audioTrack, isJaneWaitingAreaAudioMuted(state));
+        isJaneWaitingAreaAudioMuted(state) && audioTrack.mute();
         tracks.push(audioTrack);
     }
 
@@ -72,11 +72,11 @@ export function getVideoTrack(state: Object): Object {
     return state['features/jane-waiting-area']?.videoTrack;
 }
 
-export function isPrejoinAudioMuted(state: Object): boolean {
+export function isJaneWaitingAreaAudioMuted(state: Object): boolean {
     return state['features/jane-waiting-area']?.audioMuted;
 }
 
-export function isPrejoinVideoMuted(state: Object): boolean {
+export function isJaneWaitingAreaVideoMuted(state: Object): boolean {
     return state['features/jane-waiting-area']?.videoMuted;
 }
 
@@ -88,24 +88,24 @@ export function isAudioDisabled(state: Object): Object {
     return state['features/jane-waiting-area']?.audioDisabled;
 }
 
-export function isPrejoinVideoDisabled(state: Object): Object {
+export function isJaneWaitingAreaVideoDisabled(state: Object): Object {
     return state['features/jane-waiting-area']?.videoDisabled;
 }
 
-export function getPreJoinPageDisplayName(state: Object): string {
+export function getJaneWaitingAreaPageDisplayName(state: Object): string {
     return state['features/base/participants'][0].name || '';
 }
 
-export function isPrejoinPageEnabled(state: Object): boolean {
+export function isJaneWaitingAreaPageEnabled(state: Object): boolean {
     const { jwt } = state['features/base/jwt'];
     const jwtPayload = jwt && jwtDecode(jwt) || null;
-    const shouldEnablePreJoinPage = jwtPayload && jwtPayload.context && jwtPayload.context.ws_host && jwtPayload.context.ws_token;
+    const shouldEnableJaneWaitingAreaPage = jwtPayload && jwtPayload.context && jwtPayload.context.ws_host && jwtPayload.context.ws_token;
 
-    return state['features/base/config'].prejoinPageEnabled || shouldEnablePreJoinPage;
+    return state['features/base/config'].janeWaitingAreaPageEnabled || shouldEnableJaneWaitingAreaPage;
 }
 
-export function isPrejoinPageVisible(state: Object): boolean {
-    return isPrejoinPageEnabled(state) && state['features/jane-waiting-area']?.showPrejoin;
+export function isJaneWaitingAreaPageVisible(state: Object): boolean {
+    return isJaneWaitingAreaPageEnabled(state) && state['features/jane-waiting-area']?.showJaneWaitingArea;
 }
 
 export async function getAllParticipantsStatus(jwt, jwtPayload) {

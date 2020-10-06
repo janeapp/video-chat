@@ -1,18 +1,19 @@
+// @flow
 /* eslint-disable */
 
-import React, {Component} from 'react';
-import {connect} from '../../base/redux';
+import { Component } from 'react';
+import { connect } from '../../base/redux';
 import {
     getRemoteParticipantsReadyStatus, isRNSocketWebView,
     updateParticipantReadyStatus
 } from '../functions';
 import {
-    updateRemoteParticipantsStatus,
-    updateRemoteParticipantsStatusFromSocket
+    updateRemoteParticipantsStatus as updateRemoteParticipantsStatusAction,
+    updateRemoteParticipantsStatusFromSocket as updateRemoteParticipantsStatusFromSocketAction
 } from '../actions';
-import {Socket} from '../../../../service/Websocket/socket';
+import { Socket } from '../../../../service/Websocket/socket';
 import jwtDecode from 'jwt-decode';
-import {RemoteParticipantStatus} from '../RemoteParticipantStatus';
+import { RemoteParticipantStatus } from '../RemoteParticipantStatus';
 
 type Props = {
     t: Function,
@@ -20,25 +21,36 @@ type Props = {
     jwtPayload: Object,
     participantType: string,
     participant: Object,
+    isRNWebViewPage: boolean,
+    updateRemoteParticipantsStatusFromSocket: Function,
+    updateRemoteParticipantsStatus: Function
 };
 
-class SocketConnection extends Component<Props, State> {
+class SocketConnection extends Component<Props> {
+    socket: Object;
+
+    pollingInterval: ?Function;
+
+    _onMessageUpdate: Function;
+
     constructor(props) {
         super(props);
-        this.socket = null;
+        this.socket = {};
         this.pollingInterval = null;
         this._onMessageUpdate = this._onMessageUpdate.bind(this);
     }
 
     componentDidMount() {
         const { jwt, jwtPayload, participant, participantType, isRNWebViewPage } = this.props;
+
         if (participantType === 'Patient') {
             updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'waiting');
         }
+
         if (isRNWebViewPage) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ message: 'webview page is ready' }));
         } else {
-            window.onunload = window.onbeforeunload = function () {
+            window.onunload = window.onbeforeunload = function() {
                 updateParticipantReadyStatus(jwt, jwtPayload, participantType, participant, 'left');
             };
         }
@@ -52,11 +64,14 @@ class SocketConnection extends Component<Props, State> {
 
     _onMessageUpdate(event) {
         const { participantType, isRNWebViewPage, updateRemoteParticipantsStatusFromSocket } = this.props;
+
         if (event.info && event.info.status && event.participant_type && (event.participant_type !== participantType)) {
             if (isRNWebViewPage) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { socketRemoteParticipantsEvent: event } }));
+                window.ReactNativeWebView
+                    .postMessage(JSON.stringify({ message: { socketRemoteParticipantsEvent: event } }));
             } else {
                 const status = new RemoteParticipantStatus(event);
+
                 updateRemoteParticipantsStatusFromSocket(status);
             }
         }
@@ -65,6 +80,7 @@ class SocketConnection extends Component<Props, State> {
     async _polling() {
         const { jwt, jwtPayload, participantType, isRNWebViewPage, updateRemoteParticipantsStatus } = this.props;
         const remoteParticipantsStatus = await getRemoteParticipantsReadyStatus(jwt, jwtPayload, participantType);
+
         if (isRNWebViewPage) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ message: { remoteParticipantsStatus } }));
         } else {
@@ -78,18 +94,21 @@ class SocketConnection extends Component<Props, State> {
 
     _connectionStatusListener(status) {
         const { isRNWebViewPage } = this.props;
+
         if (isRNWebViewPage) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ message: status }));
         } else {
             console.log(status);
         }
-    };
+    }
 
     async _connectSocket() {
         const { jwt, jwtPayload, participantType, isRNWebViewPage, updateRemoteParticipantsStatus } = this.props;
         const socketJwtPayload = jwtDecode(jwtPayload.context.ws_token);
+
         try {
             const remoteParticipantsStatus = await getRemoteParticipantsReadyStatus(jwt, jwtPayload, participantType);
+
             if (isRNWebViewPage) {
                 window.ReactNativeWebView.postMessage(JSON.stringify({ message: { remoteParticipantsStatus } }));
             } else {
@@ -125,17 +144,21 @@ function mapStateToProps(state): Object {
     const isRNWebViewPage = isRNSocketWebView(locationURL);
 
     return {
-        jwt, jwtPayload, participantType, participant, isRNWebViewPage
+        jwt,
+        jwtPayload,
+        participantType,
+        participant,
+        isRNWebViewPage
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         updateRemoteParticipantsStatus(status) {
-            dispatch(updateRemoteParticipantsStatus(status));
+            dispatch(updateRemoteParticipantsStatusAction(status));
         },
         updateRemoteParticipantsStatusFromSocket(status) {
-            dispatch(updateRemoteParticipantsStatusFromSocket(status));
+            dispatch(updateRemoteParticipantsStatusFromSocketAction(status));
         }
     };
 }

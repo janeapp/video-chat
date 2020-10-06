@@ -4,7 +4,7 @@ import React from 'react';
 import { Avatar } from '../../../base/avatar';
 import { Video } from '../../../base/media';
 import { connect } from '../../../base/redux';
-import { getActiveVideoTrack, isPrejoinVideoMuted } from '../../functions';
+import { getActiveVideoTrack, isJaneWaitingAreaVideoMuted } from '../../functions';
 
 export type Props = {
 
@@ -68,7 +68,7 @@ function Preview(props: Props) {
 function mapStateToProps(state) {
     return {
         videoTrack: getActiveVideoTrack(state),
-        showCameraPreview: !isPrejoinVideoMuted(state)
+        showCameraPreview: !isJaneWaitingAreaVideoMuted(state)
     };
 }
 

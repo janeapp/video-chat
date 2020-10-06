@@ -1,20 +1,19 @@
 /* eslint-disable */
-
 import {
-    ADD_PREJOIN_AUDIO_TRACK,
-    ADD_PREJOIN_CONTENT_SHARING_TRACK,
-    ADD_PREJOIN_VIDEO_TRACK,
-    PREJOIN_START_CONFERENCE,
+    ADD_JANE_WAITING_AREA_AUDIO_TRACK,
+    ADD_JANE_WAITING_AREA_CONTENT_SHARING_TRACK,
+    ADD_JANE_WAITING_AREA_VIDEO_TRACK,
+    JANE_WAITING_AREA_START_CONFERENCE,
     SET_DEVICE_STATUS,
-    SET_PREJOIN_AUDIO_DISABLED,
-    SET_PREJOIN_AUDIO_MUTED,
-    SET_PREJOIN_DEVICE_ERRORS,
-    SET_PREJOIN_PAGE_VISIBILITY,
-    SET_PREJOIN_VIDEO_DISABLED,
-    SET_PREJOIN_VIDEO_MUTED,
+    SET_JANE_WAITING_AREA_AUDIO_DISABLED,
+    SET_JANE_WAITING_AREA_AUDIO_MUTED,
+    SET_JANE_WAITING_AREA_DEVICE_ERRORS,
+    SET_JANE_WAITING_AREA_PAGE_VISIBILITY,
+    SET_JANE_WAITING_AREA_VIDEO_DISABLED,
+    SET_JANE_WAITING_AREA_VIDEO_MUTED,
     CONNECT_JANE_SOCKET_SERVER, UPDATE_REMOTE_PARTICIPANTS_STATUS
 } from './actionTypes';
-import {createLocalTrack} from '../base/lib-jitsi-meet';
+import { createLocalTrack } from '../base/lib-jitsi-meet';
 import logger from './logger';
 
 import {
@@ -22,66 +21,66 @@ import {
     getVideoTrack
 } from './functions';
 
-export function addPrejoinAudioTrack(value: Object) {
+export function addJaneWaitingAreaAudioTrack(value: Object) {
     return {
-        type: ADD_PREJOIN_AUDIO_TRACK,
+        type: ADD_JANE_WAITING_AREA_AUDIO_TRACK,
         value
     };
 }
 
-export function addPrejoinVideoTrack(value: Object) {
+export function addJaneWaitingAreaVideoTrack(value: Object) {
     return {
-        type: ADD_PREJOIN_VIDEO_TRACK,
+        type: ADD_JANE_WAITING_AREA_VIDEO_TRACK,
         value
     };
 }
 
-export function addPrejoinContentSharingTrack(value: Object) {
+export function addJaneWaitingAreaContentSharingTrack(value: Object) {
     return {
-        type: ADD_PREJOIN_CONTENT_SHARING_TRACK,
+        type: ADD_JANE_WAITING_AREA_CONTENT_SHARING_TRACK,
         value
     };
 }
 
-export function initPrejoin(tracks: Object[], errors: Object) {
-    return async function (dispatch: Function) {
+export function initJaneWaitingArea(tracks: Object[], errors: Object) {
+    return async function(dispatch: Function) {
         const audioTrack = tracks.find(t => t.isAudioTrack());
         const videoTrack = tracks.find(t => t.isVideoTrack());
 
-        dispatch(setPrejoinDeviceErrors(errors));
+        dispatch(setJaneWaitingAreaDeviceErrors(errors));
 
         if (audioTrack) {
-            dispatch(addPrejoinAudioTrack(audioTrack));
+            dispatch(addJaneWaitingAreaAudioTrack(audioTrack));
         } else {
             dispatch(setAudioDisabled());
         }
 
         if (videoTrack) {
             if (videoTrack.videoType === 'desktop') {
-                dispatch(addPrejoinContentSharingTrack(videoTrack));
-                dispatch(setPrejoinVideoDisabled(true));
+                dispatch(addJaneWaitingAreaContentSharingTrack(videoTrack));
+                dispatch(setJaneWaitingAreaVideoDisabled(true));
             } else {
-                dispatch(addPrejoinVideoTrack(videoTrack));
+                dispatch(addJaneWaitingAreaVideoTrack(videoTrack));
             }
         } else {
-            dispatch(setPrejoinVideoDisabled(true));
+            dispatch(setJaneWaitingAreaVideoDisabled(true));
         }
     };
 }
 
 export function joinConference() {
-    return function (dispatch: Function) {
-        dispatch(setPrejoinPageVisibility(false));
+    return function(dispatch: Function) {
+        dispatch(setJaneWaitingAreaPageVisibility(false));
         dispatch(startConference());
     };
 }
 
-export function replacePrejoinAudioTrack(track: Object) {
+export function replaceJaneWaitingAreaAudioTrack(track: Object) {
     return async (dispatch: Function, getState: Function) => {
         const oldTrack = getAudioTrack(getState());
 
         oldTrack && await oldTrack.dispose();
-        dispatch(addPrejoinAudioTrack(track));
+        dispatch(addJaneWaitingAreaAudioTrack(track));
     };
 }
 
@@ -90,20 +89,20 @@ export function replaceAudioTrackById(deviceId: string) {
         try {
             const track = await createLocalTrack('audio', deviceId);
 
-            dispatch(replacePrejoinAudioTrack(track));
+            dispatch(replaceJaneWaitingAreaAudioTrack(track));
         } catch (err) {
-            dispatch(setDeviceStatusWarning('prejoin.audioTrackError'));
+            dispatch(setDeviceStatusWarning('janeWaitingArea.audioTrackError'));
             logger.log('Error replacing audio track', err);
         }
     };
 }
 
-export function replacePrejoinVideoTrack(track: Object) {
+export function replaceJaneWaitingAreaVideoTrack(track: Object) {
     return async (dispatch: Function, getState: Function) => {
         const oldTrack = getVideoTrack(getState());
 
         oldTrack && await oldTrack.dispose();
-        dispatch(addPrejoinVideoTrack(track));
+        dispatch(addJaneWaitingAreaVideoTrack(track));
     };
 }
 
@@ -112,38 +111,38 @@ export function replaceVideoTrackById(deviceId: Object) {
         try {
             const track = await createLocalTrack('video', deviceId);
 
-            dispatch(replacePrejoinVideoTrack(track));
+            dispatch(replaceJaneWaitingAreaVideoTrack(track));
         } catch (err) {
-            dispatch(setDeviceStatusWarning('prejoin.videoTrackError'));
+            dispatch(setDeviceStatusWarning('janeWaitingArea.videoTrackError'));
             logger.log('Error replacing video track', err);
         }
     };
 }
 
-export function setPrejoinAudioMuted(value: boolean) {
+export function setJaneWaitingAreaAudioMuted(value: boolean) {
     return {
-        type: SET_PREJOIN_AUDIO_MUTED,
+        type: SET_JANE_WAITING_AREA_AUDIO_MUTED,
         value
     };
 }
 
-export function setPrejoinVideoDisabled(value: boolean) {
+export function setJaneWaitingAreaVideoDisabled(value: boolean) {
     return {
-        type: SET_PREJOIN_VIDEO_DISABLED,
+        type: SET_JANE_WAITING_AREA_VIDEO_DISABLED,
         value
     };
 }
 
-export function setPrejoinVideoMuted(value: boolean) {
+export function setJaneWaitingAreaVideoMuted(value: boolean) {
     return {
-        type: SET_PREJOIN_VIDEO_MUTED,
+        type: SET_JANE_WAITING_AREA_VIDEO_MUTED,
         value
     };
 }
 
 export function setAudioDisabled() {
     return {
-        type: SET_PREJOIN_AUDIO_DISABLED
+        type: SET_JANE_WAITING_AREA_AUDIO_DISABLED
     };
 }
 
@@ -167,23 +166,23 @@ export function setDeviceStatusWarning(deviceStatusText: string) {
     };
 }
 
-export function setPrejoinDeviceErrors(value: Object) {
+export function setJaneWaitingAreaDeviceErrors(value: Object) {
     return {
-        type: SET_PREJOIN_DEVICE_ERRORS,
+        type: SET_JANE_WAITING_AREA_DEVICE_ERRORS,
         value
     };
 }
 
-export function setPrejoinPageVisibility(value: boolean) {
+export function setJaneWaitingAreaPageVisibility(value: boolean) {
     return {
-        type: SET_PREJOIN_PAGE_VISIBILITY,
+        type: SET_JANE_WAITING_AREA_PAGE_VISIBILITY,
         value
     };
 }
 
 function startConference() {
     return {
-        type: PREJOIN_START_CONFERENCE
+        type: JANE_WAITING_AREA_START_CONFERENCE
     };
 }
 
@@ -203,6 +202,7 @@ export function updateRemoteParticipantsStatus(value) {
 export function updateRemoteParticipantsStatusFromSocket(value) {
     return (dispatch: Function, getState: Function) => {
         const { remoteParticipantsStatus } = getState()['features/jane-waiting-area'];
+
         if (remoteParticipantsStatus.some(v => v.participant_id === value.participant_id)) {
             remoteParticipantsStatus.forEach(v => {
                 if (v.participant_id === value.participant_id) {
