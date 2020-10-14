@@ -99,7 +99,7 @@ export function getJaneWaitingAreaPageDisplayName(state: Object): string {
 export function isJaneWaitingAreaPageEnabled(state: Object): boolean {
     const { jwt } = state['features/base/jwt'];
     const jwtPayload = jwt && jwtDecode(jwt) || null;
-    const shouldEnableJaneWaitingAreaPage = jwtPayload && jwtPayload.context && jwtPayload.context.ws_host && jwtPayload.context.ws_token;
+    const shouldEnableJaneWaitingAreaPage = jwtPayload && jwtPayload.context && jwtPayload.context.waiting_area_enabled
 
     return state['features/base/config'].janeWaitingAreaPageEnabled || shouldEnableJaneWaitingAreaPage;
 }
@@ -108,22 +108,21 @@ export function isJaneWaitingAreaPageVisible(state: Object): boolean {
     return isJaneWaitingAreaPageEnabled(state) && state['features/jane-waiting-area']?.showJaneWaitingArea;
 }
 
-export async function getAllParticipantsStatus(jwt, jwtPayload) {
-    const url = new URL(jwtPayload.context.check_participants_status_url);
+export async function checkRoomStatus(jwt, jwtPayload) {
+    const url = new URL(jwtPayload.context.room_status_url);
 
     const params = { jwt };
 
     url.search = new URLSearchParams(params).toString();
 
     return fetch(url).then(response => response.json())
-        .then(res => res.participants_status);
+        .then(res => res);
 }
 
-export async function getRemoteParticipantsReadyStatus(jwt, jwtPayload, participantType) {
-    const allParticipantsStatus = await getAllParticipantsStatus(jwt, jwtPayload);
+export async function getRemoteParticipantsReadyStatus(participantsStatus, participantType) {
     const remoteParticipantType = participantType === 'StaffMember' ? 'Patient' : 'StaffMember';
     let remoteParticipantStatus = [];
-    allParticipantsStatus && allParticipantsStatus.forEach((v) => {
+    participantsStatus && participantsStatus.forEach((v) => {
         if (v.participant_type === remoteParticipantType) {
             remoteParticipantStatus.push(new RemoteParticipantStatus(v));
         }

@@ -1,5 +1,6 @@
 /* eslint-disable */
 import io from 'socket.io-client';
+import {checkRoomStatus} from '../../react/features/jane-waiting-area';
 
 export class Socket {
     constructor(options) {
@@ -8,6 +9,8 @@ export class Socket {
         this.socket_host = options.socket_host || '';
         this.ws_token = this.options.ws_token || '';
         this.usePolling = options.usePolling || null;
+        this.jwt = options.jwt || '',
+        this.jwtPayload = options.jwtPayload || '',
         this.totalRetries = 0;
         this.socketio = io(this.socket_host, {
             transports: ['websocket'],
@@ -25,7 +28,15 @@ export class Socket {
     auth_and_connect() {
         console.info('reauthorizing websocket');
         this.reauthorizing = true;
+        checkRoomStatus(this.jwt, this.jwtPayload).then(r => (r) => {
+            if (r.socket_token && r.socket_token.length > 0) {
+                this.ws_token = r.socket_token;
+                console.log('fresh websocket jwt fetched');
+            }
 
+            this.reauthorizing = false;
+            this.connect();
+        });
     }
 
     connect() {
@@ -100,7 +111,6 @@ export class Socket {
                     });
                 }
             }
-
         });
 
         this.socket.on('connect', function () {
