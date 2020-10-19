@@ -1,16 +1,16 @@
 // @flow
 
-import jwtDecode from 'jwt-decode';
 import React, { PureComponent } from 'react';
 
 import { ColorSchemeRegistry } from '../../base/color-scheme';
-import { ParticipantView } from '../../base/participants';
+import { getLocalParticipantType, ParticipantView } from '../../base/participants';
 import WaitingMessage from '../../base/react/components/native/WaitingMessage.js';
 import { connect } from '../../base/redux';
 import { DimensionsDetector } from '../../base/responsive-ui';
 import { StyleType } from '../../base/styles';
 
 import { AVATAR_SIZE } from './styles';
+
 
 /**
  * The type of the React {@link Component} props of {@link LargeVideo}.
@@ -158,17 +158,14 @@ class LargeVideo extends PureComponent<Props, State> {
  */
 function _mapStateToProps(state) {
     const { clientHeight: height, clientWidth: width } = state['features/base/responsive-ui'];
-    const { jwt } = state['features/base/jwt'];
-    const jwtPayload = jwt && jwtDecode(jwt) || null;
-    const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
-    const participantType = participant && participant.participant_type || null;
 
     return {
         _height: height,
         _participantId: state['features/large-video'].participantId,
         _styles: ColorSchemeRegistry.get(state, 'LargeVideo'),
         _width: width,
-        _participantType: participantType
+
+        _participantType: getLocalParticipantType(state)
     };
 }
 
