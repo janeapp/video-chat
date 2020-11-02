@@ -22,6 +22,8 @@ import { showNotification, showWarningNotification } from '../../notifications';
 import { updateSettings } from '../settings';
 import { formatDeviceLabel, setAudioOutputDeviceId } from './functions';
 import logger from './logger';
+import { replaceAudioTrackById, replaceVideoTrackById, setDeviceStatusWarning } from '../../jane-waiting-area/actions';
+import { isJaneWaitingAreaPageVisible } from '../../jane-waiting-area/functions';
 
 const JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP = {
     microphone: {
@@ -63,13 +65,18 @@ MiddlewareRegistry.register(store => next => action => {
             || JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP
                 .camera[JitsiTrackErrors.GENERAL];
         const additionalCameraErrorMsg = cameraJitsiTrackErrorMsg ? null : message;
+        const titleKey = name === JitsiTrackErrors.PERMISSION_DENIED
+            ? 'deviceError.cameraPermission' : 'deviceError.cameraError';
 
         store.dispatch(showWarningNotification({
             description: additionalCameraErrorMsg,
             descriptionKey: cameraErrorMsg,
-            titleKey: name === JitsiTrackErrors.PERMISSION_DENIED
-                ? 'deviceError.cameraPermission' : 'deviceError.cameraError'
+            titleKey
         }));
+
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
+            store.dispatch(setDeviceStatusWarning(titleKey));
+        }
 
         break;
     }
@@ -86,22 +93,35 @@ MiddlewareRegistry.register(store => next => action => {
             || JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP
                 .microphone[JitsiTrackErrors.GENERAL];
         const additionalMicErrorMsg = micJitsiTrackErrorMsg ? null : message;
+        const titleKey = name === JitsiTrackErrors.PERMISSION_DENIED
+            ? 'deviceError.microphonePermission'
+            : 'deviceError.microphoneError';
 
         store.dispatch(showWarningNotification({
             description: additionalMicErrorMsg,
             descriptionKey: micErrorMsg,
-            titleKey: name === JitsiTrackErrors.PERMISSION_DENIED
-                ? 'deviceError.microphonePermission'
-                : 'deviceError.microphoneError'
+            titleKey
         }));
+
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
+            store.dispatch(setDeviceStatusWarning(titleKey));
+        }
 
         break;
     }
     case SET_AUDIO_INPUT_DEVICE:
-        APP.UI.emitEvent(UIEvents.AUDIO_DEVICE_CHANGED, action.deviceId);
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
+            store.dispatch(replaceAudioTrackById(action.deviceId));
+        } else {
+            APP.UI.emitEvent(UIEvents.AUDIO_DEVICE_CHANGED, action.deviceId);
+        }
         break;
     case SET_VIDEO_INPUT_DEVICE:
-        APP.UI.emitEvent(UIEvents.VIDEO_DEVICE_CHANGED, action.deviceId);
+        if (isJaneWaitingAreaPageVisible(store.getState())) {
+            store.dispatch(replaceVideoTrackById(action.deviceId));
+        } else {
+            APP.UI.emitEvent(UIEvents.VIDEO_DEVICE_CHANGED, action.deviceId);
+        }
         break;
     case CHECK_AND_NOTIFY_FOR_NEW_DEVICE:
         _checkAndNotifyForNewDevice(store, action.newDevices, action.oldDevices);
