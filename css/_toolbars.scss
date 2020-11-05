@@ -78,6 +78,32 @@
                 min-width: 200px;
             }
             .toolbox-button {
+                &.test-hangup-btn {
+                    .jitsi-icon {
+                        svg {
+                            fill: #fff !important;
+                        }
+                    }
+
+                    & > div > div:nth-child(2) > div {
+                        top: -5!important;
+
+                        & > div:nth-child(1) {
+                            padding: 5px 20px 5px 10px;
+                            line-height: 20px;
+
+                            span:after {
+                                content: "";
+                                position: absolute;
+                                bottom: -5px;
+                                right: 90px;
+                                border-width: 5px 5px 0;
+                                border-style: solid;
+                                border-color: #283447 transparent;
+                            }
+                        }
+                    }
+                }
 
                 .toolbox-icon {
                     @media all and (max-width: 420px) {
@@ -90,31 +116,31 @@
                     margin: 0px 4px;
                     width: 38px;
                     height: 38px;
-        
+
                     &:hover {
                         background-color: #daebfa;
                         border: 1px solid #daebfa;
                     }
-        
+
                     &.toggled {
                         background: #2a3a4b;
                         border: 1px solid #5e6d7a;
-    
+
                         svg {
                             fill: #fff;
                         }
-        
+
                         &:hover {
                             background-color: #5e6d7a;
                         }
                     }
-        
+
                     &.disabled, .disabled & {
                         cursor: initial;
                         color: #fff;
                         background-color: #a4b8d1;
                     }
-    
+
                     svg {
                         fill: #5e6d7a;
                     }
@@ -130,7 +156,7 @@
                         border: 1px solid $hangupColor;
                         width: 40px;
                         height: 40px;
-                
+
                         &:hover {
                             background-color: $hangupColor;
                         }
@@ -268,7 +294,7 @@
             &:hover, &.toggled {
                 background: $newToolbarButtonHoverColor;
             }
-    
+
             &.disabled {
                 cursor: initial !important;
                 background-color: #a4b8d1 !important;

@@ -11,15 +11,6 @@ import WaitingMessage from './WaitingMessage';
 declare var interfaceConfig: Object;
 
 /**
- * The CSS style of the element with CSS class {@code rightwatermark}.
- *
- * @private
- */
-const _RIGHT_WATERMARK_STYLE = {
-    backgroundImage: 'url(images/rightwatermark.png)'
-};
-
-/**
  * The type of the React {@code Component} props of {@link Watermarks}.
  */
 type Props = {
@@ -29,7 +20,8 @@ type Props = {
      */
     _isGuest: boolean,
     conferenceHasStarted: boolean,
-    isWelcomePage: boolean,
+    hideWaitingMessage: boolean,
+    waitingMessageHeader: string,
 
     /**
      * Invoked to obtain translated strings.
@@ -71,7 +63,8 @@ type State = {
     /**
      * Whether or not the show the "powered by Jitsi.org" link.
      */
-    showPoweredBy: boolean
+    showPoweredBy: boolean,
+    hideWaitingMessage: boolean
 };
 
 /**
@@ -112,8 +105,23 @@ class Watermarks extends Component<Props, State> {
             showBrandWatermark,
             showJitsiWatermark,
             showJitsiWatermarkForGuests,
-            showPoweredBy: interfaceConfig.SHOW_POWERED_BY
+            showPoweredBy: interfaceConfig.SHOW_POWERED_BY,
+            hideWaitingMessage: props.hideWaitingMessage || false
         };
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.hideWaitingMessage !== this.props.hideWaitingMessage) {
+            this.setState({
+                hideWaitingMessage: prevProps.hideWaitingMessage
+            });
+        }
+    }
+
+    hideWaitingMessageAction() {
+        this.setState({
+            hideWaitingMessage: true
+        });
     }
 
     /**
@@ -139,14 +147,16 @@ class Watermarks extends Component<Props, State> {
      * @returns {ReactElement|null}
      */
     _renderWatermark() {
-        const { conferenceHasStarted, isWelcomePage } = this.props;
-
-
-        return (<div className = 'watermark '>
+        const { conferenceHasStarted, waitingMessageHeader } = this.props;
+        const { hideWaitingMessage } = this.state;
+        return (<div
+            className={`watermark ${(conferenceHasStarted || hideWaitingMessage) ? '' : 'watermark-with-background'}`}>
             <div
-                className = { `leftwatermark ${conferenceHasStarted || isWelcomePage ? '' : 'animate-flicker'}` } />
+                className={`leftwatermark ${conferenceHasStarted || hideWaitingMessage ? '' : 'animate-flicker'}`}/>
             {
-                !isWelcomePage && <WaitingMessage />
+                !hideWaitingMessage &&
+                <WaitingMessage waitingMessageHeader={waitingMessageHeader}
+                                onClose={this.hideWaitingMessageAction.bind(this)}/>
             }
         </div>);
     }
@@ -164,7 +174,6 @@ function _mapStateToProps(state) {
     const { isGuest } = state['features/base/jwt'];
     const participantCount = getParticipantCount(state);
     const remoteTracks = getRemoteTracks(state['features/base/tracks']);
-
 
     return {
         _isGuest: isGuest,
