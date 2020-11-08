@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import { Watermarks } from '../../base/react';
 import { Captions } from '../../subtitles/';
 import { connect } from '../../base/redux';
+import { isJaneWaitingAreaPageVisible } from '../../jane-waiting-area';
 
 declare var interfaceConfig: Object;
 
@@ -14,7 +15,8 @@ type Props = {
      * Used to determine the value of the autoplay attribute of the underlying
      * video element.
      */
-    _noAutoPlayVideo: boolean
+    _noAutoPlayVideo: boolean,
+    _showJaneWaitingArea: boolean
 }
 
 /**
@@ -31,6 +33,8 @@ class LargeVideo extends Component<Props> {
      * @returns {React$Element}
      */
     render() {
+        const { _showJaneWaitingArea } = this.props;
+
         return (
             <div
                 className = 'videocontainer'
@@ -40,7 +44,7 @@ class LargeVideo extends Component<Props> {
                 </div>
                 <div id = 'etherpad' />
 
-                <Watermarks />
+                {!_showJaneWaitingArea && <Watermarks />}
 
                 <div id = 'dominantSpeaker'>
                     <div className = 'dynamic-shadow' />
@@ -87,7 +91,8 @@ function _mapStateToProps(state) {
     const testingConfig = state['features/base/config'].testing;
 
     return {
-        _noAutoPlayVideo: testingConfig?.noAutoPlayVideo
+        _noAutoPlayVideo: testingConfig?.noAutoPlayVideo,
+        _showJaneWaitingArea: isJaneWaitingAreaPageVisible(state)
     };
 }
 
