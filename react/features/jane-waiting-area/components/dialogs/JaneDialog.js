@@ -19,6 +19,7 @@ import {
     joinConference as joinConferenceAction
 } from '../../actions';
 import JaneHangupButton from '../../../toolbox/components/JaneHangupButton';
+import { openURLInBrowser } from '../../../base/util';
 
 type Props = {
     joinConference: Function,
@@ -27,16 +28,18 @@ type Props = {
     jwtPayload: Object,
     participantType: string,
     participant: Object,
-    remoteParticipantsStatuses: string
+    remoteParticipantsStatuses: string,
+    authState: string
 };
 
 type DialogTitleProps = {
     t: Function,
     participantType: string,
-    localParticipantCanJoin: boolean
+    localParticipantCanJoin: boolean,
+    authState: string
 }
 
-function DialogTitle(props: DialogTitleProps) {
+function DialogTitleComp(props: DialogTitleProps) {
     let header;
 
     if (props.participantType === 'StaffMember') {
@@ -51,10 +54,14 @@ function DialogTitle(props: DialogTitleProps) {
         header = props.t('janeWaitingArea.waitPractitioner');
     }
 
+    if (props.authState === 'failed') {
+        header = props.t('janeWaitingArea.authenticationExpired');
+    }
+
     return <div className='jane-waiting-area-info-title'>{header}</div>;
 }
 
-function DialogTitleMsg(props: DialogTitleProps) {
+function DialogTitleMsgComp(props: DialogTitleProps) {
     let title;
 
     if (props.localParticipantCanJoin) {
@@ -66,8 +73,15 @@ function DialogTitleMsg(props: DialogTitleProps) {
         title = props.t('janeWaitingArea.testYourDevice');
     }
 
+    if (props.authState === 'failed') {
+        title = '';
+    }
+
     return <div className='jane-waiting-area-info-title-msg'>{title}</div>;
 }
+
+const DialogTitle = (translate(DialogTitleComp));
+const DialogTitleMsg = (translate(DialogTitleMsgComp));
 
 class JaneDialog extends Component<Props> {
 
@@ -79,9 +93,9 @@ class JaneDialog extends Component<Props> {
     }
 
     _joinConference() {
-        const { jwt, joinConference, participant, participantType } = this.props;
+        const { jwt, joinConference } = this.props;
 
-        updateParticipantReadyStatus(jwt, participantType, participant, 'joined');
+        updateParticipantReadyStatus(jwt, 'joined');
         joinConference();
     }
 
@@ -135,9 +149,19 @@ class JaneDialog extends Component<Props> {
     }
 
     _getBtnText() {
-        const { participantType } = this.props;
+        const { participantType, authState } = this.props;
+
+        if (authState === 'failed') {
+            return participantType === 'StaffMember' ? 'Return to my Schedule' : 'Return to my account';
+        }
 
         return participantType === 'StaffMember' ? 'Admit Client' : 'Begin';
+    }
+
+    _returnToMyAccount() {
+        const { jwtPayload } = this.props;
+        const { leave_waiting_area_url } = jwtPayload && jwtPayload.context;
+        openURLInBrowser(leave_waiting_area_url);
     }
 
     render() {
@@ -145,9 +169,9 @@ class JaneDialog extends Component<Props> {
             participantType,
             jwtPayload,
             remoteParticipantsStatuses,
-            t
+            authState
         } = this.props;
-        const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses);
+        const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType);
         const { _joinConference } = this;
 
         return (<div className='jane-waiting-area-info-area-container'>
@@ -155,17 +179,16 @@ class JaneDialog extends Component<Props> {
                     <div className='jane-waiting-area-info'>
                         <div className='jane-waiting-area-info-logo-wrapper'>
                             <div className='jane-waiting-area-info-logo'/>
-                            {participantType === 'StaffMember' && checkLocalParticipantCanJoin(remoteParticipantsStatuses)
-                            &&
+                            {participantType === 'StaffMember' && localParticipantCanJoin &&
                             <p className='jane-waiting-area-info-patient-waiting'>Client
                                 is waiting</p>}
                         </div>
                         <div className='jane-waiting-area-info-text-wrapper'>
                             <DialogTitle participantType={participantType}
-                                         t={t}
+                                         authState={authState}
                                          localParticipantCanJoin={localParticipantCanJoin}/>
                             <DialogTitleMsg participantType={participantType}
-                                            t={t}
+                                            authState={authState}
                                             localParticipantCanJoin={localParticipantCanJoin}/>
                             <div className='jane-waiting-area-info-detail'>
                                 <p>
@@ -194,9 +217,16 @@ class JaneDialog extends Component<Props> {
                         <div
                             className='jane-waiting-area-preview-join-btn-container'>
                             {
-                                <ActionButton
+                                authState !== 'failed' && <ActionButton
                                     onClick={_joinConference}
                                     disabled={!localParticipantCanJoin}
+                                    type='primary'>
+                                    {this._getBtnText()}
+                                </ActionButton>
+                            }
+                            {
+                                authState === 'failed' && <ActionButton
+                                    onClick={this._returnToMyAccount.bind(this)}
                                     type='primary'>
                                     {this._getBtnText()}
                                 </ActionButton>
@@ -216,7 +246,7 @@ class JaneDialog extends Component<Props> {
 
 function mapStateToProps(state): Object {
     const { jwt } = state['features/base/jwt'];
-    const { remoteParticipantsStatuses } = state['features/jane-waiting-area'];
+    const { remoteParticipantsStatuses, authState } = state['features/jane-waiting-area'];
     const jwtPayload = jwt && jwtDecode(jwt) || null;
     const participant = jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
     const participantType = participant && participant.participant_type || null;
@@ -226,7 +256,8 @@ function mapStateToProps(state): Object {
         jwtPayload,
         participantType,
         participant,
-        remoteParticipantsStatuses
+        remoteParticipantsStatuses,
+        authState
     };
 }
 

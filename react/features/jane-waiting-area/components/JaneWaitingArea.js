@@ -39,7 +39,7 @@ class JaneWaitingArea extends Component<Props> {
             deviceStatusVisible,
             remoteParticipantsStatuses
         } = this.props;
-        const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses);
+        const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType);
         const hasWaitingMessage = participantType === 'Patient'
             && !localParticipantCanJoin;
         const waitingMessageHeader = hasWaitingMessage && 'Waiting for the practitioner...' || '';

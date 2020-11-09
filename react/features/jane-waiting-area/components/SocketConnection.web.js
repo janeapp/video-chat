@@ -9,6 +9,7 @@ import {
     updateParticipantReadyStatus
 } from '../functions';
 import {
+    setJaneWaitingAreaAuthState as setJaneWaitingAreaAuthStateAction,
     updateRemoteParticipantsStatuses as updateRemoteParticipantsStatusesAction,
     updateRemoteParticipantsStatusesFromSocket as updateRemoteParticipantsStatusesFromSocketAction
 } from '../actions';
@@ -30,7 +31,8 @@ type Props = {
     updateRemoteParticipantsStatusesFromSocket: Function,
     updateRemoteParticipantsStatuses: Function,
     playSound: Function,
-    joinConference: Function
+    joinConference: Function,
+    setJaneWaitingAreaAuthState: Function
 };
 
 class SocketConnection extends Component<Props> {
@@ -39,21 +41,19 @@ class SocketConnection extends Component<Props> {
 
     constructor(props) {
         super(props);
-        this.socket = {};
+        this.socket = null;
     }
 
     componentDidMount() {
-        const { jwt, participant, participantType, isRNWebViewPage } = this.props;
+        const { jwt, isRNWebViewPage } = this.props;
 
-        if (participantType === 'Patient') {
-            updateParticipantReadyStatus(jwt, participantType, participant, 'waiting');
-        }
+        updateParticipantReadyStatus(jwt, 'waiting');
 
         if (isRNWebViewPage) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ message: 'webview page is ready' }));
         } else {
             window.onunload = window.onbeforeunload = function () {
-                updateParticipantReadyStatus(jwt, participantType, participant, 'left');
+                updateParticipantReadyStatus(jwt, 'left');
             };
         }
         this._connectSocket();
@@ -75,7 +75,7 @@ class SocketConnection extends Component<Props> {
         }
     }
 
-    _onMessageReceived(event) {
+    _onMessageReceivedListener(event) {
         const { participantType, isRNWebViewPage, updateRemoteParticipantsStatusesFromSocket } = this.props;
 
         if (event.info && event.info.status && event.participant_type && (event.participant_type !== participantType)) {
@@ -90,18 +90,19 @@ class SocketConnection extends Component<Props> {
     }
 
     _connectionStatusListener(status) {
-        const { isRNWebViewPage } = this.props;
+        const { isRNWebViewPage, joinConference } = this.props;
 
         if (isRNWebViewPage) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ message: status }));
-        } else {
-            console.log(status);
+        }
+        if (status && status.error) {
+            joinConference();
         }
     }
 
-    async _connectSocket() {
-        const { jwt, participantType, isRNWebViewPage, updateRemoteParticipantsStatuses, joinConference } = this.props;
 
+    async _connectSocket() {
+        const { jwt, participantType, isRNWebViewPage, updateRemoteParticipantsStatuses, joinConference, setJaneWaitingAreaAuthState } = this.props;
         try {
             const response = await checkRoomStatus(jwt);
             const remoteParticipantsStatuses = getRemoteParticipantsReadyStatus(response.participant_statuses, participantType);
@@ -116,16 +117,17 @@ class SocketConnection extends Component<Props> {
                 socket_host: response.socket_host,
                 ws_token: response.socket_token
             });
-            this.socket.onMessageReceivedListener = this._onMessageReceived.bind(this);
+            this.socket.onMessageReceivedListener = this._onMessageReceivedListener.bind(this);
             this.socket.connectionStatusListener = this._connectionStatusListener.bind(this);
             this.socket.connect();
         } catch (error) {
             if (isRNWebViewPage) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { ...error } }));
+                window.ReactNativeWebView.postMessage(JSON.stringify({ message: { error } }));
+            } else if (error && error.error === 'Signature has expired') {
+                setJaneWaitingAreaAuthState('failed');
+            } else {
+                joinConference();
             }
-            window.APP.UI.notifyInternalError(error);
-            joinConference();
-            console.error(error);
         }
     }
 
@@ -164,6 +166,9 @@ function mapDispatchToProps(dispatch) {
         },
         joinConference() {
             dispatch(joinConferenceAction());
+        },
+        setJaneWaitingAreaAuthState(state) {
+            dispatch(setJaneWaitingAreaAuthStateAction(state));
         }
     };
 }
