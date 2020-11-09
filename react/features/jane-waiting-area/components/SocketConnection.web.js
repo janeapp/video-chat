@@ -39,7 +39,7 @@ class SocketConnection extends Component<Props> {
 
     constructor(props) {
         super(props);
-        this.socket = {};
+        this.socket = null;
     }
 
     componentDidMount() {

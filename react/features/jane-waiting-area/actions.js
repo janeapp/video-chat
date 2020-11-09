@@ -17,6 +17,7 @@ import { createLocalTrack } from '../base/lib-jitsi-meet';
 import logger from './logger';
 
 import {
+    checkRoomStatus,
     getAudioTrack,
     getVideoTrack
 } from './functions';
@@ -192,10 +193,45 @@ export function connectJaneSocketServer() {
     };
 }
 
-export function updateRemoteParticipantsStatuses(value) {
-    return {
-        type: UPDATE_REMOTE_PARTICIPANT_STATUSES,
-        value
+export function updateRemoteParticipantsStatuses(remoteParticipantsStatuses) {
+    return (dispatch: Function, getState: Function) => {
+        let remoteParticipantsInBeginStatus = remoteParticipantsStatuses.filter(v => v.info && v.info.status === 'begin');
+        if (remoteParticipantsInBeginStatus.length > 0) {
+            const now = Math.floor(Date.now() / 1000);
+            let shouldCheckAgain = false;
+            remoteParticipantsInBeginStatus.forEach(status => {
+                if (now - status.updated_at > 5) {
+                    status.info.status = 'waiting';
+                }
+
+                if (now - status.updated_at <= 5) {
+                    shouldCheckAgain = true;
+                }
+            });
+
+            if (!shouldCheckAgain) {
+                dispatch({
+                    type: UPDATE_REMOTE_PARTICIPANT_STATUSES,
+                    value: remoteParticipantsInBeginStatus
+                });
+            } else {
+                const { jwt } = getState()['features/base/jwt'];
+                setTimeout(async () => {
+                    try {
+                        const response = await checkRoomStatus(jwt);
+                        const remoteParticipantsStatuses = response && response.participant_statuses;
+                        dispatch(updateRemoteParticipantsStatuses(remoteParticipantsStatuses));
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }, 5000);
+            }
+        } else {
+            dispatch({
+                type: UPDATE_REMOTE_PARTICIPANT_STATUSES,
+                value: remoteParticipantsStatuses
+            });
+        }
     };
 }
 

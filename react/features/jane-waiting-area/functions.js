@@ -168,7 +168,7 @@ export function isRNSocketWebView(locationURL: string): boolean {
 
 export function checkLocalParticipantCanJoin(remoteParticipantsStatuses: Array): boolean {
     return remoteParticipantsStatuses && remoteParticipantsStatuses.length > 0 && remoteParticipantsStatuses.some(v => {
-        return v.info && v.info.status !== 'left';
+        return v.info && v.info.status !== 'left' && v.info.status !== 'begin';
     }) || false;
 }
 
