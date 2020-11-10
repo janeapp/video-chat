@@ -51,6 +51,7 @@ export const ColorPalette = {
 
     /** action button */
     btnBorder: '#DDDDDD',
+    disabledBtnBackground: '#DDDDDD',
     btnTextDefault: '#333333',
 
     janeDarkColor: JANE_DARK_COLOR
