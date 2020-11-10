@@ -20,7 +20,10 @@ import { createLocalTrack } from '../base/lib-jitsi-meet';
 import logger from './logger';
 
 import {
+    checkRoomStatus,
     getAudioTrack,
+    getLocalParticipantType,
+    getRemoteParticipantsStatues,
     getVideoTrack
 } from './functions';
 
@@ -195,10 +198,51 @@ export function connectJaneSocketServer() {
     };
 }
 
-export function updateRemoteParticipantsStatuses(value) {
-    return {
-        type: UPDATE_REMOTE_PARTICIPANT_STATUSES,
-        value
+export function updateRemoteParticipantsStatuses(remoteParticipantsStatuses) {
+    return (dispatch: Function, getState: Function) => {
+        let remoteParticipantsInBeginStatus = remoteParticipantsStatuses.some(v => v.info && v.info.status === 'begin');
+        const participantType = getLocalParticipantType(getState());
+
+        if (remoteParticipantsInBeginStatus) {
+            const now = Math.floor(Date.now() / 1000);
+            let fetchRoomStatus = false;
+            remoteParticipantsStatuses.forEach(status => {
+                if (status.info.status === 'begin') {
+                    if (now - status.updated_at > 5) {
+                        if (participantType === 'StaffMember') {
+                            status.info.status = 'waiting';
+                        } else {
+                            status.info.status = 'joined';
+                        }
+                    } else {
+                        fetchRoomStatus = true;
+                    }
+                }
+            });
+
+            if (fetchRoomStatus) {
+                const { jwt } = getState()['features/base/jwt'];
+                setTimeout(async () => {
+                    try {
+                        const response = await checkRoomStatus(jwt);
+                        const remoteParticipantsStatuses = getRemoteParticipantsStatues(response.participant_statuses, participantType);
+                        dispatch(updateRemoteParticipantsStatuses(remoteParticipantsStatuses));
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }, 6000);
+            } else {
+                dispatch({
+                    type: UPDATE_REMOTE_PARTICIPANT_STATUSES,
+                    value: remoteParticipantsStatuses
+                });
+            }
+        } else {
+            dispatch({
+                type: UPDATE_REMOTE_PARTICIPANT_STATUSES,
+                value: remoteParticipantsStatuses
+            });
+        }
     };
 }
 
@@ -219,6 +263,7 @@ export function updateRemoteParticipantsStatusesFromSocket(value) {
             remoteParticipantsStatuses.forEach(v => {
                 if (v.participant_id === value.participant_id) {
                     v.info = value.info;
+                    v.updated_at = value.updated_at;
                 }
             });
         } else {

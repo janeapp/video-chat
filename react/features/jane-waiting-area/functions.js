@@ -121,7 +121,7 @@ export async function checkRoomStatus(jwt: string): Object {
     }
 }
 
-export function getRemoteParticipantsReadyStatus(participantStatuses: Array, participantType: string): Array {
+export function getRemoteParticipantsStatues(participantStatuses: Array, participantType: string): Array {
     const remoteParticipantType = participantType === 'StaffMember' ? 'Patient' : 'StaffMember';
     let remoteParticipantStatuses = [];
     participantStatuses && participantStatuses.forEach((v) => {
@@ -164,9 +164,8 @@ export function checkLocalParticipantCanJoin(remoteParticipantsStatuses: Array, 
     return remoteParticipantsStatuses && remoteParticipantsStatuses.length > 0 && remoteParticipantsStatuses.some(v => {
         if (participantType === 'StaffMember') {
             return v.info && (v.info.status === 'joined' || v.info.status === 'waiting');
-        } else {
-            return v.info && v.info.status === 'joined';
         }
+        return v.info && v.info.status === 'joined';
     }) || false;
 }
 
