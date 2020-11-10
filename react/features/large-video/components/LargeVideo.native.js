@@ -6,13 +6,14 @@ import { ColorSchemeRegistry } from '../../base/color-scheme';
 import { ParticipantView } from '../../base/participants';
 import { connect } from '../../base/redux';
 import { StyleType } from '../../base/styles';
-
-import WaitingMessage from '../../base/react/components/native/WaitingMessage.js';
+import WaitingMessage
+    from '../../base/react/components/native/WaitingMessage.js';
 import { AVATAR_SIZE } from './styles';
 import { DimensionsDetector } from '../../base/responsive-ui';
 import {
     getLocalParticipantType
 } from '../../jane-waiting-area-native/functions';
+import { checkLocalParticipantCanJoin } from '../../jane-waiting-area-native';
 
 /**
  * The type of the React {@link Component} props of {@link LargeVideo}.
@@ -45,7 +46,8 @@ type Props = {
      * Callback to invoke when the {@code LargeVideo} is clicked/pressed.
      */
     onClick: Function,
-    _participantType: string
+    _participantType: string,
+    _localParticipantCanJoin: boolean
 };
 
 /**
@@ -121,9 +123,10 @@ class LargeVideo extends PureComponent<Props, State> {
             _participantId,
             _styles,
             onClick,
-            _participantType
+            _participantType,
+            _localParticipantCanJoin
         } = this.props;
-        const stopAnimation = _participantType === 'StaffMember';
+        const hideWaitingMessage = _participantType === 'StaffMember' || _localParticipantCanJoin;
         const waitingMessage = _participantType === 'StaffMember' ? {
             header: '',
             text: ''
@@ -144,7 +147,7 @@ class LargeVideo extends PureComponent<Props, State> {
                     zOrder = { 0 }
                     zoomEnabled = { true } />
                 <WaitingMessage
-                    stopAnimation = { stopAnimation }
+                    hideWaitingMessage = { hideWaitingMessage }
                     waitingMessageFromProps = { waitingMessage } />
             </DimensionsDetector>
         );
@@ -160,13 +163,17 @@ class LargeVideo extends PureComponent<Props, State> {
  */
 function _mapStateToProps(state) {
     const { clientHeight: height, clientWidth: width } = state['features/base/responsive-ui'];
+    const { remoteParticipantsStatuses } = state['features/jane-waiting-area-native'];
+    const participantType = getLocalParticipantType(state);
+    const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType);
 
     return {
         _height: height,
         _participantId: state['features/large-video'].participantId,
         _styles: ColorSchemeRegistry.get(state, 'LargeVideo'),
         _width: width,
-        _participantType: getLocalParticipantType(state)
+        _participantType: participantType,
+        _localParticipantCanJoin: localParticipantCanJoin
     };
 }
 
