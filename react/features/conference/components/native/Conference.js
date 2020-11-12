@@ -23,6 +23,9 @@ import { AddPeopleDialog, CalleeInfoContainer } from '../../../invite';
 import { updateParticipantReadyStatus,
     getLocalParticipantFromJwt,
     getLocalParticipantType
+    ,
+    getLocalParticipantFromJwt,
+    getLocalParticipantType
 } from '../../../jane-waiting-area-native';
 import JaneWaitingArea from '../../../jane-waiting-area-native/components/JaneWaitingArea.native';
 import { LargeVideo } from '../../../large-video';
@@ -36,7 +39,7 @@ import {
     AbstractConference,
     abstractMapStateToProps
 } from '../AbstractConference';
-import type { AbstractProps } from '../AbstractConference';
+import type { AbstractProps, AbstractProps } from '../AbstractConference';
 
 import Labels from './Labels';
 import NavigationBar from './NavigationBar';
@@ -146,6 +149,7 @@ class Conference extends AbstractConference<Props, *> {
     }
 
     /**
+<<<<<<< HEAD
      * Implements {@link Component#componentDidUpdate()}. Invoked immediately
      * after this component is updated check app background state and update
      * the participant's ready status if app state is 'inactive' or 'background'.
@@ -162,6 +166,8 @@ class Conference extends AbstractConference<Props, *> {
     }
 
     /**
+=======
+>>>>>>> handle the jw token expiration error
      * Clear the video chat universal link copied from Jane here to
      * avoid users rejoin the call on the welcome page after hanging up
      * the call.
@@ -335,6 +341,7 @@ class Conference extends AbstractConference<Props, *> {
                     { _shouldDisplayTileView || <Container style = { styles.displayNameContainer }>
                         <DisplayNameLabel participantId = { _largeVideoParticipantId } />
                     </Container> }
+
                     {_enableJaneWaitingAreaPage && <JaneWaitingArea />}
                     {/*
                       * The Toolbox is in a stacking layer below the Filmstrip.
@@ -474,7 +481,6 @@ function _mapStateToProps(state) {
         = connecting || (connection && (!membersOnly && (joining || (!conference && !leaving))));
 
     const { jwt } = state['features/base/jwt'];
-    const appstate = state['features/background'];
 
     return {
         ...abstractMapStateToProps(state),
@@ -496,8 +502,7 @@ function _mapStateToProps(state) {
         _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage,
         _jwt: jwt,
         _participantType: getLocalParticipantType(state),
-        _participant: getLocalParticipantFromJwt(state),
-        _appstate: appstate
+        _participant: getLocalParticipantFromJwt(state)
     };
 }
 
