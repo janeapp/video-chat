@@ -22,7 +22,7 @@ type State = {
      *
      * @type {boolean}
      */
-    filmstripBecomingVisible: boolean
+    filmstripBecomingVisible: boolean,
 };
 
 /**
@@ -66,11 +66,12 @@ class Labels extends AbstractLabels<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { _filmstripVisible } = this.props;
+        const { _filmstripVisible, _showWaitingMessage } = this.props;
         const { filmstripBecomingVisible } = this.state;
         const className = `large-video-labels ${
             filmstripBecomingVisible ? 'opening' : ''} ${
-            _filmstripVisible ? 'with-filmstrip' : 'without-filmstrip'}`;
+            _filmstripVisible ? 'with-filmstrip' : 'without-filmstrip'}
+            ${_showWaitingMessage ? 'has-margin-top' : ''}`;
 
         return (
             <div className = { className } >
