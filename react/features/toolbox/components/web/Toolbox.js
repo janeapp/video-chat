@@ -86,6 +86,11 @@ import OverflowMenuButton from './OverflowMenuButton';
 import OverflowMenuProfileItem from './OverflowMenuProfileItem';
 import ToolbarButton from './ToolbarButton';
 import VideoSettingsButton from './VideoSettingsButton';
+import {
+    ClosedCaptionButton
+} from '../../../subtitles';
+import JaneHangupButton from '../JaneHangupButton';
+import { isJaneTestMode } from '../../../base/conference';
 
 /**
  * The type of the React {@code Component} props of {@link Toolbox}.
@@ -192,7 +197,8 @@ type Props = {
     /**
      * Invoked to obtain translated strings.
      */
-    t: Function
+    t: Function,
+    _isJaneTestMode: boolean
 };
 
 /**
@@ -1222,6 +1228,8 @@ class Toolbox extends Component<Props, State> {
             _chatOpen,
             _overflowMenuVisible,
             _raisedHand,
+            _visible,
+            _isJaneTestMode,
             t
         } = this.props;
         const overflowMenuContent = this._renderOverflowMenuContent();
@@ -1347,11 +1355,15 @@ class Toolbox extends Component<Props, State> {
                             && <ClosedCaptionButton />
                     }
                 </div>
-                <div className = 'button-group-center'>
-                    { this._renderAudioButton() }
+                <div className='button-group-center'>
+                    {this._renderAudioButton()}
                     <HangupButton
-                        visible = { this._shouldShowButton('hangup') } />
-                    { this._renderVideoButton() }
+                        visible={this._shouldShowButton('hangup') && !_isJaneTestMode}/>
+                    <JaneHangupButton showTooltip={_visible}
+                                      visible={_isJaneTestMode}
+                                      tooltipText="Finished testing? Click here."
+                                      hasCloseBtn/>
+                    {this._renderVideoButton()}
                 </div>
                 <div className = 'button-group-right'>
                     { buttonsRight.indexOf('localrecording') !== -1
@@ -1471,7 +1483,8 @@ function _mapStateToProps(state) {
             || sharedVideoStatus === 'start'
             || sharedVideoStatus === 'pause',
         _visible: isToolboxVisible(state),
-        _visibleButtons: equals(visibleButtons, buttons) ? visibleButtons : buttons
+        _visibleButtons: equals(visibleButtons, buttons) ? visibleButtons : buttons,
+        _isJaneTestMode: isJaneTestMode(state)
     };
 }
 
