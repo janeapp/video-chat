@@ -1,11 +1,10 @@
 /* application specific logic */
 
-import bugsnag from '@bugsnag/js';
-window.bugsnagClient = bugsnag('a0c8e2c65bed338af650acd9c2192855');
 import 'jquery';
 import 'jquery-contextmenu';
 import 'jQuery-Impromptu';
 
+import { getBugsnagClient } from './bugsnag';
 import 'olm';
 
 import conference from './conference';
@@ -19,6 +18,8 @@ import translation from './modules/translation/translation';
 if (window.Olm) {
     window.Olm.init();
 }
+
+window.bugsnag = getBugsnagClient();
 
 window.APP = {
     API,
