@@ -9,6 +9,7 @@ import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import { AbstractHangupButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
+import { updateParticipantReadyStatus } from '../../jane-waiting-area-native';
 
 /**
  * The type of the React {@code Component} props of {@link HangupButton}.
@@ -48,6 +49,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
             // FIXME: these should be unified.
             if (navigator.product === 'ReactNative') {
                 this.props.dispatch(appNavigate(undefined));
+                updateParticipantReadyStatus(props.jwt, 'left');
             } else {
                 this.props.dispatch(disconnect(false));
             }
@@ -66,4 +68,11 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
 }
 
-export default translate(connect()(HangupButton));
+// eslint-disable-next-line require-jsdoc
+function mapStateToProps(state): Object {
+    return {
+        jwt: state['features/base/jwt']
+    };
+}
+
+export default translate(connect(mapStateToProps)(HangupButton));
