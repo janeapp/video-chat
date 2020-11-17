@@ -124,7 +124,7 @@ export async function checkRoomStatus(): Object {
     }
 }
 
-export function getRemoteParticipantsStatues(participantStatuses: Array, participantType: string): Array {
+export function getRemoteParticipantsStatuses(participantStatuses: Array, participantType: string): Array {
     const remoteParticipantType = participantType === 'StaffMember' ? 'Patient' : 'StaffMember';
     let remoteParticipantStatuses = [];
     participantStatuses && participantStatuses.forEach((v) => {
@@ -209,7 +209,7 @@ export function detectLegacyMobileApp(remoteParticipantsStatuses) {
         setTimeout(async () => {
             try {
                 const response = await checkRoomStatus(jwt);
-                const remoteParticipantsStatuses = getRemoteParticipantsStatues(response.participant_statuses, participantType);
+                const remoteParticipantsStatuses = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
                 APP.store.dispatch(updateRemoteParticipantsStatuses(remoteParticipantsStatuses));
             } catch (e) {
                 console.error(e);

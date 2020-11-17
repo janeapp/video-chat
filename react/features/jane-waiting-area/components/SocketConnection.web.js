@@ -5,7 +5,7 @@ import { Component } from 'react';
 import { connect } from '../../base/redux';
 import {
     checkRoomStatus, getLocalParticipantFromJwt, getLocalParticipantType,
-    getRemoteParticipantsStatues, isRNSocketWebView,
+    getRemoteParticipantsStatuses, isRNSocketWebView,
     updateParticipantReadyStatus
 } from '../functions';
 import {
@@ -106,7 +106,7 @@ class SocketConnection extends Component<Props> {
         const { participantType, isRNWebViewPage, updateRemoteParticipantsStatuses, joinConference, setJaneWaitingAreaAuthState } = this.props;
         try {
             const response = await checkRoomStatus();
-            const remoteParticipantsStatuses = getRemoteParticipantsStatues(response.participant_statuses, participantType);
+            const remoteParticipantsStatuses = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
             updateRemoteParticipantsStatuses(remoteParticipantsStatuses);
 
             this.socket = new Socket({
