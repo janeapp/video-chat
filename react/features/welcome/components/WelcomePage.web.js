@@ -231,6 +231,7 @@ class WelcomePage extends AbstractWelcomePage {
                     ) }
                     { this._renderTabs() }
                     </div> */}
+
                 </div>
                 { showAdditionalContent
                     ? <div
