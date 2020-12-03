@@ -1,8 +1,8 @@
 /* global __dirname */
 
 const CircularDependencyPlugin = require('circular-dependency-plugin');
-const process = require('process');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const process = require('process');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const cacheVersionNumber = Math.random().toString(36)
@@ -63,7 +63,7 @@ const config = {
     devtool: 'source-map',
     mode: minimize ? 'production' : 'development',
     module: {
-        rules: [{
+        rules: [ {
             // Transpile ES2015 (aka ES6) to ES5. Accept the JSX syntax by React
             // as well.
 
@@ -140,14 +140,14 @@ const config = {
             }
         }, {
             test: /\.svg$/,
-            use: [{
+            use: [ {
                 loader: '@svgr/webpack',
                 options: {
                     dimensions: false,
                     expandProps: 'start'
                 }
-            }]
-        }]
+            } ]
+        } ]
     },
     node: {
         // Allow the use of the real filename of the module being executed. By
@@ -199,7 +199,8 @@ const config = {
     }
 };
 
-const appBundleConfig = { ...config, plugins: [...config.plugins, generateIndexHtml]};
+const appBundleConfig = { ...config,
+    plugins: [ ...config.plugins, generateIndexHtml ] };
 
 module.exports = [
     Object.assign({}, appBundleConfig, {
@@ -263,7 +264,7 @@ module.exports = [
             'video-blur-effect': './react/features/stream-effects/blur/index.js'
         },
         output: Object.assign({}, config.output, {
-            library: ['JitsiMeetJS', 'app', 'effects'],
+            library: [ 'JitsiMeetJS', 'app', 'effects' ],
             libraryTarget: 'window',
             filename: '[name].min.js',
             sourceMapFilename: '[name].min.map'
@@ -276,7 +277,7 @@ module.exports = [
             'rnnoise-processor': './react/features/stream-effects/rnnoise/index.js'
         },
         output: Object.assign({}, config.output, {
-            library: ['JitsiMeetJS', 'app', 'effects', 'rnnoise'],
+            library: [ 'JitsiMeetJS', 'app', 'effects', 'rnnoise' ],
             libraryTarget: 'window',
             filename: '[name].min.js',
             sourceMapFilename: '[name].min.map'

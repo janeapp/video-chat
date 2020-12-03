@@ -1,12 +1,9 @@
 /* application specific logic */
-
 import 'jquery';
 import 'jquery-contextmenu';
 import 'jQuery-Impromptu';
-
-import { getBugsnagClient } from './bugsnag';
 import 'olm';
-
+import { getBugsnagClient } from './bugsnag';
 import conference from './conference';
 import API from './modules/API';
 import UI from './modules/UI/UI';
