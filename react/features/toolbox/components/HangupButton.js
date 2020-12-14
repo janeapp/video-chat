@@ -70,8 +70,10 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
 // eslint-disable-next-line require-jsdoc
 function mapStateToProps(state): Object {
+    const { jwt } = state['features/base/jwt'];
+
     return {
-        jwt: state['features/base/jwt']
+        jwt
     };
 }
 
