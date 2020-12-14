@@ -3,12 +3,12 @@
 import _ from 'lodash';
 
 import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { appNavigate } from '../../app/actions';
+import { appNavigate } from '../../app';
 import { disconnect } from '../../base/connection';
 import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
-import { AbstractHangupButton } from '../../base/toolbox/components';
-import type { AbstractButtonProps } from '../../base/toolbox/components';
+import { AbstractHangupButton } from '../../base/toolbox';
+import type { AbstractButtonProps } from '../../base/toolbox';
 import { updateParticipantReadyStatus } from '../../jane-waiting-area-native';
 
 /**
@@ -51,7 +51,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                 this.props.dispatch(appNavigate(undefined));
                 updateParticipantReadyStatus(props.jwt, 'left');
             } else {
-                this.props.dispatch(disconnect(false));
+                this.props.dispatch(disconnect(true));
             }
         });
     }
@@ -70,8 +70,10 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
 // eslint-disable-next-line require-jsdoc
 function mapStateToProps(state): Object {
+    const { jwt } = state['features/base/jwt'];
+
     return {
-        jwt: state['features/base/jwt']
+        jwt
     };
 }
 
