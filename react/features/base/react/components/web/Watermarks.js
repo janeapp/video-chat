@@ -9,6 +9,7 @@ import { getParticipantCount } from '../../../participants';
 import { getRemoteTracks } from '../../../tracks';
 import WaitingMessage from './WaitingMessage';
 import { setWaitingMessageVisibility } from '../../../../jane-waiting-area/actions';
+import { isJaneWaitingAreaPageEnabled } from '../../../../jane-waiting-area/functions';
 import { isJaneTestMode } from '../../../conference';
 
 declare var interfaceConfig: Object;
@@ -177,7 +178,7 @@ function _mapStateToProps(state) {
     const { isGuest } = state['features/base/jwt'];
     const participantCount = getParticipantCount(state);
     const remoteTracks = getRemoteTracks(state['features/base/tracks']);
-    const { showWaitingMessage } = state['features/jane-waiting-area'];
+    const showWaitingMessage = isJaneWaitingAreaPageEnabled(state) ? state['features/jane-waiting-area'].showWaitingMessage : true;
 
     return {
         _isGuest: isGuest,
