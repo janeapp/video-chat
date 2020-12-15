@@ -9,6 +9,7 @@ import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import _ from 'lodash';
 import { maybeRedirectToWelcomePage } from '../../app';
+import { updateParticipantReadyStatus } from '../../jane-waiting-area/functions';
 
 export type Props = {
     showTooltip: boolean,
@@ -48,7 +49,8 @@ class JaneHangupButton extends Component<Props, State> {
         return null;
     }
 
-    _onClick(): void {
+    async _onClick(): void {
+        await updateParticipantReadyStatus('left')
         this._hangup();
     }
 
