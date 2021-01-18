@@ -86,9 +86,6 @@ import OverflowMenuButton from './OverflowMenuButton';
 import OverflowMenuProfileItem from './OverflowMenuProfileItem';
 import ToolbarButton from './ToolbarButton';
 import VideoSettingsButton from './VideoSettingsButton';
-import {
-    ClosedCaptionButton
-} from '../../../subtitles';
 import JaneHangupButton from '../JaneHangupButton';
 import { isJaneTestMode } from '../../../base/conference';
 

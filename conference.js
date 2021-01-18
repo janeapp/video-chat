@@ -31,8 +31,6 @@ import {
     replaceJaneWaitingAreaVideoTrack
 } from './react/features/jane-waiting-area';
 
-import EventEmitter from 'events';
-
 import {
     AVATAR_ID_COMMAND,
     AVATAR_URL_COMMAND,
@@ -149,7 +147,6 @@ const eventEmitter = new EventEmitter();
 
 let room;
 let connection;
-let _connectionPromise;
 
 /**
  * The promise is used when the prejoin screen is shown.
