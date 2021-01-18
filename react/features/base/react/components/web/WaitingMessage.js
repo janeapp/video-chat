@@ -94,7 +94,7 @@ class WaitingMessage extends Component<Props, State> {
     }
 
     render() {
-        const { conferenceHasStarted } = this.props;
+        const { conferenceHasStarted, isJaneTestMode } = this.props;
 
         if (conferenceHasStarted) {
             return null;
@@ -105,10 +105,12 @@ class WaitingMessage extends Component<Props, State> {
                 {
                     this._renderWaitingMessage()
                 }
-                <div className='close'>
-                    <Icon src={IconClose}
-                          onClick={this._hideWaitingMessage.bind(this)}/>
-                </div>
+                {
+                    !isJaneTestMode && <div className='close'>
+                        <Icon src={IconClose}
+                              onClick={this._hideWaitingMessage.bind(this)}/>
+                    </div>
+                }
             </div>
         );
     }
@@ -132,8 +134,7 @@ class WaitingMessage extends Component<Props, State> {
         if (isJaneTestMode) {
             header = <p>Testing your audio and video...</p>;
             text = <p>
-                This is just a test area. Begin your online appointment from
-                your Upcoming Appointments page.
+                When you are done testing your audio and video, hang up to close this screen. Begin your online appointment from your upcoming appointments page.
             </p>;
         }
 
