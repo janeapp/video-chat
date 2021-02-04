@@ -11,6 +11,7 @@ import JitsiMeetJS, {
     browser,
     isAnalyticsEnabled
 } from '../base/lib-jitsi-meet';
+import { getLocalParticipantType } from '../base/participants';
 import { getJitsiMeetGlobalNS, loadScript } from '../base/util';
 
 import { AmplitudeHandler, MatomoHandler } from './handlers';
