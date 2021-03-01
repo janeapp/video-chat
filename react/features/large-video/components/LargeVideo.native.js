@@ -8,6 +8,8 @@ import { connect } from '../../base/redux';
 import { DimensionsDetector } from '../../base/responsive-ui';
 import { StyleType } from '../../base/styles';
 
+import WaitingMessage
+    from '../../base/react/components/native/WaitingMessage.js';
 import { AVATAR_SIZE } from './styles';
 
 /**
@@ -137,6 +139,7 @@ class LargeVideo extends Component<Props, State> {
                     useConnectivityInfoLabel = { useConnectivityInfoLabel }
                     zOrder = { 0 }
                     zoomEnabled = { true } />
+                <WaitingMessage />
             </DimensionsDetector>
         );
     }
@@ -153,9 +156,10 @@ class LargeVideo extends Component<Props, State> {
  * }}
  */
 function _mapStateToProps(state) {
+
     return {
         _participantId: state['features/large-video'].participantId,
-        _styles: ColorSchemeRegistry.get(state, 'LargeVideo')
+        _styles: ColorSchemeRegistry.get(state, 'LargeVideo'),
     };
 }
 
