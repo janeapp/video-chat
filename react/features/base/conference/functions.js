@@ -2,6 +2,7 @@
 /* eslint-disable */
 import _ from 'lodash';
 
+import jwtDecode from 'jwt-decode';
 import { JitsiTrackErrors } from '../lib-jitsi-meet';
 import {
     getLocalParticipant,
@@ -357,4 +358,39 @@ function safeStartCase(s = '') {
     return _.words(`${s}`.replace(/['\u2019]/g, '')).reduce(
         (result, word, index) => result + (index ? ' ' : '') + _.upperFirst(word)
         , '');
+}
+
+/**
+ * Check if the call is a test call though jwt token
+ *
+ * @param {Function|Object} state - The redux store, state, or
+ * {@code getState} function.
+ * @returns {boolean}
+ */
+export function isJaneTestCall(state) {
+    // Jane generates the following jwt context for all test calls:
+    // {
+    //   "context": {
+    //     "user": {
+    //       "id": "1-0",
+    //       "name": "Test User",
+    //       "email": "test@test.com",
+    //       "participant_type": "Patient",
+    //       "participant_id": 0
+    //     },
+    //   },
+    //   "aud": "jane-client",
+    //   "iss": "janeapp",
+    //   "sub": "videochat-jwt.jane.qa",
+    //   "room": "1TEST4f0314a2",
+    //  }
+    const { jwt } = state['features/base/jwt'];
+    const jwtPayload = jwt && jwtDecode(jwt) ?? null;
+    const context = jwtPayload && jwtPayload.context ?? null;
+    const user = context && context.user ?? null;
+    const participantId = user && user.participant_id;
+    const videoChatSessionId = context && context.video_chat_session_id;
+    const participantEmail = user && user.email;
+
+    return participantId === 0 && videoChatSessionId === 0 && participantEmail === 'test@test.com';
 }
