@@ -1,38 +1,35 @@
 // @flow
-/* eslint-disable */
 import React, { Component } from 'react/index';
 import {
     Animated,
-    Easing,
     Text,
     Image,
-    TouchableOpacity,
+    TouchableOpacity
 } from 'react-native';
-import styles from './styles';
-import { getLocalizedDateFormatter, translate } from '../../../i18n';
+import styles, { WAITING_MESSAGE_CONTIANER_BACKGROUND_COLOR } from './styles';
+import { getLocalizedDateFormatter, translate, getTimeStamp } from '../../../i18n';
 import { connect } from '../../../redux';
 import { getParticipantCount } from '../../../participants';
 import { getRemoteTracks } from '../../../tracks';
 import jwtDecode from 'jwt-decode';
-import View from 'react-native-webrtc/RTCView';
-import moment from 'moment';
-import { isJaneTestMode } from '../../../conference';
+import { isJaneTestCall } from '../../../conference';
 import { Icon, IconClose } from '../../../../base/icons';
-import { iphoneHasNotch } from '../../../environment/utils';
-
+import { isIPhoneX } from '../../../../base/styles/functions.native';
+import { getLocalParticipantType } from '../../../../base/participants/functions';
 const watermarkImg = require('../../../../../../images/watermark.png');
 
+const WATERMARK_ANIMATION_INPUT_RANGE = [ 0, 0.5, 1 ];
+const WATERMARK_ANIMATION_OUTPUT_RANGE = [ 0.1, 1, 0.1 ];
+
 type Props = {
-    _isGuest: boolean,
-    jwt: Object,
+    appointmentStartAt: string,
     conferenceHasStarted: boolean,
-    hideWaitingMessage: boolean,
-    waitingMessageFromProps: string,
+    isStaffMember: boolean,
+    testMode: boolean
 };
 
 type State = {
     beforeAppointmentStart: boolean,
-    appointmentStartAt: string
 };
 
 class WaitingMessage extends Component<Props, State> {
@@ -41,48 +38,30 @@ class WaitingMessage extends Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
-
         this.state = {
             beforeAppointmentStart: false,
-            appointmentStartAt: '',
-            fadeAnim: new Animated.Value(0),
-            hideWaitingMessage: props.hideWaitingMessage
+            hideWaitingMessage: !props.testMode && props.isStaffMember
         };
         this.animatedValue = new Animated.Value(0);
+        this._onClose = this._onClose.bind(this);
     }
 
     componentDidMount() {
         this._startTimer();
-        this._animate();
-    }
-
-    _animate() {
-        this.animatedValue.setValue(0);
-        Animated.timing(
-            this.animatedValue,
-            {
-                toValue: 1,
-                duration: 2000,
-                easing: Easing.linear
-            }
-        )
-            .start(() => this._animate());
     }
 
     _startTimer() {
-        const { jwt, conferenceHasStarted } = this.props;
-        const jwtPayload = jwt && jwtDecode(jwt);
-        if (jwtPayload && jwtPayload.context && !conferenceHasStarted) {
-            const { start_at } = jwtPayload.context || 0;
-            const appointmentStartTimeStamp = moment(start_at, 'YYYY-MM-DD HH:mm:ss')
-                .valueOf();
+        const { appointmentStartAt, conferenceHasStarted } = this.props;
+
+        if (appointmentStartAt && !conferenceHasStarted) {
+            const appointmentStartAtTimeStamp = getTimeStamp(appointmentStartAt);
             const now = new Date().getTime();
-            if (now < appointmentStartTimeStamp) {
+
+            if (now < appointmentStartAtTimeStamp) {
                 this.setState({
-                    beforeAppointmentStart: true,
-                    appointmentStartAt: start_at
+                    beforeAppointmentStart: true
                 }, () => {
-                    this._setInterval(appointmentStartTimeStamp);
+                    this._setInterval(appointmentStartAtTimeStamp);
                 });
             }
         }
@@ -109,107 +88,105 @@ class WaitingMessage extends Component<Props, State> {
         }
     }
 
-    _close() {
+    _onClose() {
         this.setState({
             hideWaitingMessage: true
         });
     }
 
-    getWaitingMessage() {
-        const { waitingMessageFromProps, isJaneTestMode } = this.props;
-        const { beforeAppointmentStart, appointmentStartAt } = this.state;
+    _getWaitingMessage() {
+        const { testMode, appointmentStartAt } = this.props;
+        const { beforeAppointmentStart } = this.state;
 
-        let header = <Text
-            style={styles.waitingMessageHeader}>{waitingMessageFromProps ? waitingMessageFromProps.header
-            : 'Waiting for the other participant to join...'}</Text>;
+        let header = (<Text
+            style = { styles.waitingMessageHeader }>Waiting for the other participant to join...</Text>);
 
-        let text = <Text style={styles.waitingMessageText}>{
-            waitingMessageFromProps ? waitingMessageFromProps.text :
-                'Sit back, relax and take a moment for yourself.'
-        }</Text>;
+        let text = <Text style = { styles.waitingMessageText }>Sit back, relax and take a moment for yourself.</Text>;
 
-        if (beforeAppointmentStart && appointmentStartAt && !waitingMessageFromProps) {
-            const time = moment(appointmentStartAt, 'YYYY-MM-DD HH:mm')
-                .format('YYYY-MM-DD HH:mm');
+        if (beforeAppointmentStart && appointmentStartAt) {
+            const timeStamp = getTimeStamp(appointmentStartAt);
 
             header = (
-                <Text style={styles.waitingMessageHeader}>Your appointment will
-                    begin
-                    at {getLocalizedDateFormatter(time)
+                <Text style = { styles.waitingMessageHeader }>Your appointment will
+                    begin at {getLocalizedDateFormatter(timeStamp)
                         .format('hh:mm A')}</Text>);
         }
 
-        if (isJaneTestMode) {
-            header =
-                <Text style={styles.waitingMessageHeader}>Testing your audio and
-                    video...</Text>;
+        if (testMode) {
+            header
+                = (<Text style = { styles.waitingMessageHeader }>Testing your audio and
+                    video...</Text>);
 
-            text = <Text style={styles.waitingMessageText}>
-                This is just a test area. Begin your online appointment from
-                your Upcoming Appointments page.
-            </Text>;
+            text = (<Text style = { styles.waitingMessageText }>
+                When you are done testing your audio and video, hang up to close this screen.
+                Begin your online appointment from your upcoming appointments page.
+            </Text>);
         }
 
-        return <TouchableOpacity style={{ backgroundColor: 'transparent' }}
-                                 activeOpacity={1}>
+        return (<TouchableOpacity
+            activeOpacity = { 1 }
+            style = { styles.messageWrapper }>
             {
                 header
             }
             {
                 text
             }
-        </TouchableOpacity>;
+        </TouchableOpacity>);
     }
 
-    renderCloseBtn() {
-        return <TouchableOpacity style={styles.waitingMessageCloseBtn}
-                                 onPress={this._close.bind(this)}>
+    _renderCloseBtn() {
+        return (<TouchableOpacity
+            onPress = { this._onClose }
+            style = { styles.waitingMessageCloseBtn }>
             <Icon
-                src={IconClose}
-                size={22}
-            />
-        </TouchableOpacity>;
+                size = { 22 }
+                src = { IconClose } />
+        </TouchableOpacity>);
     }
 
     _renderWaitingMessage() {
         const { hideWaitingMessage } = this.state;
         const animate = hideWaitingMessage ? null : this.animatedValue.interpolate({
-            inputRange: [ 0, .5, 1 ],
-            outputRange: [ .1, 1, .1 ]
+            inputRange: WATERMARK_ANIMATION_INPUT_RANGE,
+            outputRange: WATERMARK_ANIMATION_OUTPUT_RANGE
         });
 
-        const image = <Image style={styles.watermark}
-                             source={watermarkImg}/>;
-        const backgroundColor = hideWaitingMessage ? 'transparent' : 'rgba(255,255,255,.3)';
+        const image = (<Image
+            source = { watermarkImg }
+            style = { styles.watermark } />);
+        const backgroundColor = hideWaitingMessage ? 'transparent' : WAITING_MESSAGE_CONTIANER_BACKGROUND_COLOR;
+        const paddingTop = isIPhoneX() ? 60 : 40;
 
         return (<TouchableOpacity
-            style={{
-                ...styles.waitingMessageContainer,
-                backgroundColor,
-                paddingTop: iphoneHasNotch() ? 60 : 40
-            }}
-            activeOpacity={1}>
-            <Animated.View className='waitingMessage'
-                           style={[ styles.waitingMessageImage, {
-                               opacity: animate
-                           } ]}>
+            activeOpacity = { 1 }
+            style = { [
+                styles.waitingMessageContainer, {
+                    backgroundColor,
+                    paddingTop
+                }
+            ] }>
+            <Animated.View
+                style = { [ styles.watermarkWrapper, {
+                    opacity: animate
+                } ] }>
                 {
                     image
                 }
             </Animated.View>
             {
-                !hideWaitingMessage && this.getWaitingMessage()
+                !hideWaitingMessage && this._getWaitingMessage()
             }
             {
-                !hideWaitingMessage && this.renderCloseBtn()
+                !hideWaitingMessage && this._renderCloseBtn()
             }
         </TouchableOpacity>);
     }
 
     render() {
-        const { conferenceHasStarted, appstate } = this.props;
+        const { conferenceHasStarted } = this.props;
 
-        if (conferenceHasStarted || appstate !== 'active') {
+        if (conferenceHasStarted) {
             return null;
         }
 
@@ -223,13 +200,14 @@ function _mapStateToProps(state) {
     const { jwt } = state['features/base/jwt'];
     const participantCount = getParticipantCount(state);
     const remoteTracks = getRemoteTracks(state['features/base/tracks']);
-    const appstate = state['features/background'];
+    const participantType = getLocalParticipantType(state);
+    const jwtPayload = jwt && jwtDecode(jwt);
 
     return {
-        jwt,
-        appstate: appstate && appstate.appState,
         conferenceHasStarted: participantCount > 1 && remoteTracks.length > 0,
-        isJaneTestMode: isJaneTestMode(state)
+        testMode: isJaneTestCall(state),
+        isStaffMember: participantType === 'StaffMember',
+        appointmentStartAt: jwtPayload && jwtPayload.context && jwtPayload.context.start_at ?? ''
     };
 }
 
