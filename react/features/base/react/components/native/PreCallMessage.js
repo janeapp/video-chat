@@ -1,5 +1,9 @@
 // @flow
+/* eslint-disable require-jsdoc*/
+
 import React, { Component } from 'react/index';
+import _ from 'lodash';
+
 import {
     Animated,
     Text,
@@ -16,6 +20,9 @@ import { isJaneTestCall } from '../../../conference';
 import { Icon, IconClose } from '../../../../base/icons';
 import { isIPhoneX } from '../../../../base/styles/functions.native';
 import { getLocalParticipantType } from '../../../../base/participants/functions';
+import { isJaneWaitingAreaPageEnabled } from '../../../../jane-waiting-area-native';
+import { shouldShowPreCallMessage } from '../functions';
+
 const watermarkImg = require('../../../../../../images/watermark.png');
 
 const WATERMARK_ANIMATION_INPUT_RANGE = [ 0, 0.5, 1 ];
@@ -25,14 +32,17 @@ type Props = {
     appointmentStartAt: string,
     conferenceHasStarted: boolean,
     isStaffMember: boolean,
-    testMode: boolean
+    isTestCall: boolean,
+    isWaitingAreaPageEnabled: boolean,
+    showPreCallMessage: boolean
 };
 
 type State = {
     beforeAppointmentStart: boolean,
+    showPreCallMessage: boolean
 };
 
-class WaitingMessage extends Component<Props, State> {
+class PreCallMessage extends Component<Props, State> {
 
     _interval;
 
@@ -40,7 +50,7 @@ class WaitingMessage extends Component<Props, State> {
         super(props);
         this.state = {
             beforeAppointmentStart: false,
-            hideWaitingMessage: !props.testMode && props.isStaffMember
+            showPreCallMessage: props.showPreCallMessage
         };
         this.animatedValue = new Animated.Value(0);
         this._onClose = this._onClose.bind(this);
@@ -90,78 +100,77 @@ class WaitingMessage extends Component<Props, State> {
 
     _onClose() {
         this.setState({
-            hideWaitingMessage: true
+            showPreCallMessage: false
         });
     }
 
-    _getWaitingMessage() {
-        const { testMode, appointmentStartAt } = this.props;
+    _getPreCallMessage() {
+        const { isTestCall, appointmentStartAt, isWaitingAreaPageEnabled } = this.props;
         const { beforeAppointmentStart } = this.state;
 
-        let header = (<Text
-            style = { styles.waitingMessageHeader }>Waiting for the other participant to join...</Text>);
+        let header = 'Waiting for the other participant to join...';
 
-        let text = <Text style = { styles.waitingMessageText }>Sit back, relax and take a moment for yourself.</Text>;
+        let message = 'Sit back, relax and take a moment for yourself.';
 
         if (beforeAppointmentStart && appointmentStartAt) {
             const timeStamp = getTimeStamp(appointmentStartAt);
 
-            header = (
-                <Text style = { styles.waitingMessageHeader }>Your appointment will
-                    begin at {getLocalizedDateFormatter(timeStamp)
-                        .format('hh:mm A')}</Text>);
+            header = `Your appointment will
+                    begin at ${getLocalizedDateFormatter(timeStamp)
+                        .format('hh:mm A')}`;
         }
 
-        if (testMode) {
-            header
-                = (<Text style = { styles.waitingMessageHeader }>Testing your audio and
-                    video...</Text>);
+        if (isTestCall) {
+            header = 'Testing your audio and video...';
+            message = 'When you are done testing your audio and video, '
+                + 'hang up to close this screen. Begin your online appointment from your upcoming appointments page.';
+        }
 
-            text = (<Text style = { styles.waitingMessageText }>
-                When you are done testing your audio and video, hang up to close this screen.
-                Begin your online appointment from your upcoming appointments page.
-            </Text>);
+        if (isWaitingAreaPageEnabled) {
+            header = 'Waiting for the practitioner...';
         }
 
         return (<TouchableOpacity
             activeOpacity = { 1 }
             style = { styles.messageWrapper }>
-            {
-                header
-            }
-            {
-                text
-            }
+            <Text style = { styles.preCallMessageHeader }>{ header} </Text>
+            <Text style = { styles.preCallMessageText }>{ message } </Text>
         </TouchableOpacity>);
     }
 
     _renderCloseBtn() {
         return (<TouchableOpacity
             onPress = { this._onClose }
-            style = { styles.waitingMessageCloseBtn }>
+            style = { styles.preCallMessageCloseBtn }>
             <Icon
                 size = { 22 }
                 src = { IconClose } />
         </TouchableOpacity>);
     }
 
-    _renderWaitingMessage() {
-        const { hideWaitingMessage } = this.state;
-        const animate = hideWaitingMessage ? null : this.animatedValue.interpolate({
+    render() {
+        const { conferenceHasStarted } = this.props;
+        const { showPreCallMessage } = this.state;
+
+        if (conferenceHasStarted) {
+            return null;
+        }
+
+        const animate = showPreCallMessage ? this.animatedValue.interpolate({
             inputRange: WATERMARK_ANIMATION_INPUT_RANGE,
             outputRange: WATERMARK_ANIMATION_OUTPUT_RANGE
-        });
+        }) : null;
 
         const image = (<Image
             source = { watermarkImg }
             style = { styles.watermark } />);
-        const backgroundColor = hideWaitingMessage ? 'transparent' : WAITING_MESSAGE_CONTIANER_BACKGROUND_COLOR;
+        const backgroundColor = showPreCallMessage ? 'transparent' : WAITING_MESSAGE_CONTIANER_BACKGROUND_COLOR;
         const paddingTop = isIPhoneX() ? 60 : 40;
 
         return (<TouchableOpacity
             activeOpacity = { 1 }
             style = { [
-                styles.waitingMessageContainer, {
+                styles.preCallMessageContainer, {
                     backgroundColor,
                     paddingTop
                 }
@@ -175,24 +184,12 @@ class WaitingMessage extends Component<Props, State> {
                 }
             </Animated.View>
             {
-                !hideWaitingMessage && this._getWaitingMessage()
+                showPreCallMessage && this._getPreCallMessage()
             }
             {
-                !hideWaitingMessage && this._renderCloseBtn()
+                showPreCallMessage && this._renderCloseBtn()
             }
         </TouchableOpacity>);
-    }
-
-    render() {
-        const { conferenceHasStarted } = this.props;
-
-        if (conferenceHasStarted) {
-            return null;
-        }
-
-        return (
-            this._renderWaitingMessage()
-        );
     }
 }
 
@@ -202,13 +199,18 @@ function _mapStateToProps(state) {
     const remoteTracks = getRemoteTracks(state['features/base/tracks']);
     const participantType = getLocalParticipantType(state);
     const jwtPayload = jwt && jwtDecode(jwt);
+    const isWaitingAreaPageEnabled = isJaneWaitingAreaPageEnabled(state);
+    const appointmentStartAt = _.get(jwtPayload, 'context.start_at') || '';
+    const showPreCallMessage = shouldShowPreCallMessage(state);
 
     return {
         conferenceHasStarted: participantCount > 1 && remoteTracks.length > 0,
-        testMode: isJaneTestCall(state),
+        isTestCall: isJaneTestCall(state),
         isStaffMember: participantType === 'StaffMember',
-        appointmentStartAt: jwtPayload && jwtPayload.context && jwtPayload.context.start_at ?? ''
+        appointmentStartAt,
+        isWaitingAreaPageEnabled,
+        showPreCallMessage
     };
 }
 
-export default connect(_mapStateToProps)(translate(WaitingMessage));
+export default connect(_mapStateToProps)(translate(PreCallMessage));

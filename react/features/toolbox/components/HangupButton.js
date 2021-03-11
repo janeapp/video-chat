@@ -49,7 +49,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
             // FIXME: these should be unified.
             if (navigator.product === 'ReactNative') {
                 this.props.dispatch(appNavigate(undefined));
-                updateParticipantReadyStatus(props.jwt, 'left')
+                updateParticipantReadyStatus('left');
             } else {
                 this.props.dispatch(disconnect(true));
             }
@@ -68,12 +68,4 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
 }
 
-function mapStateToProps (state): Object {
-    const { jwt } = state['features/base/jwt'];
-
-    return {
-        jwt
-    };
-}
-
-export default translate(connect(mapStateToProps)(HangupButton));
+export default translate(connect()(HangupButton));

@@ -1,12 +1,12 @@
 // @flow
-
+/* eslint-disable require-jsdoc,max-len, no-undef*/
 import jwtDecode from 'jwt-decode';
-import { doGetJSON } from '../base/util';
+import _ from 'lodash';
 
 export function isJaneWaitingAreaPageEnabled(state: Object): boolean {
     const { jwt } = state['features/base/jwt'];
-    const jwtPayload = jwt && jwtDecode(jwt) || null;
-    const shouldEnableJaneWaitingAreaPage = jwtPayload && jwtPayload.context && jwtPayload.context.waiting_area_enabled || false;
+    const jwtPayload = jwt && jwtDecode(jwt) ?? null;
+    const shouldEnableJaneWaitingAreaPage = jwtPayload && jwtPayload.context && jwtPayload.context.waiting_area_enabled ?? false;
 
     return state['features/base/config'].janeWaitingAreaPageEnabled || shouldEnableJaneWaitingAreaPage;
 }
@@ -15,11 +15,14 @@ export function isJaneWaitingAreaPageVisible(state: Object): boolean {
     return isJaneWaitingAreaPageEnabled(state) && state['features/jane-waiting-area-native']?.showJaneWaitingArea;
 }
 
-export function updateParticipantReadyStatus(jwt: string, status: string): Promise {
+export function updateParticipantReadyStatus(status: string): void {
     try {
-        const jwtPayload = jwt && jwtDecode(jwt) || null;
-        const updateParticipantStatusUrl = jwtPayload && jwtPayload.context && jwtPayload.context.update_participant_status_url || '';
+        const { jwt } = APP.store.getState()['features/base/jwt'];
+        const jwtPayload = jwt && jwtDecode(jwt) ?? {};
+        const updateParticipantStatusUrl = _.get(jwtPayload, 'context.update_participant_status_url') ?? '';
         const info = { status };
+
+        // sendAnalytics(createWaitingAreaParticipantStatusChangedEvent(status));
 
         return fetch(updateParticipantStatusUrl, {
             method: 'POST',
@@ -30,28 +33,14 @@ export function updateParticipantReadyStatus(jwt: string, status: string): Promi
                 'jwt': jwt,
                 'info': info
             })
-        })
-            .then(res => {
-                if (!res.ok) {
-                    throw Error('Can Not Update Current Participant\'s Status.');
-                }
-            });
+        }).then(res => {
+            if (!res.ok) {
+                throw Error('Can Not Update Current Participant\'s Status.');
+            }
+        });
     } catch (e) {
         console.error(e);
     }
-}
-
-export function getLocalParticipantFromJwt(state) {
-    const { jwt } = state['features/base/jwt'];
-    const jwtPayload = jwt && jwtDecode(jwt) || null;
-
-    return jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
-}
-
-export function getLocalParticipantType(state) {
-    const participant = getLocalParticipantFromJwt(state);
-
-    return participant && participant.participant_type || null;
 }
 
 export function checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType) {
@@ -62,5 +51,5 @@ export function checkLocalParticipantCanJoin(remoteParticipantsStatuses, partici
 
         return v.info && v.info.status === 'joined';
 
-    }) || false;
+    }) ?? false;
 }

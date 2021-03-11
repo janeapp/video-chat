@@ -419,7 +419,7 @@ export function conferenceWillLeave(conference: Object) {
             // eslint-disable-next-line no-mixed-operators
             if (url && surveyUrl) {
 
-                updateParticipantReadyStatus(jwt, 'left');
+                updateParticipantReadyStatus('left');
                 Linking.openURL(surveyUrl).then(() => {
                     sendBeaconToJaneRN(url, data).then(r => {
                         console.log(r, 'response');

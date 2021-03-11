@@ -205,7 +205,7 @@ const SECTION_LIST_STYLES = {
 };
 
 const WATING_MESSAGE_STYLES = {
-    waitingMessageContainer: {
+    preCallMessageContainer: {
         paddingBottom: 20,
         flexDirection: 'row',
         width: '100%'
@@ -221,14 +221,14 @@ const WATING_MESSAGE_STYLES = {
         flex: 1
     },
 
-    waitingMessageHeader: {
+    preCallMessageHeader: {
         fontSize: 15,
         color: ColorPalette.white,
         textAlign: 'left',
         ...JaneWeb.boldFont
     },
 
-    waitingMessageText: {
+    preCallMessageText: {
         marginTop: 5,
         fontSize: 12,
         color: ColorPalette.white,
@@ -236,7 +236,7 @@ const WATING_MESSAGE_STYLES = {
         ...JaneWeb.boldFont
     },
 
-    waitingMessageCloseBtn: {
+    preCallMessageCloseBtn: {
         width: 30
     },
 

@@ -39,10 +39,8 @@ import NavigationBar from './NavigationBar';
 import styles, { NAVBAR_GRADIENT_COLORS } from './styles';
 
 import type { AbstractProps } from '../AbstractConference';
-import {
-    getLocalParticipantFromJwt,
-    getLocalParticipantType
-} from '../../../jane-waiting-area-native';
+import { getLocalParticipantFromJwt, getLocalParticipantType
+} from '../../../base/participants';
 
 /**
  * The type of the React {@code Component} props of {@link Conference}.
@@ -313,8 +311,8 @@ class Conference extends AbstractConference<Props, *> {
                     <Captions onPress = { this._onClick } />
 
                     {_shouldDisplayTileView || <DisplayNameLabel
-                        participantId={_largeVideoParticipantId}/>}
-                    {_enableJaneWaitingAreaPage && <JaneWaitingArea/>}
+                        participantId = { _largeVideoParticipantId } />}
+                    {_enableJaneWaitingAreaPage && <JaneWaitingArea />}
                     {/*
                       * The Toolbox is in a stacking layer below the Filmstrip.
                       */}

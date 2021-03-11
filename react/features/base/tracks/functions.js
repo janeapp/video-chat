@@ -359,19 +359,3 @@ export function setTrackMuted(track, muted) {
         }
     });
 }
-
-/**
- * Returns an array containing the remote tracks with or without a (valid)
- * {@code JitsiTrack}.
- *
- * @param {Track[]} tracks - An array containing all remote tracks.
- * @param {boolean} [includePending] - Indicates whether a remote track is to be
- * returned if it is still pending. A remote track is pending if
- * {@code getUserMedia} is still executing to create it and, consequently, its
- * {@code jitsiTrack} property is {@code undefined}. By default a pending remote
- * track is not returned.
- * @returns {Track[]}
- */
-export function getRemoteTracks(tracks, includePending = false) {
-    return tracks.filter(t => !t.local && (t.jitsiTrack || includePending));
-}

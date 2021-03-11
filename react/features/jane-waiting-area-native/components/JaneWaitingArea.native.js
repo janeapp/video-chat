@@ -1,5 +1,5 @@
 // @flow
-
+/* eslint-disable require-jsdoc*/
 import React, { Component } from 'react';
 import { connect } from '../../base/redux';
 import { translate } from '../../base/i18n';
@@ -11,14 +11,8 @@ type Props = {
 };
 
 class JaneWaitingAreaNative extends Component<Props, State> {
-
-    constructor(props) {
-        super(props);
-    }
-
     componentDidMount() {
-        const { jwt } = this.props;
-        updateParticipantReadyStatus(jwt, 'waiting');
+        updateParticipantReadyStatus('waiting');
     }
 
     render() {
@@ -29,11 +23,9 @@ class JaneWaitingAreaNative extends Component<Props, State> {
 
 function mapStateToProps(state): Object {
     const appstate = state['features/background'];
-    const { jwt } = state['features/base/jwt'];
 
     return {
-        appstate,
-        jwt
+        appstate
     };
 }
 
