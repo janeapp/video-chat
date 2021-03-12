@@ -3,7 +3,7 @@
 import type { Dispatch } from 'redux';
 import { API_ID } from '../../../modules/API/constants';
 import { setRoom } from '../base/conference';
-import { enableJaneWaitingAreaPage, isJaneWaitingAreaPageEnabled } from '../jane-waiting-area-native';
+import { enableJaneWaitingArea, isJaneWaitingAreaEnabled } from '../jane-waiting-area-native';
 import {
     configWillLoad,
     createFakeConfig,
@@ -140,8 +140,8 @@ export function appNavigate(uri: ?string) {
         // FIXME: unify with web, currently the connection and track creation happens in conference.js.
         if (room && navigator.product === 'ReactNative') {
             dispatch(createDesiredLocalTracks());
-            if (isJaneWaitingAreaPageEnabled(getState())) {
-                dispatch(enableJaneWaitingAreaPage(true));
+            if (isJaneWaitingAreaEnabled(getState())) {
+                dispatch(enableJaneWaitingArea(true));
             } else {
                 dispatch(connect());
             }
