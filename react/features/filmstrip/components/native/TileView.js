@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import type { Dispatch } from 'redux';
 
+import PreCallMessage
+    from '../../../base/react/components/native/PreCallMessage';
 import WaitingMessage
     from '../../../base/react/components/native/WaitingMessage';
 import { connect } from '../../../base/redux';
@@ -109,7 +111,7 @@ class TileView extends Component<Props> {
         return (
             <DimensionsDetector
                 onDimensionsChanged = { this._onDimensionsChanged }>
-                <WaitingMessage />
+                <PreCallMessage />
                 <ScrollView
                     style = {{
                         ...styles.tileView,

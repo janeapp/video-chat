@@ -4,14 +4,14 @@ import React, { PureComponent } from 'react';
 
 import { ColorSchemeRegistry } from '../../base/color-scheme';
 import { ParticipantView } from '../../base/participants';
-import WaitingMessage from '../../base/react/components/native/WaitingMessage.js';
+import { getLocalParticipantType } from '../../base/participants/functions';
+import PreCallMessage
+    from '../../base/react/components/native/PreCallMessage.js';
 import { connect } from '../../base/redux';
 import { DimensionsDetector } from '../../base/responsive-ui';
 import { StyleType } from '../../base/styles';
 import { checkLocalParticipantCanJoin } from '../../jane-waiting-area-native';
-import {
-    getLocalParticipantType
-} from '../../jane-waiting-area-native/functions';
+
 
 import { AVATAR_SIZE } from './styles';
 
@@ -123,18 +123,8 @@ class LargeVideo extends PureComponent<Props, State> {
         const {
             _participantId,
             _styles,
-            onClick,
-            _participantType,
-            _localParticipantCanJoin
+            onClick
         } = this.props;
-        const hideWaitingMessage = _participantType === 'StaffMember' || _localParticipantCanJoin;
-        const waitingMessage = _participantType === 'StaffMember' ? {
-            header: '',
-            text: ''
-        } : {
-            header: 'Waiting for the practitioner...',
-            text: 'Sit back, relax and take a moment for yourself.'
-        };
 
         return (
             <DimensionsDetector
@@ -148,9 +138,7 @@ class LargeVideo extends PureComponent<Props, State> {
                     useConnectivityInfoLabel = { useConnectivityInfoLabel }
                     zOrder = { 0 }
                     zoomEnabled = { true } />
-                <WaitingMessage
-                    hideWaitingMessage = { hideWaitingMessage }
-                    waitingMessageFromProps = { waitingMessage } />
+                <PreCallMessage />
             </DimensionsDetector>
         );
     }

@@ -6,6 +6,8 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import { appNavigate } from '../../../app/actions';
 import { PIP_ENABLED, getFeatureFlag } from '../../../base/flags';
+import { getLocalParticipantFromJwt, getLocalParticipantType
+} from '../../../base/participants';
 import { Container, LoadingIndicator, TintedView } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
@@ -36,7 +38,7 @@ import {
     AbstractConference,
     abstractMapStateToProps
 } from '../AbstractConference';
-import type { AbstractProps } from '../AbstractConference';
+import type { AbstractProps, AbstractProps } from '../AbstractConference';
 
 import Labels from './Labels';
 import NavigationBar from './NavigationBar';
@@ -96,7 +98,7 @@ type Props = AbstractProps & {
      * The redux {@code dispatch} function.
      */
     dispatch: Function,
-    enableJaneWaitingAreaPage: boolean
+    janeWaitingAreaEnabled: boolean
 };
 
 /**
@@ -256,7 +258,7 @@ class Conference extends AbstractConference<Props, *> {
             _reducedUI,
             _shouldDisplayTileView,
             _toolboxVisible,
-            _enableJaneWaitingAreaPage
+            _janeWaitingAreaEnabled
         } = this.props;
         const showGradient = _toolboxVisible;
         const applyGradientStretching
@@ -322,7 +324,8 @@ class Conference extends AbstractConference<Props, *> {
 
                     {/* <LonelyMeetingExperience />*/}
 
-                    {_enableJaneWaitingAreaPage && <JaneWaitingArea />}
+                    {_janeWaitingAreaEnabled && <JaneWaitingArea />}
+
                     {/*
                       * The Toolbox is in a stacking layer below the Filmstrip.
                       */}
@@ -445,7 +448,7 @@ function _mapStateToProps(state) {
     } = state['features/base/conference'];
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
     const {
-        enableJaneWaitingAreaPage
+        janeWaitingAreaEnabled
     } = state['features/jane-waiting-area-native'];
 
     // XXX There is a window of time between the successful establishment of the
@@ -478,7 +481,7 @@ function _mapStateToProps(state) {
          * @type {boolean}
          */
         _toolboxVisible: isToolboxVisible(state),
-        _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage,
+        _janeWaitingAreaEnabled: janeWaitingAreaEnabled,
         _jwt: jwt,
         _participantType: getLocalParticipantType(state),
         _participant: getLocalParticipantFromJwt(state)
