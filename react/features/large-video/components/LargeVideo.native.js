@@ -4,7 +4,8 @@ import React, { PureComponent } from 'react';
 
 import { ColorSchemeRegistry } from '../../base/color-scheme';
 import { getLocalParticipantType, ParticipantView } from '../../base/participants';
-import WaitingMessage from '../../base/react/components/native/WaitingMessage.js';
+import PreCallMessage
+    from '../../base/react/components/native/PreCallMessage.js';
 import { connect } from '../../base/redux';
 import { DimensionsDetector } from '../../base/responsive-ui';
 import { StyleType } from '../../base/styles';
@@ -118,18 +119,8 @@ class LargeVideo extends PureComponent<Props, State> {
         const {
             _participantId,
             _styles,
-            onClick,
-            _participantType,
-            _localParticipantCanJoin
+            onClick
         } = this.props;
-        const hideWaitingMessage = _participantType === 'StaffMember' || _localParticipantCanJoin;
-        const waitingMessage = _participantType === 'StaffMember' ? {
-            header: '',
-            text: ''
-        } : {
-            header: 'Waiting for the practitioner...',
-            text: 'Sit back, relax and take a moment for yourself.'
-        };
 
         return (
             <DimensionsDetector
@@ -143,9 +134,7 @@ class LargeVideo extends PureComponent<Props, State> {
                     useConnectivityInfoLabel = { useConnectivityInfoLabel }
                     zOrder = { 0 }
                     zoomEnabled = { true } />
-                <WaitingMessage
-                    hideWaitingMessage = { hideWaitingMessage }
-                    waitingMessageFromProps = { waitingMessage } />
+                <PreCallMessage />
             </DimensionsDetector>
         );
     }
@@ -167,10 +156,10 @@ function _mapStateToProps(state) {
     return {
         _height: height,
         _participantId: state['features/large-video'].participantId,
-        _styles: ColorSchemeRegistry.get(state, 'LargeVideo'),
         _width: width,
         _participantType: participantType,
-        _localParticipantCanJoin: localParticipantCanJoin
+        _localParticipantCanJoin: localParticipantCanJoin,
+        _styles: ColorSchemeRegistry.get(state, 'LargeVideo')
     };
 }
 

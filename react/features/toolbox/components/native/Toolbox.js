@@ -1,16 +1,14 @@
 // @flow
 
 import React, { PureComponent } from 'react';
-import { View, Button } from 'react-native';
+import { View } from 'react-native';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
-import { connect as startConference } from '../../../base/connection';
 import { CHAT_ENABLED, getFeatureFlag } from '../../../base/flags';
 import { Container } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { ChatButton } from '../../../chat';
-import { InfoDialogButton } from '../../../invite';
 import { isToolboxVisible } from '../../functions';
 import AudioMuteButton from '../AudioMuteButton';
 import HangupButton from '../HangupButton';
@@ -44,6 +42,7 @@ type Props = {
      * The redux {@code dispatch} function.
      */
     dispatch: Function,
+    _janeWaitingAreaEnabled: boolean
 };
 
 /**
@@ -105,7 +104,7 @@ class Toolbox extends PureComponent<Props> {
      * @returns {React$Node}
      */
     _renderToolbar() {
-        const { _chatEnabled, _styles, _enableJaneWaitingAreaPage, _startConference } = this.props;
+        const { _chatEnabled, _styles, _janeWaitingAreaEnabled } = this.props;
         const { buttonStyles, buttonStylesBorderless, hangupButtonStyles, toggledButtonStyles } = _styles;
 
         return (
@@ -113,7 +112,7 @@ class Toolbox extends PureComponent<Props> {
                 pointerEvents = 'box-none'
                 style = { styles.toolbar }>
                 {
-                    _chatEnabled && !_enableJaneWaitingAreaPage
+                    _chatEnabled && !_janeWaitingAreaEnabled
                         && <ChatButton
                             styles = { buttonStylesBorderless }
                             toggledStyles = {
@@ -134,7 +133,7 @@ class Toolbox extends PureComponent<Props> {
                 <VideoMuteButton
                     styles = { buttonStyles }
                     toggledStyles = { toggledButtonStyles } />
-                {!_enableJaneWaitingAreaPage && <OverflowMenuButton
+                {!_janeWaitingAreaEnabled && <OverflowMenuButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />}
             </View>
@@ -156,13 +155,13 @@ class Toolbox extends PureComponent<Props> {
  * }}
  */
 function _mapStateToProps(state: Object): Object {
-    const { enableJaneWaitingAreaPage } = state['features/jane-waiting-area-native'];
+    const { janeWaitingAreaEnabled } = state['features/jane-waiting-area-native'];
 
     return {
         _chatEnabled: getFeatureFlag(state, CHAT_ENABLED, true),
         _styles: ColorSchemeRegistry.get(state, 'Toolbox'),
         _visible: isToolboxVisible(state),
-        _enableJaneWaitingAreaPage: enableJaneWaitingAreaPage
+        _janeWaitingAreaEnabled: janeWaitingAreaEnabled
     };
 }
 

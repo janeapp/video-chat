@@ -8,8 +8,8 @@ import {
 } from 'react-native';
 import type { Dispatch } from 'redux';
 
-import WaitingMessage
-    from '../../../base/react/components/native/WaitingMessage';
+import PreCallMessage
+    from '../../../base/react/components/native/PreCallMessage';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { setTileViewDimensions } from '../../actions.native';
@@ -17,6 +17,7 @@ import { DimensionsDetector } from '../../base/responsive-ui';
 
 import Thumbnail from './Thumbnail';
 import styles from './styles';
+
 
 /**
  * The type of the React {@link Component} props of {@link TileView}.
@@ -109,7 +110,7 @@ class TileView extends Component<Props> {
         return (
             <DimensionsDetector
                 onDimensionsChanged = { this._onDimensionsChanged }>
-                <WaitingMessage />
+                <PreCallMessage />
                 <ScrollView
                     style = {{
                         ...styles.tileView,
