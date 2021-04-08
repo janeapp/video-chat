@@ -9,6 +9,7 @@
 // polyfills are globals). The remaining problem to be solved here is where to
 // collect the polyfills' files.
 import './features/base/lib-jitsi-meet/native/polyfills-bundler';
+import Bugsnag from '@bugsnag/react-native';
 
 import React, { PureComponent } from 'react';
 import { AppRegistry } from 'react-native';
@@ -18,6 +19,8 @@ import { IncomingCallApp } from './features/mobile/incoming-call';
 
 // It's crucial that the native loggers are created ASAP, not to lose any data.
 import { _initLogging } from './features/base/logging/functions';
+
+Bugsnag.start();
 
 declare var __DEV__;
 
@@ -31,6 +34,8 @@ type Props = {
      */
     url: Object | string
 };
+
+const ErrorBoundary = Bugsnag.getPlugin('react').createErrorBoundary(React);
 
 /**
  * React Native doesn't support specifying props to the main/root component (in
@@ -48,8 +53,11 @@ class Root extends PureComponent<Props> {
      */
     render() {
         return (
-            <App
-                { ...this.props } />
+            <ErrorBoundary>
+                <App
+                    { ...this.props } />
+            </ErrorBoundary>
+
         );
     }
 }

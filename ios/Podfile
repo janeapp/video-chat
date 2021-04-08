@@ -65,6 +65,7 @@ target 'JitsiMeet' do
   pod 'RNWatch', :path => '../node_modules/react-native-watch-connectivity'
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
   pod 'react-native-video', :path => '../node_modules/react-native-video/react-native-video.podspec'
+  pod 'BugsnagReactNative', :path => '../node_modules/@bugsnag/react-native/BugsnagReactNative.podspec'
 
   # Native pod dependencies
   #
