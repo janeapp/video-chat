@@ -343,7 +343,7 @@ const DialogTitleHeader = (props: DialogTitleProps) => {
 
     if (participantType === 'StaffMember') {
         if (localParticipantCanJoin) {
-            header = 'Your patient is ready to begin the session.';
+            header = 'Your client is ready to begin the session.';
         } else {
             header = 'Waiting for your client...';
         }
