@@ -3,12 +3,12 @@
 import _ from 'lodash';
 
 import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { appNavigate } from '../../app';
+import { appNavigate } from '../../app/actions';
 import { disconnect } from '../../base/connection';
 import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
-import { AbstractHangupButton } from '../../base/toolbox';
-import type { AbstractButtonProps } from '../../base/toolbox';
+import { AbstractHangupButton } from '../../base/toolbox/components';
+import type { AbstractButtonProps } from '../../base/toolbox/components';
 import { updateParticipantReadyStatus } from '../../jane-waiting-area-native';
 
 /**
@@ -54,7 +54,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
                 // updateParticipantReadyStatus(props.jwt, 'left');
             } else {
-                this.props.dispatch(disconnect(true));
+                this.props.dispatch(disconnect(false));
             }
         });
     }

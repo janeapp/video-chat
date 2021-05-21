@@ -426,17 +426,3 @@ async function _getFirstLoadableAvatarUrl(participant) {
 
     return undefined;
 }
-
-/**
- * Returns participant info from the jwt token
- *
- * @param {Object|Function} state - Object or function that can be resolved
- * to the Redux state.
- * @returns {string|null}
- */
-export function getLocalParticipantFromJwt(state: Object | Function): Object {
-    const { jwt } = state['features/base/jwt'];
-    const jwtPayload = jwt && jwtDecode(jwt) ?? null;
-
-    return jwtPayload && jwtPayload.context && jwtPayload.context.user ?? null;
-}

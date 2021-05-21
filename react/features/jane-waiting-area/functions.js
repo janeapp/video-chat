@@ -4,7 +4,7 @@ import jwtDecode from 'jwt-decode';
 import _ from 'lodash';
 
 import {
-    createWaitingAreaParticipantStatusChangedEvent,
+    createWaitingAreaPageEvent,
     sendAnalytics
 } from '../analytics';
 import {
@@ -157,7 +157,9 @@ export function updateParticipantReadyStatus(status: string): void {
         const updateParticipantStatusUrl = _.get(jwtPayload, 'context.update_participant_status_url') ?? '';
         const info = { status };
 
-        sendAnalytics(createWaitingAreaParticipantStatusChangedEvent(status));
+        sendAnalytics(createWaitingAreaPageEvent(
+            'participant.status.changed',
+        { status }));
 
         return fetch(updateParticipantStatusUrl, {
             method: 'POST',
@@ -208,7 +210,9 @@ export function detectLegacyMobileApp(remoteParticipantsStatuses: Array<Object>)
                     status.info.status = 'waiting';
                 } else {
                     status.info.status = 'joined';
-                    sendAnalytics(createWaitingAreaParticipantStatusChangedEvent('joined'));
+                    sendAnalytics(createWaitingAreaPageEvent(
+                        'participant.status.changed',
+                        { status: 'joined' }));
                 }
             } else {
                 checkRoomStatusAgain = true;

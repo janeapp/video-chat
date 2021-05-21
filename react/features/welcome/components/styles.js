@@ -2,8 +2,7 @@
 
 import { StyleSheet } from 'react-native';
 
-import { BoxModel, ColorPalette } from '../../base/styles';
-import { JaneWeb } from '../../base/styles';
+import { BoxModel, ColorPalette, JaneWeb } from '../../base/styles';
 
 export const PLACEHOLDER_TEXT_COLOR = 'rgba(255, 255, 255, 0.3)';
 
@@ -288,35 +287,35 @@ export default {
      */
     welcomePage: {
         backgroundColor: ColorPalette.jane,
-        overflow: 'hidden',
+        overflow: 'hidden'
     },
     welcomePageContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         maxWidth: 430, // this keeps it full width on iPhones, but limitted width on iPads
-        paddingHorizontal: 4 * BoxModel.padding,
+        paddingHorizontal: 4 * BoxModel.padding
     },
     logo: {
         marginBottom: 4 * BoxModel.margin,
         width: '45%',
         height: undefined,
-        aspectRatio: 1437 / 1188,
+        aspectRatio: 1437 / 1188
     },
     bigText: {
         ...JaneWeb.h3,
         color: TEXT_COLOR,
-        textAlign: 'center',
+        textAlign: 'center'
     },
     whiteText: {
-        color: TEXT_COLOR,
+        color: TEXT_COLOR
     },
     bold: {
         fontWeight: 'bold'
     },
     row: {
         marginTop: 4 * BoxModel.margin,
-        flexDirection: 'row',
+        flexDirection: 'row'
     },
     column: {
         paddingHorizontal: BoxModel.padding,
@@ -324,6 +323,6 @@ export default {
         justifyContent: 'flex-start'
     },
     columnText: {
-        flex: 6,
-    },
+        flex: 6
+    }
 };

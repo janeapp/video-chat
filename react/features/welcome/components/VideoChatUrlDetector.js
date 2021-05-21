@@ -1,7 +1,7 @@
 // @flow
 import { Clipboard } from 'react-native';
 import { connect } from '../../base/redux';
-import { appNavigate } from '../../app';
+import { appNavigate } from '../../app/actions';
 import { toURLString, isJaneVideoChatLink } from '../../base/util';
 import { Dispatch } from 'redux';
 

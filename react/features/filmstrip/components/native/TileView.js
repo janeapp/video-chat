@@ -11,7 +11,7 @@ import type { Dispatch } from 'redux';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { setTileViewDimensions } from '../../actions.native';
-import { DimensionsDetector } from '../../base/responsive-ui';
+import { DimensionsDetector } from '../../../base/responsive-ui';
 import Thumbnail from './Thumbnail';
 import styles from './styles';
 import PreCallMessage

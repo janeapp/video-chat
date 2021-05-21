@@ -8,7 +8,7 @@ import {
     _mapStateToProps as _abstractMapStateToProps
 } from './AbstractWelcomePage';
 import WelcomePageScreen from './Screen';
-import jitsiLocalStorage from '../../../../modules/util/JitsiLocalStorage';
+import { jitsiLocalStorage } from '@jitsi/js-utils';
 
 const LAUNCHED_BEFORE_STORAGE_KEY = 'LAUNCHED_BEFORE';
 

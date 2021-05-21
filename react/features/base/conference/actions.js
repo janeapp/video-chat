@@ -1,4 +1,3 @@
-// @flow
 
 import type { Dispatch } from 'redux';
 
@@ -7,9 +6,8 @@ import {
     createStartMutedConfigurationEvent,
     sendAnalytics
 } from '../../analytics';
-import { getName } from '../../app';
+import { getName } from '../../app/functions';
 import { endpointMessageReceived } from '../../subtitles';
-
 import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection';
 import { JitsiConferenceEvents } from '../lib-jitsi-meet';
 import { setAudioMuted, setVideoMuted } from '../media';
@@ -26,6 +24,7 @@ import {
 } from '../participants';
 import { getLocalTracks, trackAdded, trackRemoved } from '../tracks';
 import {
+    getBackendSafePath,
     getBackendSafeRoomName,
     getJitsiMeetGlobalNS, sendBeaconToJaneRN
 } from '../util';
@@ -46,13 +45,12 @@ import {
     SEND_TONES,
     SET_DESKTOP_SHARING_ENABLED,
     SET_FOLLOW_ME,
-    SET_MAX_RECEIVER_VIDEO_QUALITY,
     SET_PASSWORD,
     SET_PASSWORD_FAILED,
-    SET_PREFERRED_RECEIVER_VIDEO_QUALITY,
     SET_ROOM,
     SET_PENDING_SUBJECT_CHANGE,
-    SET_START_MUTED_POLICY
+    SET_START_MUTED_POLICY,
+    SET_CONFERENCE_START_TIME
 } from './actionTypes';
 import {
     AVATAR_ID_COMMAND,
@@ -251,6 +249,7 @@ export function authStatusChanged(authEnabled: boolean, authLogin: string) {
  * @param {JitsiConference} conference - The JitsiConference that has failed.
  * @param {string} error - The error describing/detailing the cause of the
  * failure.
+ * @param {any} params - Rest of the params that we receive together with the event.
  * @returns {{
  *     type: CONFERENCE_FAILED,
  *     conference: JitsiConference,
@@ -258,7 +257,7 @@ export function authStatusChanged(authEnabled: boolean, authLogin: string) {
  * }}
  * @public
  */
-export function conferenceFailed(conference: Object, error: string) {
+export function conferenceFailed(conference: Object, error: string, ...params: any) {
     return {
         type: CONFERENCE_FAILED,
         conference,
@@ -267,6 +266,7 @@ export function conferenceFailed(conference: Object, error: string) {
         // jitsi-meet needs it).
         error: {
             name: error,
+            params,
             recoverable: undefined
         }
     };
@@ -283,8 +283,6 @@ export function conferenceFailed(conference: Object, error: string) {
  * }}
  */
 export function conferenceJoined(conference: Object) {
-    // Reset localstorage lastVisitedUrl logic once user joined the conference.
-    localStorage.setItem('lastVisitedUrlRefreshed', 'false');
 
     return {
         type: CONFERENCE_JOINED,
@@ -326,14 +324,14 @@ export function conferenceSubjectChanged(subject: string) {
 }
 
 /**
-* Signals that the conference timestamp has been changed.
-*
-* @param {number} conferenceTimestamp - The UTC timestamp.
-* @returns {{
-*       type: CONFERENCE_TIMESTAMP_CHANGED,
-*       conferenceTimestamp
-* }}
-*/
+ * Signals that the conference timestamp has been changed.
+ *
+ * @param {number} conferenceTimestamp - The UTC timestamp.
+ * @returns {{
+ *       type: CONFERENCE_TIMESTAMP_CHANGED,
+ *       conferenceTimestamp
+ * }}
+ */
 export function conferenceTimestampChanged(conferenceTimestamp: number) {
     return {
         type: CONFERENCE_TIMESTAMP_CHANGED,
@@ -354,7 +352,7 @@ function _conferenceWillJoin(conference: Object) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const localTracks
             = getLocalTracks(getState()['features/base/tracks'])
-                .map(t => t.jitsiTrack);
+            .map(t => t.jitsiTrack);
 
         if (localTracks.length) {
             _addLocalTracksToConference(conference, localTracks);
@@ -398,32 +396,32 @@ export function conferenceWillJoin(conference: Object) {
 export function conferenceWillLeave(conference: Object) {
 
     return (dispatch: Function, getState: Function) => {
-        const state = getState();
-        const { jwt } = state['features/base/jwt'];
-        const startedAt = state['features/base/conference'].start;
+        const { jwt } = APP.store.getState()['features/base/jwt'];
+        const { conferenceStartedTime } = APP.store.getState()['features/base/conference'];
 
-        if (jwt) {
+        if (jwt && conferenceStartedTime) {
             const jwtPayload = jwtDecode(jwt);
-            const url = jwtPayload.context.leave_url || null;
+            const leaveUrl = jwtPayload.context.leave_url || null;
             const surveyUrl = jwtPayload.context.survey_url || null;
             const obj = {
                 jwt,
-                // eslint-disable-next-line camelcase
-                started_at: startedAt
+                started_at: conferenceStartedTime.toISOString()
             };
             const data = new Blob([ JSON.stringify(obj, null, 2) ], { type: 'text/plain; charset=UTF-8' });
 
-            // eslint-disable-next-line no-mixed-operators
-            if (url && surveyUrl) {
-
-                Linking.openURL(surveyUrl).then(() => {
-                    sendBeaconToJaneRN(url, data).then(r => {
-                        console.log(r, 'response');
-                    })
-                     .catch(e => {
-                         console.log(e, 'error');
-                     });
-                });
+            if (leaveUrl && surveyUrl) {
+                if (navigator.product === 'ReactNative') {
+                    Linking.openURL(surveyUrl).then(() => {
+                        sendBeaconToJaneRN(leaveUrl, data).then(r => {
+                            console.log(r, 'response');
+                        })
+                        .catch(e => {
+                            console.error(e, 'error');
+                        });
+                    });
+                } else {
+                    navigator.sendBeacon(leaveUrl, data);
+                }
             }
         }
 
@@ -455,18 +453,21 @@ export function createConference() {
         }
 
         const config = state['features/base/config'];
+        const { tenant } = state['features/base/jwt'];
         const { email, name: nick } = getLocalParticipant(state);
+
         const conference
             = connection.initJitsiConference(
 
-                getBackendSafeRoomName(room), {
-                    ...config,
-                    applicationName: getName(),
-                    getWiFiStatsMethod: getJitsiMeetGlobalNS().getWiFiStats,
-                    confID: `${locationURL.host}${locationURL.pathname}`,
-                    statisticsDisplayName: config.enableDisplayNameInStats ? nick : undefined,
-                    statisticsId: config.enableEmailInStats ? email : undefined
-                });
+            getBackendSafeRoomName(room), {
+                ...config,
+                applicationName: getName(),
+                getWiFiStatsMethod: getJitsiMeetGlobalNS().getWiFiStats,
+                confID: `${locationURL.host}${getBackendSafePath(locationURL.pathname)}`,
+                siteID: tenant,
+                statisticsDisplayName: config.enableDisplayNameInStats ? nick : undefined,
+                statisticsId: config.enableEmailInStats ? email : undefined
+            });
 
         connection[JITSI_CONNECTION_CONFERENCE_KEY] = conference;
 
@@ -649,23 +650,6 @@ export function setFollowMe(enabled: boolean) {
 }
 
 /**
- * Sets the max frame height that should be received from remote videos.
- *
- * @param {number} maxReceiverVideoQuality - The max video frame height to
- * receive.
- * @returns {{
- *     type: SET_MAX_RECEIVER_VIDEO_QUALITY,
- *     maxReceiverVideoQuality: number
- * }}
- */
-export function setMaxReceiverVideoQuality(maxReceiverVideoQuality: number) {
-    return {
-        type: SET_MAX_RECEIVER_VIDEO_QUALITY,
-        maxReceiverVideoQuality
-    };
-}
-
-/**
  * Sets the password to join or lock a specific JitsiConference.
  *
  * @param {JitsiConference} conference - The JitsiConference which requires a
@@ -685,28 +669,23 @@ export function setPassword(
         case conference.join: {
             let state = getState()['features/base/conference'];
 
-            // Make sure that the action will set a password for a conference
-            // that the application wants joined.
-            if (state.passwordRequired === conference) {
-                dispatch({
-                    type: SET_PASSWORD,
-                    conference,
-                    method,
-                    password
-                });
+            dispatch({
+                type: SET_PASSWORD,
+                conference,
+                method,
+                password
+            });
 
-                // Join the conference with the newly-set password.
+            // Join the conference with the newly-set password.
 
-                // Make sure that the action did set the password.
-                state = getState()['features/base/conference'];
-                if (state.password === password
-                        && !state.passwordRequired
+            // Make sure that the action did set the password.
+            state = getState()['features/base/conference'];
+            if (state.password === password
 
-                        // Make sure that the application still wants the
-                        // conference joined.
-                        && !state.conference) {
-                    method.call(conference, password);
-                }
+                    // Make sure that the application still wants the
+                    // conference joined.
+                    && !state.conference) {
+                method.call(conference, password);
             }
             break;
         }
@@ -717,41 +696,22 @@ export function setPassword(
             if (state.conference === conference) {
                 return (
                     method.call(conference, password)
-                        .then(() => dispatch({
-                            type: SET_PASSWORD,
-                            conference,
-                            method,
-                            password
-                        }))
-                        .catch(error => dispatch({
-                            type: SET_PASSWORD_FAILED,
-                            error
-                        }))
+                            .then(() => dispatch({
+                                type: SET_PASSWORD,
+                                conference,
+                                method,
+                                password
+                            }))
+                            .catch(error => dispatch({
+                                type: SET_PASSWORD_FAILED,
+                                error
+                            }))
                 );
             }
 
             return Promise.reject();
         }
         }
-    };
-}
-
-/**
- * Sets the max frame height the user prefers to receive from remote participant
- * videos.
- *
- * @param {number} preferredReceiverVideoQuality - The max video resolution to
- * receive.
- * @returns {{
- *     type: SET_PREFERRED_RECEIVER_VIDEO_QUALITY,
- *     preferredReceiverVideoQuality: number
- * }}
- */
-export function setPreferredReceiverVideoQuality(
-        preferredReceiverVideoQuality: number) {
-    return {
-        type: SET_PREFERRED_RECEIVER_VIDEO_QUALITY,
-        preferredReceiverVideoQuality
     };
 }
 
@@ -802,17 +762,25 @@ export function setStartMutedPolicy(
  * @param {string} subject - The new subject.
  * @returns {void}
  */
-export function setSubject(subject: string = '') {
+export function setSubject(subject: string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const { conference } = getState()['features/base/conference'];
 
         if (conference) {
-            conference.setSubject(subject);
+            conference.setSubject(subject || '');
         } else {
             dispatch({
                 type: SET_PENDING_SUBJECT_CHANGE,
                 subject
             });
         }
+    };
+}
+
+
+export function setConferenceStartTime(conferenceStartedTime: any) {
+    return {
+        type: SET_CONFERENCE_START_TIME,
+        conferenceStartedTime
     };
 }

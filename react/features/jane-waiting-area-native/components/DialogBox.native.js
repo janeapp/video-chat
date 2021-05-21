@@ -8,7 +8,7 @@ import {
     checkLocalParticipantCanJoin,
     updateParticipantReadyStatus
 } from '../functions';
-import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../base/participants';
+import { getLocalParticipantInfoFromJwt, getLocalParticipantType } from '../../base/participants';
 import jwtDecode from 'jwt-decode';
 import moment from 'moment';
 import {
@@ -311,7 +311,7 @@ class DialogBox extends Component<DialogBoxProps> {
 function mapStateToProps(state): Object {
     const { jwt } = state['features/base/jwt'];
     const jwtPayload = jwt && jwtDecode(jwt) ?? null;
-    const participant = getLocalParticipantFromJwt(state);
+    const participant = getLocalParticipantInfoFromJwt(state);
     const participantType = getLocalParticipantType(state);
     const { locationURL } = state['features/base/connection'];
     const { remoteParticipantsStatuses, authState } = state['features/jane-waiting-area-native'];
