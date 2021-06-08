@@ -52,9 +52,14 @@ class SocketConnection extends Component<Props> {
             sendMessageToIosApp({ message: 'webview page is ready' });
         } else {
             updateParticipantReadyStatus('waiting');
-            window.onunload = window.onbeforeunload = function() {
+
+            // When the user closes the window or leaves the waiting area or quits the browser,
+            // We send a "left" signal here to Jane
+            const beforeunloadHanlder = () => {
                 updateParticipantReadyStatus('left');
             };
+
+            window.addEventListener('beforeunload', beforeunloadHanlder);
         }
         this._connectSocket();
     }
