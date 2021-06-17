@@ -1,10 +1,11 @@
 // @flow
+import { StyleSheet, Platform } from 'react-native';
+
 import {
     ColorPalette, isIPhoneX,
     JaneWeb,
     sizeHelper
 } from '../../../base/styles';
-import { StyleSheet, Platform } from 'react-native';
 
 const isPad = Platform.isPad;
 const WHITE_COLOR = ColorPalette.white;

@@ -1,8 +1,10 @@
 // @flow
 /* eslint-disable require-jsdoc*/
 import React, { Component } from 'react';
-import { connect } from '../../base/redux';
+
 import { translate } from '../../base/i18n';
+import { connect } from '../../base/redux';
+
 import DialogBox from './DialogBox.native';
 
 type Props = {

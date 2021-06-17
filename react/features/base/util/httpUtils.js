@@ -45,6 +45,7 @@ export function doGetJSON(url, retry) {
 
 
 // send beacon to jane
+// eslint-disable-next-line require-jsdoc
 export function sendBeaconToJaneRN(url, data, errorMsg = null) {
     return fetch(url, {
         method: 'POST',
@@ -53,10 +54,14 @@ export function sendBeaconToJaneRN(url, data, errorMsg = null) {
         },
         body: data
     })
-        .then(res => {
-            if (!res.ok) {
-                const errorMsg = errorMsg ? errorMsg : res.statusText;
-                throw Error(errorMsg);
-            }
-        });
+    .then(res => {
+        if (!res.ok) {
+            const error = errorMsg ? errorMsg : res.statusText;
+
+            throw Error(error);
+        }
+    })
+    .catch(error => {
+        console.error(error);
+    });
 }
