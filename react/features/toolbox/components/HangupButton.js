@@ -20,7 +20,7 @@ type Props = AbstractButtonProps & {
      * The redux {@code dispatch} function.
      */
     dispatch: Function,
-    isJaneWaitingAreaEnabled,
+    isJaneWaitingAreaEnabled: boolean,
     appstate: string,
     jwt: string
 };
@@ -84,10 +84,11 @@ class HangupButton extends AbstractHangupButton<Props, *> {
  */
 function mapStateToProps(state): Object {
     const appstate = state['features/background'];
+    const { jwt } = state['features/base/jwt'];
 
     return {
         appstate,
-        jwt: state['features/base/jwt'],
+        jwt,
         isJaneWaitingAreaEnabled: isJaneWaitingAreaEnabled(state)
     };
 }
