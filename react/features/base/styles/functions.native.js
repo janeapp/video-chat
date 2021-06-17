@@ -8,6 +8,7 @@ import {
     JANE_WELCOME_PAGE_DESIGN_WIDTH,
     JANE_WELCOME_PAGE_DESIGN_SAFE_AREA_VIEW_PADDING
 } from './functions.any';
+import type { StyleType } from './functions.any';
 import JaneWelcomePageSizeHelper from './janeWelcomePageSizeHelper';
 
 export * from './functions.any';

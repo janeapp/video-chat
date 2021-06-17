@@ -12,7 +12,7 @@ type Props = {
     jwt: string
 };
 
-class JaneWaitingAreaNative extends Component<Props, State> {
+class JaneWaitingAreaNative extends Component<Props> {
 
     render() {
         return (this.props.appstate && this.props.appstate.appState === 'active'

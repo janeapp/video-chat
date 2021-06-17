@@ -7,6 +7,7 @@ import {
     sizeHelper
 } from '../../../base/styles';
 
+// $FlowFixMe[object literal]
 const isPad = Platform.isPad;
 const WHITE_COLOR = ColorPalette.white;
 const JANE_COLOR = ColorPalette.jane;

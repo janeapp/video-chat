@@ -45,6 +45,8 @@ type State = {
 class PreCallMessage extends Component<Props, State> {
 
     _interval;
+    animatedValue;
+    _onClose;
 
     constructor(props: Props) {
         super(props);
@@ -68,7 +70,8 @@ class PreCallMessage extends Component<Props, State> {
             {
                 toValue: 1,
                 duration: 2000,
-                easing: Easing.linear
+                easing: Easing.linear,
+                useNativeDriver: true
             }
         )
             .start(() => this._animate());

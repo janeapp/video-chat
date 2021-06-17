@@ -38,6 +38,7 @@ const RGBA_COLOR_FORMAT
  */
 const _WELL_KNOWN_NUMBER_PROPERTIES = [ 'height', 'width' ];
 
+// $FlowFixMe[object literal]
 const isPad = Platform.isPad;
 
 export const JANE_WELCOME_PAGE_DESIGN_HEIGHT = isPad ? 1080 : 844;

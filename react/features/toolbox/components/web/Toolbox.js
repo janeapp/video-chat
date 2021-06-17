@@ -14,7 +14,7 @@ import {
     IconChat,
     IconExitFullScreen,
     IconFullScreen,
-    IconInvite,
+    IconInviteMore,
     IconRaisedHand,
     IconShareDesktop
 } from '../../../base/icons';
@@ -24,7 +24,7 @@ import {
     participantUpdated
 } from '../../../base/participants';
 import { connect, equals } from '../../../base/redux';
-import { OverflowMenuItem } from '../../../base/toolbox';
+import OverflowMenuItem from '../../../base/toolbox/components/OverflowMenuItem.web';
 import { getLocalVideoTrack, toggleScreensharing } from '../../../base/tracks';
 import { ChatCounter, toggleChat } from '../../../chat';
 import { openFeedbackDialog } from '../../../feedback';
@@ -1089,7 +1089,7 @@ class Toolbox extends Component<Props, State> {
             //         <OverflowMenuItem
             //             accessibilityLabel =
             //                 { t('toolbar.accessibilityLabel.invite') }
-            //             icon = { IconInvite }
+            //             icon = { IconInviteMore }
             //             key = 'invite'
             //             onClick = { this._onToolbarOpenInvite }
             //             text = { t('toolbar.invite') } />
@@ -1255,7 +1255,7 @@ class Toolbox extends Component<Props, State> {
                         && <ToolbarButton
                             accessibilityLabel =
                                 { t('toolbar.accessibilityLabel.invite') }
-                            icon = { IconInvite }
+                            icon = { IconInviteMore }
                             onClick = { this._onToolbarOpenInvite }
                             tooltip = { t('toolbar.invite') } /> }
                     {/* {*/}

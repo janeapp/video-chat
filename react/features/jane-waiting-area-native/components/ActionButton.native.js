@@ -7,7 +7,7 @@ import styles from './styles';
 type Props = {
     onPress: Function,
     title: string,
-    disabled: boolean,
+    disabled?: boolean,
 };
 
 export const ActionButton = (props: Props): React$Node => {

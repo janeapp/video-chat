@@ -51,7 +51,7 @@ type SocketWebViewProps = {
     locationURL: string
 }
 
-const getWebViewUrl = locationURL => {
+const getWebViewUrl = (locationURL: any) => {
     let uri = locationURL.href;
 
     uri = `${uri}&RNsocket=true`;
@@ -78,6 +78,11 @@ const SocketWebView = (props: SocketWebViewProps) => {
 };
 
 class DialogBox extends Component<DialogBoxProps> {
+
+    _joinConference: Function;
+    _webviewOnError: Function;
+    _return: Function;
+    _onMessageUpdate: Function;
 
     constructor(props) {
         super(props);
