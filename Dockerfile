@@ -28,6 +28,9 @@ RUN \
   mkdir /config/nginx/sites \
   && mkdir /config/nginx/site-confs \
   && tar xjf /jitsi-meet.tar.bz2 -C /config/nginx/sites \
+  && mkdir /config/nginx/sites/jitsi-meet/.well-known \
+  && cp /config/apple-app-site-association /config/nginx/sites/jitsi-meet/.well-known/ \
+  && ln -s /config/nginx/sites/jitsi-meet/.well-known/apple-app-site-association /config/nginx/sites/jitsi-meet/apple-app-site-association \
   && chmod 0755 /start-nginx.sh
 
 RUN install-all-stubs
