@@ -23,7 +23,7 @@ import {
     TileView
 } from '../../../filmstrip';
 import { AddPeopleDialog, CalleeInfoContainer } from '../../../invite';
-import JaneWaitingArea from '../../../jane-waiting-area-native/components/JaneWaitingArea.native';
+import JaneWaitingArea from '../../../jane-waiting-area/components/native/JaneWaitingArea';
 import { LargeVideo } from '../../../large-video';
 import { BackButtonRegistry } from '../../../mobile/back-button';
 import { Captions } from '../../../subtitles';
@@ -446,7 +446,7 @@ function _mapStateToProps(state) {
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
     const {
         janeWaitingAreaEnabled
-    } = state['features/jane-waiting-area-native'];
+    } = state['features/jane-waiting-area'];
 
     // XXX There is a window of time between the successful establishment of the
     // XMPP connection and the subsequent commencement of joining the MUC during

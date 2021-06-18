@@ -13,7 +13,7 @@ import {
 import { Icon, IconClose } from '../../../../base/icons';
 import { getLocalParticipantType } from '../../../../base/participants/functions';
 import { isIPhoneX } from '../../../../base/styles/functions.native';
-import { isJaneWaitingAreaEnabled } from '../../../../jane-waiting-area-native';
+import { isJaneWaitingAreaEnabled } from '../../../../jane-waiting-area';
 import { isJaneTestCall } from '../../../conference';
 import { getLocalizedDateFormatter, translate, getTimeStamp } from '../../../i18n';
 import { getParticipantCount } from '../../../participants';

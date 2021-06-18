@@ -2,4 +2,4 @@
 
 import { getLogger } from '../base/logging/functions';
 
-export default getLogger('features/jane-waiting-area-native');
+export default getLogger('features/jane-waiting-area');

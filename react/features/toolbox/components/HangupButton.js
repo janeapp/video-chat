@@ -9,7 +9,7 @@ import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import { AbstractHangupButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
-import { isJaneWaitingAreaEnabled, updateParticipantReadyStatus } from '../../jane-waiting-area-native/functions';
+import { isJaneWaitingAreaEnabled, updateParticipantReadyStatus } from '../../jane-waiting-area/functions';
 
 /**
  * The type of the React {@code Component} props of {@link HangupButton}.

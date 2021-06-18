@@ -2,17 +2,17 @@
 /* eslint-disable require-jsdoc*/
 import React, { Component } from 'react';
 
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
+import { translate } from '../../../base/i18n';
+import { connect } from '../../../base/redux';
 
-import DialogBox from './DialogBox.native';
+import DialogBox from './DialogBox';
 
 type Props = {
     appstate: Object,
     jwt: string
 };
 
-class JaneWaitingAreaNative extends Component<Props> {
+class JaneWaitingArea extends Component<Props> {
 
     render() {
         return (this.props.appstate && this.props.appstate.appState === 'active'
@@ -30,4 +30,4 @@ function mapStateToProps(state): Object {
     };
 }
 
-export default connect(mapStateToProps)(translate(JaneWaitingAreaNative));
+export default connect(mapStateToProps)(translate(JaneWaitingArea));

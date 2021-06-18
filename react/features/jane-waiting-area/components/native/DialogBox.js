@@ -7,22 +7,22 @@ import React, { Component } from 'react';
 import { Image, Linking, Text, View, Clipboard } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import { createWaitingAreaPageEvent, sendAnalytics } from '../../analytics';
-import { connect as startConference } from '../../base/connection';
-import { getLocalizedDateFormatter } from '../../base/i18n';
-import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../base/participants';
-import { connect } from '../../base/redux';
+import { createWaitingAreaPageEvent, sendAnalytics } from '../../../analytics';
+import { connect as startConference } from '../../../base/connection';
+import { getLocalizedDateFormatter } from '../../../base/i18n';
+import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../base/participants';
+import { connect } from '../../../base/redux';
 import {
     enableJaneWaitingArea,
     setJaneWaitingAreaAuthState,
     updateRemoteParticipantsStatuses
-} from '../actions';
+} from '../../actions';
 import {
     checkLocalParticipantCanJoin,
     updateParticipantReadyStatus
-} from '../functions';
+} from '../../functions';
 
-import { ActionButton } from './ActionButton.native';
+import { ActionButton } from './ActionButton';
 import styles from './styles';
 
 type DialogTitleProps = {
@@ -248,7 +248,7 @@ class DialogBox extends Component<DialogBoxProps> {
                 <View style = { styles.janeWaitingAreaDialogBoxInnerWrapper }>
                     <View style = { styles.logoWrapper }>
                         <Image
-                            source = { require('../../../../images/jane_logo_72.png') }
+                            source = { require('../../../../../images/jane_logo_72.png') }
                             style = { styles.logo } />
                     </View>
                     <View style = { styles.messageWrapper }>
@@ -320,7 +320,7 @@ function mapStateToProps(state): Object {
     const participant = getLocalParticipantFromJwt(state);
     const participantType = getLocalParticipantType(state);
     const { locationURL } = state['features/base/connection'];
-    const { remoteParticipantsStatuses, authState } = state['features/jane-waiting-area-native'];
+    const { remoteParticipantsStatuses, authState } = state['features/jane-waiting-area'];
 
     return {
         jwt,
