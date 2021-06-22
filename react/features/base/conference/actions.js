@@ -400,7 +400,7 @@ export function conferenceWillLeave(conference: Object) {
     return (dispatch: Function, getState: Function) => {
         const state = getState();
         const { jwt } = state['features/base/jwt'];
-        const { conferenceStartedTime } = APP.store.getState()['features/base/conference'];
+        const { conferenceStartedTime } = getState()['features/base/conference'];
 
         if (jwt && conferenceStartedTime) {
             const jwtPayload = jwtDecode(jwt);
