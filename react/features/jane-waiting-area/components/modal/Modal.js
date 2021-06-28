@@ -152,13 +152,14 @@ class Modal extends Component<Props> {
     }
 
     _getBtnText() {
-        const { participantType, authState } = this.props;
+        const { participantType, authState, t } = this.props;
 
         if (authState === 'failed') {
-            return participantType === 'StaffMember' ? 'Return to my Schedule' : 'Return to my account';
+            return participantType === 'StaffMember'
+                ? t('janeWaitingArea.returnToSchedule') : t('janeWaitingArea.returnToAccount');
         }
 
-        return participantType === 'StaffMember' ? 'Admit Client' : 'Begin';
+        return participantType === 'StaffMember' ? t('janeWaitingArea.admitClient') : t('janeWaitingArea.begin');
     }
 
     _onFailed() {
@@ -176,7 +177,8 @@ class Modal extends Component<Props> {
             participantType,
             jwtPayload,
             localParticipantCanJoin,
-            authState
+            authState,
+            t
         } = this.props;
         const { _joinConference } = this;
 
@@ -185,8 +187,8 @@ class Modal extends Component<Props> {
                 <div className = 'jane-waiting-area-modal-logo-wrapper'>
                     <div className = 'jane-waiting-area-modal-logo' />
                     {participantType === 'StaffMember' && localParticipantCanJoin
-                            && <p className = 'jane-waiting-area-modal-patient-waiting-badge'>Client
-                                is waiting</p>}
+                    && <p className = 'jane-waiting-area-modal-patient-waiting-badge'>
+                        {t('janeWaitingArea.clientIsWaiting')}</p>}
                 </div>
                 <div className = 'jane-waiting-area-modal-text-wrapper'>
                     <DialogTitle
