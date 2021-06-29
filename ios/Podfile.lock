@@ -6,8 +6,6 @@ PODS:
   - AppAuth/Core (1.4.0)
   - AppAuth/ExternalUserAgent (1.4.0)
   - boost-for-react-native (1.63.0)
-  - BugsnagReactNative (7.10.3):
-    - React-Core
   - BVLinearGradient (2.5.6):
     - React
   - CocoaLumberjack (3.5.3):
@@ -340,7 +338,6 @@ PODS:
 
 DEPENDENCIES:
   - Amplitude-iOS (~> 4.0.4)
-  - "BugsnagReactNative (from `../node_modules/@bugsnag/react-native/BugsnagReactNative.podspec`)"
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - CocoaLumberjack (~> 3.5.3)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
@@ -408,8 +405,6 @@ SPEC REPOS:
     - PromisesObjC
 
 EXTERNAL SOURCES:
-  BugsnagReactNative:
-    :path: "../node_modules/@bugsnag/react-native/BugsnagReactNative.podspec"
   BVLinearGradient:
     :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
@@ -495,7 +490,6 @@ SPEC CHECKSUMS:
   Amplitude-iOS: 2ad4d7270c99186236c1272a3a9425463b1ae1a7
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
-  BugsnagReactNative: 18491637d667837c7b33ca1600af78215d9c179f
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   CocoaLumberjack: 2f44e60eb91c176d471fdba43b9e3eae6a721947
   DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
@@ -551,6 +545,6 @@ SPEC CHECKSUMS:
   RNWatch: a5320c959c75e72845c07985f3e935e58998f1d3
   Yoga: 7b4209fda2441f99d54dd6cf4c82b094409bb68f
 
-PODFILE CHECKSUM: ec128282a0054ebb87e11cac4860c9b4cc2caadd
+PODFILE CHECKSUM: b0ccae886ecc76ecb95cf15282a3d1c63909e41d
 
 COCOAPODS: 1.10.1
