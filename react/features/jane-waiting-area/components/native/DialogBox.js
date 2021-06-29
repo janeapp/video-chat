@@ -42,7 +42,8 @@ type DialogBoxProps = {
     setJaneWaitingAreaAuthStateAction: Function,
     locationURL: string,
     remoteParticipantsStatuses: Array<Object>,
-    authState: string
+    authState: string,
+    localParticipantCanJoin: boolean
 };
 
 type SocketWebViewProps = {
@@ -110,6 +111,16 @@ class DialogBox extends Component<DialogBoxProps> {
                 createWaitingAreaPageEvent('webview.error', {
                     error
                 }));
+            this._joinConference();
+        }
+    }
+
+    componentDidUpdate(prevProps: DialogBoxProps): * {
+        const { localParticipantCanJoin, participantType } = this.props;
+
+        if (prevProps.localParticipantCanJoin !== localParticipantCanJoin
+            && participantType === 'Patient'
+            && localParticipantCanJoin) {
             this._joinConference();
         }
     }
@@ -238,10 +249,9 @@ class DialogBox extends Component<DialogBoxProps> {
             participantType,
             jwtPayload,
             locationURL,
-            remoteParticipantsStatuses,
-            authState
+            authState,
+            localParticipantCanJoin
         } = this.props;
-        const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType);
 
         return (<View style = { styles.janeWaitingAreaContainer }>
             <View style = { styles.janeWaitingAreaDialogBoxWrapper }>
@@ -288,13 +298,13 @@ class DialogBox extends Component<DialogBoxProps> {
                     </View>
                 </View>
                 <View style = { styles.actionButtonWrapper }>
-                    { authState !== 'failed'
-                    && <ActionButton
-                        containerStyle = { styles.joinButtonContainer }
-                        disabled = { !localParticipantCanJoin }
-                        onPress = { this._joinConference }
-                        title = { this._getBtnText() }
-                        titleStyle = { styles.joinButtonText } /> }
+                    { authState !== 'failed' && participantType === 'StaffMember'
+                     && <ActionButton
+                         containerStyle = { styles.joinButtonContainer }
+                         disabled = { !localParticipantCanJoin }
+                         onPress = { this._joinConference }
+                         title = { this._getBtnText() }
+                         titleStyle = { styles.joinButtonText } /> }
                     {
                         authState === 'failed'
                         && <ActionButton
@@ -321,6 +331,7 @@ function mapStateToProps(state): Object {
     const participantType = getLocalParticipantType(state);
     const { locationURL } = state['features/base/connection'];
     const { remoteParticipantsStatuses, authState } = state['features/jane-waiting-area'];
+    const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType);
 
     return {
         jwt,
@@ -329,7 +340,8 @@ function mapStateToProps(state): Object {
         participant,
         locationURL,
         remoteParticipantsStatuses,
-        authState
+        authState,
+        localParticipantCanJoin
     };
 }
 
