@@ -103,6 +103,16 @@ class JaneDialog extends Component<Props> {
         joinConference();
     }
 
+    componentDidUpdate(prevProps: Props) {
+        const { localParticipantCanJoin, participantType } = this.props;
+
+        if (localParticipantCanJoin !== prevProps.localParticipantCanJoin
+            && localParticipantCanJoin
+            && participantType === 'Patient') {
+            this._joinConference();
+        }
+    }
+
     _getStartDate() {
         const { jwtPayload } = this.props;
         const startAt = _.get(jwtPayload, 'context.start_at') ?? '';
@@ -224,9 +234,8 @@ class JaneDialog extends Component<Props> {
                     <div
                         className = 'jane-waiting-area-preview-join-btn-container'>
                         {
-                            authState !== 'failed' && <ActionButton
+                            authState !== 'failed' && participantType === 'StaffMember' && <ActionButton
                                 disabled = { !localParticipantCanJoin }
-
                                 onClick = { _joinConference }
                                 type = 'primary'>
                                 {this._getBtnText()}
