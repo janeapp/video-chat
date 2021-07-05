@@ -41,7 +41,8 @@ type DialogBoxProps = {
     setJaneWaitingAreaAuthStateAction: Function,
     locationURL: string,
     remoteParticipantsStatuses: Array<Object>,
-    authState: string
+    authState: string,
+    localParticipantCanJoin: boolean
 };
 
 type SocketWebViewProps = {
@@ -109,6 +110,16 @@ class DialogBox extends Component<DialogBoxProps> {
                 createWaitingAreaPageEvent('webview.error', {
                     error
                 }));
+            this._joinConference();
+        }
+    }
+
+    componentDidUpdate(prevProps: DialogBoxProps): * {
+        const { localParticipantCanJoin, participantType } = this.props;
+
+        if (prevProps.localParticipantCanJoin !== localParticipantCanJoin
+            && participantType === 'Patient'
+            && localParticipantCanJoin) {
             this._joinConference();
         }
     }
@@ -244,10 +255,9 @@ class DialogBox extends Component<DialogBoxProps> {
             participantType,
             jwtPayload,
             locationURL,
-            remoteParticipantsStatuses,
-            authState
+            authState,
+            localParticipantCanJoin
         } = this.props;
-        const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType);
 
         return (<View style = { styles.janeWaitingAreaContainer }>
             <View style = { styles.janeWaitingAreaDialogBoxWrapper }>
@@ -293,23 +303,33 @@ class DialogBox extends Component<DialogBoxProps> {
                         </View>
                     </View>
                 </View>
-                <View style = { styles.actionButtonWrapper }>
-                    { authState !== 'failed'
-                    && <ActionButton
-                        containerStyle = { styles.joinButtonContainer }
-                        disabled = { !localParticipantCanJoin }
-                        onPress = { this._joinConference }
-                        title = { this._getBtnText() }
-                        titleStyle = { styles.joinButtonText } /> }
-                    {
-                        authState === 'failed'
+                {
+                    participantType === 'StaffMember' && <View style = { styles.actionButtonWrapper }>
+                        {
+                            authState !== 'failed'
+                        && <ActionButton
+                            containerStyle = { styles.joinButtonContainer }
+                            disabled = { !localParticipantCanJoin }
+                            onPress = { this._joinConference }
+                            title = { this._getBtnText() }
+                            titleStyle = { styles.joinButtonText } />
+                        }
+                        {
+                            authState === 'failed'
                         && <ActionButton
                             onPress = { this._return }
-                            title = {
-                                participantType === 'StaffMember'
-                                    ? 'Return to my Schedule' : 'Return to my account' } />
-                    }
-                </View>
+                            title = { 'Return to my Schedule' } />
+                        }
+                    </View>
+                }
+                {
+                    participantType === 'Patient' && authState === 'failed'
+                    && <View style = { styles.actionButtonWrapper }>
+                        <ActionButton
+                            onPress = { this._return }
+                            title = { 'Return to my account' } />
+                    </View>
+                }
             </View>
             <SocketWebView
                 locationURL = { locationURL }
@@ -327,6 +347,7 @@ function mapStateToProps(state): Object {
     const participantType = getLocalParticipantType(state);
     const { locationURL } = state['features/base/connection'];
     const { remoteParticipantsStatuses, authState } = state['features/jane-waiting-area'];
+    const localParticipantCanJoin = checkLocalParticipantCanJoin(remoteParticipantsStatuses, participantType);
 
     return {
         jwt,
@@ -335,7 +356,8 @@ function mapStateToProps(state): Object {
         participant,
         locationURL,
         remoteParticipantsStatuses,
-        authState
+        authState,
+        localParticipantCanJoin
     };
 }
 
@@ -359,8 +381,6 @@ const DialogTitleHeader = (props: DialogTitleProps) => {
         } else {
             header = 'Waiting for your client...';
         }
-    } else if (localParticipantCanJoin) {
-        header = 'Your practitioner is ready to begin the session.';
     } else {
         header = 'Your practitioner will let you into the session when ready...';
     }
@@ -370,17 +390,33 @@ const DialogTitleHeader = (props: DialogTitleProps) => {
 };
 
 const DialogTitleMsg = (props: DialogTitleProps) => {
-    const { participantType, authState, localParticipantCanJoin } = props;
-    let message;
+    const { authState, localParticipantCanJoin, participantType } = props;
+    const isStaffMember = participantType === 'StaffMember';
 
-    if (!localParticipantCanJoin) {
-        message = 'Test your audio and video while you wait.';
-    } else if (participantType === 'StaffMember') {
-        message = 'When you are ready to begin, click on button below to admit your client into the video session.';
-    } else {
-        message = '';
+    if (authState === 'failed') {
+        return null;
     }
 
-    return (<Text
-        style = { styles.titleMsg }>{ authState === 'failed' ? '' : message }</Text>);
+    if (localParticipantCanJoin && isStaffMember) {
+        return (<Text style = { styles.titleMsg }>
+            When you are ready to begin, click on button below to admit your client into the video session.
+        </Text>);
+    }
+
+    return <>
+        <Text
+            style = { styles.titleMsg }>
+            Please keep your app open to stay on the call.
+        </Text>
+        <Text
+            style = { styles.titleMsg }>
+            You may test your audio and video while you wait.
+        </Text>
+        {
+            !isStaffMember && <Text
+                style = { styles.titleMsg }>
+                Your call will automatically begin momentarily.
+            </Text>
+        }
+    </>;
 };
