@@ -2,7 +2,6 @@
 /* eslint-disable require-jsdoc, react/no-multi-comp, react/jsx-handler-names*/
 import jwtDecode from 'jwt-decode';
 import _ from 'lodash';
-import moment from 'moment';
 import React, { Component } from 'react';
 import { Image, Linking, Text, View, Clipboard } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -164,21 +163,28 @@ class DialogBox extends Component<DialogBoxProps> {
 
     _getDuration() {
         const { jwtPayload } = this.props;
-        const startAt = _.get(jwtPayload, 'context.start_at') ?? '';
-        const endAt = _.get(jwtPayload, 'context.end_at') ?? '';
+        const startAt = _.get(jwtPayload, 'context.start_at');
+        const endAt = _.get(jwtPayload, 'context.end_at');
+        const treatmentDuration = _.get(jwtPayload, 'context.treatment_duration');
+        let duration;
 
-        if (!startAt || !endAt) {
+        if (treatmentDuration) {
+            duration = Number(treatmentDuration) / 60;
+        }
+
+        if (startAt && endAt && !treatmentDuration) {
+            duration = getLocalizedDateFormatter(endAt)
+                    .valueOf() - getLocalizedDateFormatter(startAt)
+                    .valueOf();
+        }
+
+        if (!duration) {
             return null;
         }
-        const duration = getLocalizedDateFormatter(endAt)
-            .valueOf() - getLocalizedDateFormatter(startAt)
-            .valueOf();
-
 
         return (<Text style = { styles.msgText }>
             {
-                `${moment.duration(duration)
-                    .asMinutes()} Minutes`
+                `${duration} Minutes`
             }
         </Text>);
     }
