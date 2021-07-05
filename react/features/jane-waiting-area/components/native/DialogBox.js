@@ -9,7 +9,7 @@ import { WebView } from 'react-native-webview';
 
 import { createWaitingAreaPageEvent, sendAnalytics } from '../../../analytics';
 import { connect as startConference } from '../../../base/connection';
-import { getLocalizedDateFormatter } from '../../../base/i18n';
+import { getLocalizedDateFormatter, translate } from '../../../base/i18n';
 import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import {
@@ -28,7 +28,8 @@ import styles from './styles';
 type DialogTitleProps = {
     participantType: string,
     localParticipantCanJoin: boolean,
-    authState: string
+    authState: string,
+    t: Function
 }
 
 type DialogBoxProps = {
@@ -43,7 +44,8 @@ type DialogBoxProps = {
     locationURL: string,
     remoteParticipantsStatuses: Array<Object>,
     authState: string,
-    localParticipantCanJoin: boolean
+    localParticipantCanJoin: boolean,
+    t: Function
 };
 
 type SocketWebViewProps = {
@@ -177,7 +179,7 @@ class DialogBox extends Component<DialogBoxProps> {
     }
 
     _getDuration() {
-        const { jwtPayload } = this.props;
+        const { jwtPayload, t } = this.props;
         const startAt = _.get(jwtPayload, 'context.start_at') ?? '';
         const endAt = _.get(jwtPayload, 'context.end_at') ?? '';
 
@@ -188,19 +190,17 @@ class DialogBox extends Component<DialogBoxProps> {
             .valueOf() - getLocalizedDateFormatter(startAt)
             .valueOf();
 
-
         return (<Text style = { styles.msgText }>
             {
-                `${moment.duration(duration)
-                    .asMinutes()} Minutes`
+                t('janeWaitingArea.minutes', { duration: moment.duration(duration).asMinutes() })
             }
         </Text>);
     }
 
     _getBtnText() {
-        const { participantType } = this.props;
+        const { participantType, t } = this.props;
 
-        return participantType === 'StaffMember' ? 'Admit Client' : 'Begin';
+        return participantType === 'StaffMember' ? t('janeWaitingArea.admitClient') : t('janeWaitingArea.begin');
     }
 
     _return() {
@@ -252,8 +252,9 @@ class DialogBox extends Component<DialogBoxProps> {
             participantType,
             jwtPayload,
             locationURL,
+            localParticipantCanJoin,
             authState,
-            localParticipantCanJoin
+            t
         } = this.props;
 
         return (<View style = { styles.janeWaitingAreaContainer }>
@@ -269,13 +270,15 @@ class DialogBox extends Component<DialogBoxProps> {
                             <DialogTitleHeader
                                 authState = { authState }
                                 localParticipantCanJoin = { localParticipantCanJoin }
-                                participantType = { participantType } />
+                                participantType = { participantType }
+                                t = { t } />
                         }
                         {
                             <DialogTitleMsg
                                 authState = { authState }
                                 localParticipantCanJoin = { localParticipantCanJoin }
-                                participantType = { participantType } />
+                                participantType = { participantType }
+                                t = { t } />
                         }
                         <View style = { styles.infoDetailContainer }>
                             <Text style = { [ styles.msgText, styles.boldText ] }>
@@ -315,7 +318,7 @@ class DialogBox extends Component<DialogBoxProps> {
                             authState === 'failed'
                         && <ActionButton
                             onPress = { this._return }
-                            title = { 'Return to my Schedule' } />
+                            title = { t('janeWaitingArea.returnToSchedule') } />
                         }
                     </View>
                 }
@@ -324,7 +327,7 @@ class DialogBox extends Component<DialogBoxProps> {
                     && <View style = { styles.actionButtonWrapper }>
                         <ActionButton
                             onPress = { this._return }
-                            title = { 'Return to my account' } />
+                            title = { t('janeWaitingArea.returnToAccount') } />
                     </View>
                 }
             </View>
@@ -365,21 +368,21 @@ const mapDispatchToProps = {
     setJaneWaitingAreaAuthStateAction: setJaneWaitingAreaAuthState
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(DialogBox);
+export default connect(mapStateToProps, mapDispatchToProps)(translate(DialogBox));
 
 const DialogTitleHeader = (props: DialogTitleProps) => {
-    const { participantType, authState, localParticipantCanJoin } = props;
-    const tokenExpiredHeader = 'Your appointment booking has expired';
+    const { participantType, authState, localParticipantCanJoin, t } = props;
+    const tokenExpiredHeader = t('janeWaitingArea.authenticationExpired');
     let header;
 
     if (participantType === 'StaffMember') {
         if (localParticipantCanJoin) {
-            header = 'Your patient is ready to begin the session.';
+            header = t('janeWaitingArea.patientIsReady');
         } else {
-            header = 'Waiting for your client...';
+            header = t('janeWaitingArea.waitClient');
         }
     } else {
-        header = 'Your practitioner will let you into the session when ready...';
+        header = t('janeWaitingArea.waitPractitioner');
     }
 
     return (<Text
@@ -387,7 +390,7 @@ const DialogTitleHeader = (props: DialogTitleProps) => {
 };
 
 const DialogTitleMsg = (props: DialogTitleProps) => {
-    const { authState, localParticipantCanJoin, participantType } = props;
+    const { authState, localParticipantCanJoin, participantType, t } = props;
     const isStaffMember = participantType === 'StaffMember';
 
     if (authState === 'failed') {
@@ -396,23 +399,31 @@ const DialogTitleMsg = (props: DialogTitleProps) => {
 
     if (localParticipantCanJoin && isStaffMember) {
         return (<Text style = { styles.titleMsg }>
-            When you are ready to begin, click on button below to admit your client into the video session.
+            {
+                t('janeWaitingArea.whenYouAreReady')}
+            }
         </Text>);
     }
 
     return <>
         <Text
             style = { styles.titleMsg }>
-            Please keep your app open to stay on the call.
+            {
+                t('janeWaitingArea.keepAppOpen')
+            }
         </Text>
         <Text
             style = { styles.titleMsg }>
-            You may test your audio and video while you wait.
+            {
+                t('janeWaitingArea.testYourDevice')
+            }
         </Text>
         {
             !isStaffMember && <Text
                 style = { styles.titleMsg }>
-                Your call will automatically begin momentarily.
+                {
+                    t('janeWaitingArea.callWillBegin')
+                }
             </Text>
         }
     </>;
