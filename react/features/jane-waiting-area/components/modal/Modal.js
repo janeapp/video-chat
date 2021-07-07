@@ -26,14 +26,16 @@ type Props = {
     participantType: string,
     participant: Object,
     authState: string,
-    localParticipantCanJoin: boolean
+    localParticipantCanJoin: boolean,
+    isMobile: boolean
 };
 
 type DialogTitleProps = {
     t: Function,
     participantType: string,
     localParticipantCanJoin: boolean,
-    authState: string
+    authState: string,
+    isMobile: boolean
 }
 
 function DialogTitleComp(props: DialogTitleProps) {
@@ -67,7 +69,7 @@ function DialogTitleMsgComp(props: DialogTitleProps) {
             title = props.t('janeWaitingArea.whenYouAreReady');
         }
     } else {
-        title = props.t('janeWaitingArea.testYourDevice');
+        title = `${props.t('janeWaitingArea.keepOpen')} ${props.t('janeWaitingArea.youMayTest')}`;
     }
 
     if (props.authState === 'failed') {
@@ -76,6 +78,14 @@ function DialogTitleMsgComp(props: DialogTitleProps) {
 
     if (title === '') {
         return null;
+    }
+
+    if (props.participantType === 'Patient' && props.isMobile) {
+        return <>
+            <div className = 'jane-waiting-area-modal-title-msg'>{props.t('janeWaitingArea.keepOpen')}</div>
+            <div className = 'jane-waiting-area-modal-title-msg'>{props.t('janeWaitingArea.youMayTest')}</div>
+            <div className = 'jane-waiting-area-modal-title-msg'>{props.t('janeWaitingArea.callWillBegin')}</div>
+        </>;
     }
 
     return <div className = 'jane-waiting-area-modal-title-msg'>{title}</div>;
@@ -100,6 +110,16 @@ class Modal extends Component<Props> {
 
         updateParticipantReadyStatus('joined');
         joinConference();
+    }
+
+    componentDidUpdate(prevProps: Props) {
+        const { localParticipantCanJoin, participantType } = this.props;
+
+        if (localParticipantCanJoin !== prevProps.localParticipantCanJoin
+            && localParticipantCanJoin
+            && participantType === 'Patient') {
+            this._joinConference();
+        }
     }
 
     _getStartDate() {
@@ -174,7 +194,8 @@ class Modal extends Component<Props> {
             participantType,
             jwtPayload,
             localParticipantCanJoin,
-            authState
+            authState,
+            isMobile
         } = this.props;
         const { _joinConference } = this;
 
@@ -193,6 +214,7 @@ class Modal extends Component<Props> {
                         participantType = { participantType } />
                     <DialogTitleMsg
                         authState = { authState }
+                        isMobile = { isMobile }
                         localParticipantCanJoin = { localParticipantCanJoin }
                         participantType = { participantType } />
                     <div className = 'jane-waiting-area-modal-detail'>
@@ -219,24 +241,24 @@ class Modal extends Component<Props> {
                 </div>
             </div>
             {
-                <div
+                authState !== 'failed' && participantType === 'StaffMember' && <div
                     className = 'jane-waiting-area-preview-join-btn-container'>
-                    {
-                        authState !== 'failed' && <ActionButton
-                            disabled = { !localParticipantCanJoin }
-
-                            onClick = { _joinConference }
-                            type = 'primary'>
-                            {this._getBtnText()}
-                        </ActionButton>
-                    }
-                    {
-                        authState === 'failed' && <ActionButton
-                            onClick = { this._onFailed }
-                            type = 'primary'>
-                            {this._getBtnText()}
-                        </ActionButton>
-                    }
+                    <ActionButton
+                        disabled = { !localParticipantCanJoin }
+                        onClick = { _joinConference }
+                        type = 'primary'>
+                        {this._getBtnText()}
+                    </ActionButton>
+                </div>
+            }
+            {
+                authState === 'failed' && <div
+                    className = 'jane-waiting-area-preview-join-btn-container'>
+                    <ActionButton
+                        onClick = { this._onFailed }
+                        type = 'primary'>
+                        {this._getBtnText()}
+                    </ActionButton>
                 </div>
             }
         </div>);
