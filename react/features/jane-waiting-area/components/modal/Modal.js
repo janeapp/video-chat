@@ -70,6 +70,9 @@ function DialogTitleMsgComp(props: DialogTitleProps) {
         }
     } else {
         title = `${props.t('janeWaitingArea.keepOpen')} ${props.t('janeWaitingArea.youMayTest')}`;
+        if (props.participantType === 'Patient') {
+            title = `${title} ${props.t('janeWaitingArea.callWillBegin')}`;
+        }
     }
 
     if (props.authState === 'failed') {
