@@ -168,7 +168,3 @@ gradle.projectsEvaluated {
 if (googleServicesEnabled) {
     apply plugin: 'com.google.gms.google-services'
 }
-
-bugsnag {
-  uploadReactNativeMappings = true
-}

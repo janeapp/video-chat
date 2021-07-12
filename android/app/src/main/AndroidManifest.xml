@@ -40,6 +40,5 @@
         <data android:scheme="org.jitsi.meet" />
       </intent-filter>
     </activity>
-    <meta-data android:name="com.bugsnag.android.API_KEY" android:value="d8466c4436f5d282ea9a602b000a434b" />
   </application>
 </manifest>

@@ -3,16 +3,12 @@
 // Apply all necessary polyfills as early as possible to make sure anything imported henceforth
 // sees them.
 import './features/mobile/polyfills';
-
-import Bugsnag from '@bugsnag/react-native';
 import React, { PureComponent } from 'react';
 import { AppRegistry } from 'react-native';
 
 import { App } from './features/app/components';
 import { _initLogging } from './features/base/logging/functions';
 import { IncomingCallApp } from './features/mobile/incoming-call';
-
-Bugsnag.start();
 
 declare var __DEV__;
 
@@ -26,8 +22,6 @@ type Props = {
      */
     url: Object | string
 };
-
-const ErrorBoundary = Bugsnag.getPlugin('react').createErrorBoundary(React);
 
 /**
  * React Native doesn't support specifying props to the main/root component (in
@@ -45,11 +39,8 @@ class Root extends PureComponent<Props> {
      */
     render() {
         return (
-            <ErrorBoundary>
-                <App
-                    { ...this.props } />
-            </ErrorBoundary>
-
+            <App
+                { ...this.props } />
         );
     }
 }

@@ -18,7 +18,6 @@
 #import "AppDelegate.h"
 #import "FIRUtilities.h"
 #import "Types.h"
-#import <Bugsnag/Bugsnag.h>
 
 @import Firebase;
 @import JitsiMeet;
@@ -55,8 +54,6 @@
 
     [jitsiMeet application:application didFinishLaunchingWithOptions:launchOptions];
 
-    [Bugsnag start];
-  
     return YES;
 }
 
