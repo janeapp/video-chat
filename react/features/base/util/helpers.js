@@ -185,3 +185,18 @@ function parseShorthandColor(color) {
 
     return [ r, g, b ];
 }
+
+/**
+ * A synchronous function that guarantees to execute the code in
+ * the window.beforeunload & window.unload callbacks.
+ * Https://stackoverflow.com/a/42914045.
+ *
+ * @param {num} delay - Milliseconds.
+ * @returns {void}
+ */
+export function sleep(delay: number) {
+    const start = new Date().getTime();
+
+    // eslint-disable-next-line no-empty
+    while (new Date().getTime() < start + delay) { }
+}

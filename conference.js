@@ -17,7 +17,7 @@ import {
     createStartSilentEvent,
     createScreenSharingEvent,
     createTrackMutedEvent,
-    sendAnalytics
+    sendAnalytics, createWaitingAreaParticipantStatusChangedEvent
 } from './react/features/analytics';
 import {
     maybeRedirectToWelcomePage,
@@ -43,8 +43,7 @@ import {
     lockStateChanged,
     onStartMutedPolicyChanged,
     p2pStatusChanged,
-    sendLocalParticipant,
-    isJaneTestCall
+    sendLocalParticipant
 } from './react/features/base/conference';
 import {
     checkAndNotifyForNewDevice,
@@ -2779,8 +2778,9 @@ export default {
 
         APP.UI.removeAllListeners();
 
-        if (!isJaneTestCall(APP.store.getState())
-            && isJaneWaitingAreaPageEnabled(APP.store.getState())) {
+        if (window.APP.waitingArea.status === 'initialized') {
+            window.APP.waitingArea.status = 'left';
+            sendAnalytics(createWaitingAreaParticipantStatusChangedEvent('left'));
             updateParticipantReadyStatus('left');
         }
 
@@ -2813,7 +2813,6 @@ export default {
                 APP.API.notifyReadyToClose();
             }
             APP.store.dispatch(maybeRedirectToWelcomePage(values[0]));
-            window.close();
         });
     },
 
