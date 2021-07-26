@@ -12,11 +12,11 @@ import { setColorAlpha } from '../../../base/util';
 import { Chat } from '../../../chat';
 import { Filmstrip } from '../../../filmstrip';
 import { CalleeInfoContainer } from '../../../invite';
+import { JaneWaitingArea, isJaneWaitingAreaPageVisible } from '../../../jane-waiting-area';
 import { LargeVideo } from '../../../large-video';
 import { KnockingParticipantList, LobbyScreen } from '../../../lobby';
 import { ParticipantsPane } from '../../../participants-pane/components';
 import { getParticipantsPaneOpen } from '../../../participants-pane/functions';
-import { Prejoin, isPrejoinPageVisible } from '../../../prejoin';
 import { fullScreenChanged, showToolbox } from '../../../toolbox/actions.web';
 import { Toolbox } from '../../../toolbox/components/web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
@@ -29,7 +29,6 @@ import type { AbstractProps } from '../AbstractConference';
 
 import ConferenceInfo from './ConferenceInfo';
 import { default as Notice } from './Notice';
-import { default as RefreshButton } from './RefreshButton';
 
 declare var APP: Object;
 declare var interfaceConfig: Object;
@@ -90,12 +89,7 @@ type Props = AbstractProps & {
      * Name for this conference room.
      */
     _roomName: string,
-
-    /**
-     * If prejoin page is visible or not.
-     */
-    _showPrejoin: boolean,
-
+    _showJaneWaitingArea: boolean,
     dispatch: Function,
     t: Function
 }
@@ -186,10 +180,9 @@ class Conference extends AbstractConference<Props, *> {
      */
     render() {
         const {
-            _isLobbyScreenVisible,
             _isParticipantsPaneVisible,
             _layoutClassName,
-            _showPrejoin
+            _showJaneWaitingArea
         } = this.props;
 
         return (
@@ -207,15 +200,14 @@ class Conference extends AbstractConference<Props, *> {
                         <Filmstrip />
                     </div>
 
-                    { _showPrejoin || _isLobbyScreenVisible || <Toolbox /> }
+                    { _showJaneWaitingArea || <Toolbox /> }
                     <Chat />
 
                     { this.renderNotificationsContainer() }
                     { this.renderHdVideoAlert() }
-
                     <CalleeInfoContainer />
 
-                    { _showPrejoin && <Prejoin />}
+                    { _showJaneWaitingArea && <JaneWaitingArea />}
 
                 </div>
                 <ParticipantsPane />
@@ -313,7 +305,7 @@ function _mapStateToProps(state) {
         _isParticipantsPaneVisible: getParticipantsPaneOpen(state),
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
         _roomName: getConferenceNameForTitle(state),
-        _showPrejoin: isPrejoinPageVisible(state)
+        _showJaneWaitingArea: isJaneWaitingAreaPageVisible(state)
     };
 }
 

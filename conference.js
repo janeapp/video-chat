@@ -43,7 +43,8 @@ import {
     lockStateChanged,
     onStartMutedPolicyChanged,
     p2pStatusChanged,
-    sendLocalParticipant
+    sendLocalParticipant,
+    isJaneTestCall
 } from './react/features/base/conference';
 import {
     checkAndNotifyForNewDevice,
@@ -100,8 +101,6 @@ import {
     createLocalPresenterTrack,
     createLocalTracksF,
     destroyLocalTracks,
-    getLocalJitsiAudioTrack,
-    getLocalJitsiVideoTrack,
     getLocalTracks,
     isLocalCameraTrackMuted,
     isLocalTrackMuted,
@@ -119,15 +118,16 @@ import {
     maybeOpenFeedbackDialog,
     submitFeedback
 } from './react/features/feedback';
+import {
+    initJaneWaitingArea,
+    isJaneWaitingAreaPageEnabled,
+    isJaneWaitingAreaPageVisible,
+    replaceJaneWaitingAreaAudioTrack,
+    replaceJaneWaitingAreaVideoTrack, updateParticipantReadyStatus
+} from './react/features/jane-waiting-area';
 import { showNotification } from './react/features/notifications';
 import { mediaPermissionPromptVisibilityChanged, toggleSlowGUMOverlay } from './react/features/overlay';
 import { suspendDetected } from './react/features/power-monitor';
-import {
-    initPrejoin,
-    isPrejoinPageEnabled,
-    isPrejoinPageVisible,
-    makePrecallTest
-} from './react/features/prejoin';
 import { disableReceiver, stopReceiver } from './react/features/remote-control';
 import { setScreenAudioShareState, isScreenAudioShared } from './react/features/screen-share/';
 import { toggleScreenshotCaptureEffect } from './react/features/screenshot-capture';
@@ -804,7 +804,7 @@ export default {
             logger.warn('initial device list initialization failed', error);
         }
 
-        if (isPrejoinPageEnabled(APP.store.getState())) {
+        if (isJaneWaitingAreaPageEnabled(APP.store.getState())) {
             _connectionPromise = connect(roomName).then(c => {
                 // we want to initialize it early, in case of errors to be able
                 // to gather logs
@@ -812,8 +812,6 @@ export default {
 
                 return c;
             });
-
-            APP.store.dispatch(makePrecallTest(this._getConferenceOptions()));
 
             const { tryCreateLocalTracks, errors } = this.createInitialLocalTracks(initialOptions);
             const tracks = await tryCreateLocalTracks;
@@ -823,15 +821,7 @@ export default {
             // they may remain as empty strings.
             this._initDeviceList(true);
 
-            if (isPrejoinPageVisible(APP.store.getState())) {
-                return APP.store.dispatch(initPrejoin(tracks, errors));
-            }
-
-            logger.debug('Prejoin screen no longer displayed at the time when tracks were created');
-
-            this._displayErrorsForCreateInitialLocalTracks(errors);
-
-            return this._setLocalAudioVideoStreams(tracks);
+            return APP.store.dispatch(initJaneWaitingArea(tracks, errors));
         }
 
         const [ tracks, con ] = await this.createInitialLocalTracksAndConnect(roomName, initialOptions);
@@ -847,12 +837,13 @@ export default {
     },
 
     /**
-     * Joins conference after the tracks have been configured in the prejoin screen.
+     * Joins conference after the tracks have been configured in the JaneWaitingArea screen.
      *
      * @param {Object[]} tracks - An array with the configured tracks
      * @returns {Promise}
      */
-    async prejoinStart(tracks) {
+
+    async janeWaitingAreaStart(tracks) {
         const con = await _connectionPromise;
 
         return this.startConference(con, tracks);
@@ -1380,14 +1371,8 @@ export default {
             _replaceLocalVideoTrackQueue.enqueue(onFinish => {
                 const state = APP.store.getState();
 
-                // When the prejoin page is displayed localVideo is not set
-                // so just replace the video track from the store with the new one.
-                if (isPrejoinPageVisible(state)) {
-                    const oldTrack = getLocalJitsiVideoTrack(state);
-
-                    logger.debug(`useVideoStream on the prejoin screen: Replacing ${oldTrack} with ${newTrack}`);
-
-                    return APP.store.dispatch(replaceLocalTrack(oldTrack, newTrack))
+                if (isJaneWaitingAreaPageVisible(state)) {
+                    return APP.store.dispatch(replaceJaneWaitingAreaVideoTrack(newTrack))
                         .then(resolve)
                         .catch(error => {
                             logger.error(`useVideoStream failed on the prejoin screen: ${error}`);
@@ -1452,12 +1437,8 @@ export default {
             _replaceLocalAudioTrackQueue.enqueue(onFinish => {
                 const state = APP.store.getState();
 
-                // When the prejoin page is displayed localAudio is not set
-                // so just replace the audio track from the store with the new one.
-                if (isPrejoinPageVisible(state)) {
-                    const oldTrack = getLocalJitsiAudioTrack(state);
-
-                    return APP.store.dispatch(replaceLocalTrack(oldTrack, newTrack))
+                if (isJaneWaitingAreaPageVisible(state)) {
+                    return APP.store.dispatch(replaceJaneWaitingAreaAudioTrack(newTrack))
                         .then(resolve)
                         .catch(reject)
                         .then(onFinish);
@@ -2797,6 +2778,11 @@ export default {
         }
 
         APP.UI.removeAllListeners();
+
+        if (!isJaneTestCall(APP.store.getState())
+            && isJaneWaitingAreaPageEnabled(APP.store.getState())) {
+            updateParticipantReadyStatus('left');
+        }
 
         let requestFeedbackPromise;
 

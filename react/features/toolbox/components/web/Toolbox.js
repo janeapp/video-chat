@@ -98,6 +98,8 @@ import OverflowMenuProfileItem from './OverflowMenuProfileItem';
 import ToggleCameraButton from './ToggleCameraButton';
 import ToolbarButton from './ToolbarButton';
 import VideoSettingsButton from './VideoSettingsButton';
+import JaneHangupButton from '../JaneHangupButton';
+import { isJaneTestCall } from '../../../base/conference';
 
 
 /**
@@ -246,7 +248,7 @@ type Props = {
      * Invoked to obtain translated strings.
      */
     t: Function,
-
+    _isJaneTestCall: boolean,
     /**
      * Whether or not the local participant is a practitioner.
      */
@@ -1328,6 +1330,7 @@ class Toolbox extends Component<Props> {
             _clientWidth,
             _isMobile,
             _overflowMenuVisible,
+            _isJaneTestCall,
             t
         } = this.props;
 
@@ -1363,9 +1366,11 @@ class Toolbox extends Component<Props> {
                                 { this._renderOverflowMenuContent(overflowMenuAdditionalButtons) }
                             </ul>
                         </OverflowMenuButton>}
-                        <HangupButton
-                            customClass = 'hangup-button'
-                            visible = { this.props._shouldShowButton('hangup') } />
+                    <HangupButton
+                        customClass = 'hangup-button'
+                        visible={this.props._shouldShowButton('hangup') && !_isJaneTestCall}/>
+                    <JaneHangupButton visible={_isJaneTestCall}
+                                      tooltipText="Finished testing? Click here."/>
                     </div>
                 </div>
             </div>
@@ -1434,7 +1439,8 @@ function _mapStateToProps(state) {
         _shouldShowButton: buttonName => isToolbarButtonEnabled(buttonName)(state),
         _visible: isToolboxVisible(state),
         _visibleButtons: getToolbarButtons(state),
-        _isStaffMember: getLocalParticipantType(state) === 'StaffMember'
+        _isStaffMember: getLocalParticipantType(state) === 'StaffMember',
+        _isJaneTestCall: isJaneTestCall(state)
     };
 }
 
