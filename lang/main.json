@@ -653,7 +653,8 @@
         "keepOpen": "Please keep your app or browser window open to stay on the call.",
         "youMayTest": "You may test your audio and video while you wait.",
         "callWillBegin": "Your call will automatically begin momentarily.",
-        "authenticationExpired": "Your appointment booking has expired"
+        "authenticationExpired": "Your appointment booking has expired",
+        "minutes": "{{duration}} Minutes"
     },
     "raisedHand": "Would like to speak",
     "recording": {
