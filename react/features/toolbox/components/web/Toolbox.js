@@ -1370,7 +1370,7 @@ class Toolbox extends Component<Props> {
                         customClass = 'hangup-button'
                         visible={this.props._shouldShowButton('hangup') && !_isJaneTestCall}/>
                     <JaneHangupButton visible={_isJaneTestCall}
-                                      tooltipText="Finished testing? Click here."/>
+                                      tooltipText={t("toolbar.finishedTesting")}/>
                     </div>
                 </div>
             </div>
