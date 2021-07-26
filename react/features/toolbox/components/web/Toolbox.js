@@ -30,6 +30,7 @@ import {
 import JitsiMeetJS from '../../../base/lib-jitsi-meet';
 import {
     getLocalParticipant,
+    getLocalParticipantType,
     getParticipants,
     participantUpdated
 } from '../../../base/participants';
@@ -244,7 +245,12 @@ type Props = {
     /**
      * Invoked to obtain translated strings.
      */
-    t: Function
+    t: Function,
+
+    /**
+     * Whether or not the local participant is a practitioner.
+     */
+    _isStaffMember: boolean
 };
 
 declare var APP: Object;
@@ -1021,6 +1027,7 @@ class Toolbox extends Component<Props> {
             _fullScreen,
             _isMobile,
             _screensharing,
+            _isStaffMember,
             t
         } = this.props;
 
@@ -1032,6 +1039,7 @@ class Toolbox extends Component<Props> {
                     key = 'toggle-camera'
                     showLabel = { true } />,
             this.props._shouldShowButton('videoquality')
+                && _isStaffMember
                 && <OverflowMenuVideoQualityItem
                     key = 'videoquality'
                     onClick = { this._onToolbarOpenVideoQuality } />,
@@ -1425,7 +1433,8 @@ function _mapStateToProps(state) {
         _screensharing: (localVideo && localVideo.videoType === 'desktop') || isScreenAudioShared(state),
         _shouldShowButton: buttonName => isToolbarButtonEnabled(buttonName)(state),
         _visible: isToolboxVisible(state),
-        _visibleButtons: getToolbarButtons(state)
+        _visibleButtons: getToolbarButtons(state),
+        _isStaffMember: getLocalParticipantType(state) === 'StaffMember'
     };
 }
 

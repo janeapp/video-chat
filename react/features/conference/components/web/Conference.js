@@ -211,6 +211,7 @@ class Conference extends AbstractConference<Props, *> {
                     <Chat />
 
                     { this.renderNotificationsContainer() }
+                    { this.renderHdVideoAlert() }
 
                     <CalleeInfoContainer />
 
