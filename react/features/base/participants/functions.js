@@ -27,25 +27,25 @@ const AVATAR_QUEUE = [];
 
 // const AVATAR_CHECKED_URLS = new Map();
 /* eslint-disable arrow-body-style, no-unused-vars */
-const AVATAR_CHECKER_FUNCTIONS = [
-    (participant, _) => {
-        return participant && participant.isJigasi ? JIGASI_PARTICIPANT_ICON : null;
-    },
-    (participant, _) => {
-        return participant && participant.avatarURL ? participant.avatarURL : null;
-    },
-    (participant, store) => {
-        if (participant && participant.email) {
-            // TODO: remove once libravatar has deployed their new scaled up infra. -saghul
-            const gravatarBaseURL
-                = store.getState()['features/base/config'].gravatarBaseURL ?? 'https://www.gravatar.com/avatar/';
-
-            return getGravatarURL(participant.email, gravatarBaseURL);
-        }
-
-        return null;
-    }
-];
+// const AVATAR_CHECKER_FUNCTIONS = [
+//     (participant, _) => {
+//         return participant && participant.isJigasi ? JIGASI_PARTICIPANT_ICON : null;
+//     },
+//     (participant, _) => {
+//         return participant && participant.avatarURL ? participant.avatarURL : null;
+//     },
+//     (participant, store) => {
+//         if (participant && participant.email) {
+//             // TODO: remove once libravatar has deployed their new scaled up infra. -saghul
+//             const gravatarBaseURL
+//                 = store.getState()['features/base/config'].gravatarBaseURL ?? 'https://www.gravatar.com/avatar/';
+//
+//             return getGravatarURL(participant.email, gravatarBaseURL);
+//         }
+//
+//         return null;
+//     }
+// ];
 /* eslint-enable arrow-body-style, no-unused-vars */
 
 /**
@@ -432,7 +432,7 @@ async function _getFirstLoadableAvatarUrl() {
     //                 AVATAR_CHECKED_URLS.set(finalUrl, true);
     //
     //                 return finalUrl;
-    //             } catch (e) {
+    //             } catch (e) {`
     //                 AVATAR_CHECKED_URLS.set(url, false);
     //             }
     //         }

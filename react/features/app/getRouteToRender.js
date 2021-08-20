@@ -86,8 +86,10 @@ function _getWebConferenceRoute(state): ?Promise<Route> {
     // room into account.
     const { locationURL } = state['features/base/connection'];
 
+    // eslint-disable-next-line no-constant-condition
     if (false) {
-        // This is where you can authenticate your JWT token from Rails - if it's not a valid token, send them to the main chat page
+        // This is where you can authenticate your JWT token from Rails
+        // if it's not a valid token, send them to the main chat page
         // which will ideally have some instructions on how to start a video chat
         return _getWebWelcomePageRoute(state);
     }
