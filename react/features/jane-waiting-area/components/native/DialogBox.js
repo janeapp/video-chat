@@ -121,7 +121,10 @@ class DialogBox extends Component<DialogBoxProps> {
         if (prevProps.localParticipantCanJoin !== localParticipantCanJoin
             && participantType === 'Patient'
             && localParticipantCanJoin) {
-            this._joinConference();
+            // set a 1 sec delay here to ensure that the practitioner can join the call first.
+            setTimeout(() => {
+                this._joinConference();
+            }, 1000);
         }
     }
 
