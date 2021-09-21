@@ -4,9 +4,10 @@ import jwtDecode from 'jwt-decode';
 import _ from 'lodash';
 
 import {
-    createWaitingAreaPageEvent,
+    createWaitingAreaParticipantStatusChangedEvent,
     sendAnalytics
 } from '../analytics';
+import { getBrowserSessionId } from '../app/functions';
 import { showErrorNotification } from '../notifications';
 
 export function isJaneWaitingAreaEnabled(state: Object): boolean {
@@ -20,6 +21,7 @@ export function isJaneWaitingAreaEnabled(state: Object): boolean {
 export function updateParticipantReadyStatus(jwt: string, status: string): void {
     const jwtPayload = jwt && jwtDecode(jwt) ?? {};
     const updateParticipantStatusUrl = _.get(jwtPayload, 'context.update_participant_status_url') ?? '';
+    const browserSessionId = getBrowserSessionId();
     const info = { status };
 
     return fetch(updateParticipantStatusUrl, {
@@ -29,17 +31,18 @@ export function updateParticipantReadyStatus(jwt: string, status: string): void 
         },
         body: JSON.stringify({
             'jwt': jwt,
-            'info': info
+            'info': info,
+            'browser_session_id': browserSessionId
         })
     })
     .then(res => {
         if (!res.ok) {
             throw new Error('Failed to update the waiting area state for the local participant.');
         }
-        sendAnalytics(createWaitingAreaPageEvent('participant.status.changed', { status }));
+        sendAnalytics(createWaitingAreaParticipantStatusChangedEvent(status));
     })
     .catch(error => {
-        sendAnalytics(createWaitingAreaPageEvent('participant.status.changed', { status: 'failed' }));
+        sendAnalytics(createWaitingAreaParticipantStatusChangedEvent('failed'));
 
         if (navigator.product !== 'ReactNative') {
             window.APP.store.dispatch(showErrorNotification({
