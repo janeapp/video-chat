@@ -156,9 +156,8 @@ export function updateParticipantReadyStatus(status: string): void {
     const { jwt } = window.APP.store.getState()['features/base/jwt'];
     const jwtPayload = jwt && jwtDecode(jwt) ?? {};
 
-    const browserSessionId = getBrowserSessionId();
     const updateParticipantStatusUrl = _.get(jwtPayload, 'context.update_participant_status_url') ?? '';
-
+    const browserSessionId = getBrowserSessionId();
     const info = { status };
 
     return fetch(updateParticipantStatusUrl, {
