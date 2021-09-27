@@ -15,8 +15,7 @@ import {
     joinConference as joinConferenceAction
 } from '../../actions';
 import {
-    checkLocalParticipantCanJoin,
-    updateParticipantReadyStatus
+    checkLocalParticipantCanJoin
 } from '../../functions';
 import ActionButton from '../buttons/ActionButton';
 
@@ -114,7 +113,6 @@ class Modal extends Component<Props> {
     _joinConference() {
         const { joinConference } = this.props;
 
-        updateParticipantReadyStatus('joined');
         joinConference();
     }
 

@@ -5,6 +5,7 @@ import { Component } from 'react';
 
 import { Socket } from '../../../../service/Websocket/socket';
 import {
+    createWaitingAreaModalEvent,
     createWaitingAreaParticipantStatusChangedEvent,
     createWaitingAreaSocketEvent,
     sendAnalytics
@@ -13,6 +14,7 @@ import { getLocalParticipantInfoFromJwt, getLocalParticipantType } from '../../b
 import { connect } from '../../base/redux';
 import { playSound as playSoundAction } from '../../base/sounds';
 import { sleep } from '../../base/util/helpers';
+import { showErrorNotification as showErrorNotificationAction } from '../../notifications';
 import {
     setJaneWaitingAreaAuthState as setJaneWaitingAreaAuthStateAction,
     updateRemoteParticipantsStatuses as updateRemoteParticipantsStatusesAction,
@@ -40,16 +42,23 @@ type Props = {
     playSound: Function,
     joinConference: Function,
     setJaneWaitingAreaAuthState: Function,
-    remoteParticipantsStatuses: any
+    remoteParticipantsStatuses: any,
+    showErrorNotification: Function
 };
 
 class SocketConnection extends Component<Props> {
 
     socket: Object;
 
+    interval: ?IntervalID;
+
+    pollingRetries: number;
+
     constructor(props) {
         super(props);
         this.socket = null;
+        this.interval = undefined;
+        this.pollingRetries = 0;
     }
 
     componentDidMount() {
@@ -89,6 +98,10 @@ class SocketConnection extends Component<Props> {
     }
 
     componentWillUnmount() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = undefined;
+        }
         this.socket && this.socket.disconnect();
     }
 
@@ -117,19 +130,47 @@ class SocketConnection extends Component<Props> {
     }
 
     _connectionStatusListener(status) {
-        const { isRNWebViewPage, joinConference } = this.props;
-
-        if (isRNWebViewPage) {
-            sendMessageToIosApp({ message: status });
-        }
         if (status && status.error) {
-            joinConference();
+            sendAnalytics(createWaitingAreaSocketEvent('error', status.error));
+            sendAnalytics(createWaitingAreaModalEvent('start.polling'));
+            this._polling();
         }
     }
 
+    _polling() {
+        const { participantType, updateRemoteParticipantsStatuses, showErrorNotification, setJaneWaitingAreaAuthState, isRNWebViewPage } = this.props;
+
+        this.interval
+            = setInterval(
+            async () => {
+                try {
+                    const response = await checkRoomStatus();
+                    const remoteParticipantsStatuses = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
+
+                    updateRemoteParticipantsStatuses(remoteParticipantsStatuses);
+                } catch (error) {
+                    if (this.pollingRetries === 3) {
+                        if (isRNWebViewPage) {
+                            sendMessageToIosApp({ message: error });
+                        } else if (error && error.error === 'Signature has expired') {
+                            setJaneWaitingAreaAuthState('failed');
+                        }
+                        showErrorNotification({
+                            description: error && error.error,
+                            titleKey: 'Waiting area error'
+                        });
+                        sendAnalytics(createWaitingAreaModalEvent('polling.stoped'));
+                        clearInterval(this.interval);
+                        throw Error(error);
+                    }
+                    this.pollingRetries++;
+                }
+            },
+            3000);
+    }
 
     async _connectSocket() {
-        const { participantType, isRNWebViewPage, updateRemoteParticipantsStatuses, joinConference, setJaneWaitingAreaAuthState } = this.props;
+        const { participantType, isRNWebViewPage, updateRemoteParticipantsStatuses, setJaneWaitingAreaAuthState, showErrorNotification } = this.props;
 
         try {
             const response = await checkRoomStatus();
@@ -149,9 +190,12 @@ class SocketConnection extends Component<Props> {
                 sendMessageToIosApp({ message: error });
             } else if (error && error.error === 'Signature has expired') {
                 setJaneWaitingAreaAuthState('failed');
-            } else {
-                joinConference();
             }
+            showErrorNotification({
+                description: error && error.error,
+                titleKey: 'Waiting area error'
+            });
+            throw Error(error);
         }
     }
 
@@ -191,6 +235,9 @@ function mapDispatchToProps(dispatch) {
         },
         setJaneWaitingAreaAuthState(state) {
             dispatch(setJaneWaitingAreaAuthStateAction(state));
+        },
+        showErrorNotification(error) {
+            dispatch(showErrorNotificationAction(error));
         }
     };
 }

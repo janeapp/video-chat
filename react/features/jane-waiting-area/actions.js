@@ -19,6 +19,7 @@ import {
     SET_JANE_WAITING_AREA_AUTH_STATE
 } from './actionTypes';
 import {
+    updateParticipantReadyStatus,
     detectLegacyMobileApp,
     getAudioTrack,
     getVideoTrack, hasRemoteParticipantInBeginStatus
@@ -74,6 +75,7 @@ export function initJaneWaitingArea(tracks: Object[], errors: Object) {
 
 export function joinConference() {
     return function(dispatch: Function) {
+        updateParticipantReadyStatus('joined');
         dispatch(setJaneWaitingAreaPageVisibility(false));
         dispatch(startConference());
     };
