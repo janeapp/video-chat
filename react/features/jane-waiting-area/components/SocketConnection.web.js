@@ -23,6 +23,7 @@ import {
     updateRemoteParticipantsStatuses as updateRemoteParticipantsStatusesAction,
     updateRemoteParticipantsStatusesFromSocket as updateRemoteParticipantsStatusesFromSocketAction
 } from '../actions';
+import { POLL_INTERVAL, REDIRECT_TO_WELCOME_PAGE_DELAY, CLOSE_BROWSER_DELAY } from '../constants';
 import {
     checkRoomStatus,
     getRemoteParticipantsStatuses, isRNSocketWebView,
@@ -81,7 +82,7 @@ class SocketConnection extends Component<Props> {
                     sendAnalytics(createWaitingAreaParticipantStatusChangedEvent('left'));
 
                     // sleep here to ensure the above code can be executed when the browser window is closed.
-                    sleep(2000);
+                    sleep(CLOSE_BROWSER_DELAY);
                 }
             };
 
@@ -145,7 +146,7 @@ class SocketConnection extends Component<Props> {
         // Wait 5 seconds before redirecting user to the welcome page
         setTimeout(() => {
             redirectToWelcomePage();
-        }, 5000);
+        }, REDIRECT_TO_WELCOME_PAGE_DELAY);
     }
 
     _polling() {
@@ -183,7 +184,7 @@ class SocketConnection extends Component<Props> {
                     this.pollingRetries++;
                 }
             },
-            3000);
+            POLL_INTERVAL);
     }
 
     async _connectSocket() {
