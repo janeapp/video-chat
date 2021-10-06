@@ -34,7 +34,6 @@ import {
     WAITING_AREA_NOTIFICATION_SOUND_ID
 } from '../sound';
 
-
 type Props = {
     t: Function,
     participantType: string,
@@ -176,9 +175,6 @@ class SocketConnection extends Component<Props> {
                         // send event to datadog
                         sendAnalytics(createWaitingAreaModalEvent('polling.stoped'));
                         clearInterval(this.interval);
-
-                        // send error to bugsnag
-                        console.error(error);
                         this._redirectToWelcomePage();
                     }
                     this.pollingRetries++;
