@@ -1,7 +1,10 @@
 /* eslint-disable require-jsdoc,react/no-multi-comp,camelcase*/
 import io from 'socket.io-client';
 
+import { notifyBugsnag } from '../../bugsnag';
 import { checkRoomStatus } from '../../react/features/jane-waiting-area';
+
+const UNABLE_TO_CONNECT_SOCKET = 'Unable to connect Socket.IO';
 
 export class Socket {
     constructor(options) {
@@ -37,6 +40,7 @@ export class Socket {
         .catch(error => {
             this.connectionStatusListener({ error });
             console.error(error);
+            notifyBugsnag(error);
         });
     }
 
@@ -70,8 +74,8 @@ export class Socket {
             if (this.totalRetries === 5) {
                 this.socket.disconnect();
                 this.socket.destroy();
-                connectionStatusListener({ error: 'Unable to connect Socket.IO' });
-                console.error('Unable to connect Socket.IO');
+                connectionStatusListener({ error: UNABLE_TO_CONNECT_SOCKET });
+                notifyBugsnag(UNABLE_TO_CONNECT_SOCKET);
             }
             this.totalRetries++;
             this.socket.io.opts.query.token = this.ws_token;
@@ -96,11 +100,11 @@ export class Socket {
                     this.unauthorized_count = 0;
                     this.socket.disconnect();
                     connectionStatusListener({ error: reason });
-                    console.error('Unable to connect Socket.IO', reason);
+                    notifyBugsnag(`${UNABLE_TO_CONNECT_SOCKET}: ${reason}`);
                 }
             } else {
                 connectionStatusListener({ error: reason });
-                console.error('Unable to connect Socket.IO', reason);
+                notifyBugsnag(`${UNABLE_TO_CONNECT_SOCKET}: ${reason}`);
             }
         });
 

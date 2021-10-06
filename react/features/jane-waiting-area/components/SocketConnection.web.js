@@ -5,20 +5,25 @@ import { Component } from 'react';
 
 import { Socket } from '../../../../service/Websocket/socket';
 import {
+    createWaitingAreaModalEvent,
     createWaitingAreaParticipantStatusChangedEvent,
     createWaitingAreaSocketEvent,
     sendAnalytics
 } from '../../analytics';
+import {
+    redirectToStaticPage
+} from '../../app/actions';
 import { getLocalParticipantInfoFromJwt, getLocalParticipantType } from '../../base/participants/functions';
 import { connect } from '../../base/redux';
 import { playSound as playSoundAction } from '../../base/sounds';
 import { sleep } from '../../base/util/helpers';
+import { showErrorNotification as showErrorNotificationAction } from '../../notifications';
 import {
     setJaneWaitingAreaAuthState as setJaneWaitingAreaAuthStateAction,
     updateRemoteParticipantsStatuses as updateRemoteParticipantsStatusesAction,
     updateRemoteParticipantsStatusesFromSocket as updateRemoteParticipantsStatusesFromSocketAction
-    , joinConference as joinConferenceAction
 } from '../actions';
+import { POLL_INTERVAL, REDIRECT_TO_WELCOME_PAGE_DELAY, CLOSE_BROWSER_DELAY } from '../constants';
 import {
     checkRoomStatus,
     getRemoteParticipantsStatuses, isRNSocketWebView,
@@ -29,7 +34,6 @@ import {
     WAITING_AREA_NOTIFICATION_SOUND_ID
 } from '../sound';
 
-
 type Props = {
     t: Function,
     participantType: string,
@@ -38,18 +42,25 @@ type Props = {
     updateRemoteParticipantsStatusesFromSocket: Function,
     updateRemoteParticipantsStatuses: Function,
     playSound: Function,
-    joinConference: Function,
     setJaneWaitingAreaAuthState: Function,
-    remoteParticipantsStatuses: any
+    remoteParticipantsStatuses: any,
+    showErrorNotification: Function,
+    redirectToWelcomePage: Function
 };
 
 class SocketConnection extends Component<Props> {
 
     socket: Object;
 
+    interval: ?IntervalID;
+
+    pollingRetries: number;
+
     constructor(props) {
         super(props);
         this.socket = null;
+        this.interval = undefined;
+        this.pollingRetries = 0;
     }
 
     componentDidMount() {
@@ -70,7 +81,7 @@ class SocketConnection extends Component<Props> {
                     sendAnalytics(createWaitingAreaParticipantStatusChangedEvent('left'));
 
                     // sleep here to ensure the above code can be executed when the browser window is closed.
-                    sleep(2000);
+                    sleep(CLOSE_BROWSER_DELAY);
                 }
             };
 
@@ -89,6 +100,10 @@ class SocketConnection extends Component<Props> {
     }
 
     componentWillUnmount() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = undefined;
+        }
         this.socket && this.socket.disconnect();
     }
 
@@ -117,19 +132,63 @@ class SocketConnection extends Component<Props> {
     }
 
     _connectionStatusListener(status) {
-        const { isRNWebViewPage, joinConference } = this.props;
-
-        if (isRNWebViewPage) {
-            sendMessageToIosApp({ message: status });
-        }
         if (status && status.error) {
-            joinConference();
+            sendAnalytics(createWaitingAreaSocketEvent('error', status.error));
+            sendAnalytics(createWaitingAreaModalEvent('start.polling'));
+            this._polling();
         }
     }
 
+    _redirectToWelcomePage() {
+        const { redirectToWelcomePage } = this.props;
+
+        // Wait 5 seconds before redirecting user to the welcome page
+        setTimeout(() => {
+            redirectToWelcomePage();
+        }, REDIRECT_TO_WELCOME_PAGE_DELAY);
+    }
+
+    _polling() {
+        const { participantType, updateRemoteParticipantsStatuses, showErrorNotification, setJaneWaitingAreaAuthState, isRNWebViewPage } = this.props;
+
+        this.interval
+            = setInterval(
+            async () => {
+                try {
+                    const response = await checkRoomStatus();
+                    const remoteParticipantsStatuses = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
+
+                    updateRemoteParticipantsStatuses(remoteParticipantsStatuses);
+                } catch (error) {
+                    // If any error occurs while polling
+                    if (this.pollingRetries === 3) {
+                        if (isRNWebViewPage) {
+                            sendMessageToIosApp({ message: error });
+                        } else if (error && error.error === 'Signature has expired') {
+                            setJaneWaitingAreaAuthState('failed');
+                        }
+                        showErrorNotification({
+                            description: error && error.error,
+                            titleKey: 'janeWaitingArea.errorTitleKey'
+                        });
+
+                        // send event to datadog
+                        sendAnalytics(createWaitingAreaModalEvent('polling.stoped'));
+                        clearInterval(this.interval);
+                        this._redirectToWelcomePage();
+                    }
+                    this.pollingRetries++;
+                }
+            },
+            POLL_INTERVAL);
+    }
 
     async _connectSocket() {
-        const { participantType, isRNWebViewPage, updateRemoteParticipantsStatuses, joinConference, setJaneWaitingAreaAuthState } = this.props;
+        const { participantType,
+            isRNWebViewPage,
+            updateRemoteParticipantsStatuses,
+            setJaneWaitingAreaAuthState,
+            showErrorNotification } = this.props;
 
         try {
             const response = await checkRoomStatus();
@@ -149,9 +208,14 @@ class SocketConnection extends Component<Props> {
                 sendMessageToIosApp({ message: error });
             } else if (error && error.error === 'Signature has expired') {
                 setJaneWaitingAreaAuthState('failed');
-            } else {
-                joinConference();
             }
+            showErrorNotification({
+                description: error && error.error,
+                titleKey: 'janeWaitingArea.errorTitleKey'
+            });
+            console.error(error);
+
+            this._redirectToWelcomePage();
         }
     }
 
@@ -186,11 +250,14 @@ function mapDispatchToProps(dispatch) {
         playSound(soundId) {
             dispatch(playSoundAction(soundId));
         },
-        joinConference() {
-            dispatch(joinConferenceAction());
-        },
         setJaneWaitingAreaAuthState(state) {
             dispatch(setJaneWaitingAreaAuthStateAction(state));
+        },
+        showErrorNotification(error) {
+            dispatch(showErrorNotificationAction(error));
+        },
+        redirectToWelcomePage() {
+            dispatch(redirectToStaticPage('/'));
         }
     };
 }
