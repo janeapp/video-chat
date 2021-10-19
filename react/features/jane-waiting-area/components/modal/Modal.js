@@ -7,7 +7,7 @@ import moment from 'moment';
 import React, { Component } from 'react';
 
 import { createWaitingAreaModalEvent, sendAnalytics } from '../../../analytics';
-import { getLocalizedDateFormatter, translate } from '../../../base/i18n';
+import { getLocalizedDateFormatter, getTimeStamp, translate } from '../../../base/i18n';
 import { getLocalParticipantType } from '../../../base/participants/functions';
 import { connect } from '../../../base/redux';
 import { openURLInBrowser } from '../../../base/util';
@@ -160,10 +160,15 @@ class Modal extends Component<Props> {
     _getStartTimeAndEndTime() {
         const { jwtPayload } = this.props;
         const startAt = _.get(jwtPayload, 'context.start_at') ?? '';
-        const endAt = _.get(jwtPayload, 'context.end_at') ?? '';
+        let endAt = _.get(jwtPayload, 'context.end_at') ?? '';
+        const treatmentDuration = Number(_.get(jwtPayload, 'context.treatment_duration'));
 
         if (!startAt || !endAt) {
             return null;
+        }
+
+        if (treatmentDuration) {
+            endAt = getTimeStamp(startAt) + (treatmentDuration * 1000);
         }
 
         return (<p>
