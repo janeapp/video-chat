@@ -12,8 +12,7 @@ import {
     SET_JANE_WAITING_AREA_VIDEO_DISABLED,
     SET_JANE_WAITING_AREA_VIDEO_MUTED,
     UPDATE_REMOTE_PARTICIPANT_STATUSES,
-    SET_JANE_WAITING_AREA_AUTH_STATE,
-    ADD_CONNECTION_TO_JANE_WAITING_AREA
+    SET_JANE_WAITING_AREA_AUTH_STATE
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -31,8 +30,7 @@ const DEFAULT_STATE = {
     videoDisabled: false,
     videoMuted: false,
     remoteParticipantsStatuses: [],
-    authState: '',
-    connection: undefined
+    authState: ''
 };
 
 /**
@@ -122,13 +120,6 @@ ReducerRegistry.register(
             return {
                 ...state,
                 authState: action.value
-            };
-        }
-
-        case ADD_CONNECTION_TO_JANE_WAITING_AREA: {
-            return {
-                ...state,
-                connection: action.connection
             };
         }
 
