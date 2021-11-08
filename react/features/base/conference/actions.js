@@ -400,16 +400,16 @@ export function conferenceWillLeave(conference: Object) {
     return (dispatch: Function, getState: Function) => {
         const state = getState();
         const { jwt } = state['features/base/jwt'];
-        const { conferenceStartedTime } = getState()['features/base/conference'];
+        const { start } = getState()['features/base/conference'];
 
-        if (jwt && conferenceStartedTime) {
+        if (jwt && start) {
             const jwtPayload = jwtDecode(jwt);
             const leaveUrl = jwtPayload.context.leave_url || null;
             const surveyUrl = jwtPayload.context.survey_url || null;
             const obj = {
                 jwt,
                 // eslint-disable-next-line camelcase
-                started_at: conferenceStartedTime.toISOString()
+                started_at: start
             };
             const data = new Blob([ JSON.stringify(obj, null, 2) ], { type: 'text/plain; charset=UTF-8' });
 
