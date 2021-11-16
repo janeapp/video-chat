@@ -1,5 +1,5 @@
 // @flow
-import { getGravatarURL } from '@jitsi/js-utils/avatar';
+// import { getGravatarURL } from '@jitsi/js-utils/avatar';
 import jwtDecode from 'jwt-decode';
 import _ from 'lodash';
 import type { Store } from 'redux';
@@ -11,9 +11,10 @@ import { getTrackByMediaTypeAndParticipant } from '../tracks';
 import { createDeferred } from '../util';
 
 import {
-    JIGASI_PARTICIPANT_ICON,
     MAX_DISPLAY_NAME_LENGTH,
     PARTICIPANT_ROLE
+
+    // JIGASI_PARTICIPANT_ICON,
 } from './constants';
 
 // import { preloadImage } from './preloadImage';
@@ -27,25 +28,25 @@ const AVATAR_QUEUE = [];
 
 // const AVATAR_CHECKED_URLS = new Map();
 /* eslint-disable arrow-body-style, no-unused-vars */
-const AVATAR_CHECKER_FUNCTIONS = [
-    (participant, _) => {
-        return participant && participant.isJigasi ? JIGASI_PARTICIPANT_ICON : null;
-    },
-    (participant, _) => {
-        return participant && participant.avatarURL ? participant.avatarURL : null;
-    },
-    (participant, store) => {
-        if (participant && participant.email) {
-            // TODO: remove once libravatar has deployed their new scaled up infra. -saghul
-            const gravatarBaseURL
-                = store.getState()['features/base/config'].gravatarBaseURL ?? 'https://www.gravatar.com/avatar/';
-
-            return getGravatarURL(participant.email, gravatarBaseURL);
-        }
-
-        return null;
-    }
-];
+// const AVATAR_CHECKER_FUNCTIONS = [
+//     (participant, _) => {
+//         return participant && participant.isJigasi ? JIGASI_PARTICIPANT_ICON : null;
+//     },
+//     (participant, _) => {
+//         return participant && participant.avatarURL ? participant.avatarURL : null;
+//     },
+//     (participant, store) => {
+//         if (participant && participant.email) {
+//             // TODO: remove once libravatar has deployed their new scaled up infra. -saghul
+//             const gravatarBaseURL
+//                 = store.getState()['features/base/config'].gravatarBaseURL ?? 'https://www.gravatar.com/avatar/';
+//
+//             return getGravatarURL(participant.email, gravatarBaseURL);
+//         }
+//
+//         return null;
+//     }
+// ];
 /* eslint-enable arrow-body-style, no-unused-vars */
 
 /**
@@ -537,9 +538,9 @@ export function getRaiseHandsQueue(stateful: Object | Function): Array<string> {
  */
 export function getLocalParticipantFromJwt(state: Object | Function): Object {
     const { jwt } = state['features/base/jwt'];
-    const jwtPayload = jwt && jwtDecode(jwt) || null;
+    const jwtPayload = (jwt && jwtDecode(jwt)) || null;
 
-    return jwtPayload && jwtPayload.context && jwtPayload.context.user || null;
+    return (jwtPayload && jwtPayload.context && jwtPayload.context.user) || null;
 }
 
 /**
@@ -552,5 +553,5 @@ export function getLocalParticipantFromJwt(state: Object | Function): Object {
 export function getLocalParticipantType(state: Object | Function): string {
     const participant = getLocalParticipantFromJwt(state);
 
-    return participant && participant.participant_type || null;
+    return (participant && participant.participant_type) || null;
 }
