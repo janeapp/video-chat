@@ -16,11 +16,14 @@ import { ADD_KNOWN_DOMAINS } from './actionTypes';
  * out of the Andorid manifest.
  */
 export const DEFAULT_STATE = [
+    'videochat.jane.qa',
     'videochat-jwt.jane.qa',
-    'alpha.jitsi.net',
-    'beta.meet.jit.si',
-    'meet.jit.si',
-    '8x8.vc'
+    'videochat-us.janeapp.com',
+    'videochat-ca.janeapp.com',
+    'videochat-ca2.janeapp.com',
+    'videochat.janeapp.com.au',
+    'videochat.janeapp.co.uk',
+    'videochat-chrisw.jane.qa'
 ];
 
 const STORE_NAME = 'features/base/known-domains';

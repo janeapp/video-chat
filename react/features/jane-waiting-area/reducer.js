@@ -1,9 +1,6 @@
 import { ReducerRegistry } from '../base/redux';
 
 import {
-    ADD_JANE_WAITING_AREA_AUDIO_TRACK,
-    ADD_JANE_WAITING_AREA_CONTENT_SHARING_TRACK,
-    ADD_JANE_WAITING_AREA_VIDEO_TRACK,
     SET_DEVICE_STATUS,
     SET_JANE_WAITING_AREA_AUDIO_DISABLED,
     SET_JANE_WAITING_AREA_AUDIO_MUTED,
@@ -13,7 +10,8 @@ import {
     SET_JANE_WAITING_AREA_VIDEO_MUTED,
     UPDATE_REMOTE_PARTICIPANT_STATUSES,
     SET_JANE_WAITING_AREA_AUTH_STATE,
-    ADD_CONNECTION_TO_JANE_WAITING_AREA
+    ADD_CONNECTION_TO_JANE_WAITING_AREA,
+    ENABLE_JANE_WAITING_AREA_PAGE
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -32,7 +30,8 @@ const DEFAULT_STATE = {
     videoMuted: false,
     remoteParticipantsStatuses: [],
     authState: '',
-    connection: undefined
+    connection: undefined,
+    janeWaitingAreaEnabled: false
 };
 
 /**
@@ -97,6 +96,12 @@ ReducerRegistry.register(
             };
         }
 
+        case ENABLE_JANE_WAITING_AREA_PAGE:
+            return {
+                ...state,
+                janeWaitingAreaEnabled: action.janeWaitingAreaEnabled
+            };
+
         case SET_JANE_WAITING_AREA_AUTH_STATE: {
             return {
                 ...state,
@@ -156,3 +161,4 @@ function getStatusFromErrors(errors) {
         rawError: ''
     };
 }
+

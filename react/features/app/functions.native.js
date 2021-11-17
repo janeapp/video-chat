@@ -1,6 +1,7 @@
 // @flow
 
 import { NativeModules } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 import { toState } from '../base/redux';
 import { getServerURL } from '../base/settings';
@@ -36,4 +37,22 @@ export function getName() {
  */
 export function getSdkBundlePath() {
     return NativeModules.AppInfo.sdkBundlePath;
+}
+
+/**
+ * Returns ios device id.
+ *
+ * @returns {string}
+ */
+export function getBrowserSessionId() {
+    return DeviceInfo.getUniqueId();
+}
+
+/**
+ * Returns ios device id.
+ *
+ * @returns {string}
+ */
+export function getAppVersion() {
+    return DeviceInfo.getVersion();
 }

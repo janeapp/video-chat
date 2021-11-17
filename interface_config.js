@@ -10,6 +10,11 @@
 
 var interfaceConfig = {
     APP_NAME: 'Jane Video Chat',
+
+    /**
+     * Specify mobile app scheme for opening the app from the mobile browser.
+     */
+    APP_SCHEME: 'com.janeapp',
     AUDIO_LEVEL_PRIMARY_COLOR: 'rgba(255,255,255,0.4)',
     AUDIO_LEVEL_SECONDARY_COLOR: 'rgba(255,255,255,0.2)',
 
@@ -89,8 +94,8 @@ var interfaceConfig = {
      */
     HIDE_INVITE_MORE_HEADER: false,
 
-    JITSI_WATERMARK_LINK: 'http://jane.app',
     INITIAL_TOOLBAR_TIMEOUT: 20000,
+    JITSI_WATERMARK_LINK: 'http://jane.app',
 
     LANG_DETECTION: false, // Allow i18n to detect the system language
     LIVE_STREAMING_HELP_LINK: 'https://jitsi.org/live', // Documentation reference for the live streaming feature.
@@ -216,11 +221,6 @@ var interfaceConfig = {
     //    IBI: 'com.atlassian.JitsiMeet.ios',
     //    ISI: '1165103905'
     // },
-
-    /**
-     * Specify mobile app scheme for opening the app from the mobile browser.
-     */
-    // APP_SCHEME: 'org.jitsi.meet',
 
     /**
      * Specify the Android app package name.
