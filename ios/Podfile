@@ -5,6 +5,7 @@ install! 'cocoapods', :deterministic_uuids => false
 
 target 'JaneOnlineAppointments' do
   project 'app/app.xcodeproj'
+  pod 'Socket.IO-Client-Swift', '~> 16.0.1'
 end
 
 target 'JitsiMeetSDK' do

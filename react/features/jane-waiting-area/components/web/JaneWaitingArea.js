@@ -13,8 +13,8 @@ import {
     isDeviceStatusVisible,
     getJaneWaitingAreaPageDisplayName
 } from '../../functions';
-import SocketConnection from '../SocketConnection';
 
+import SocketConnection from './SocketConnection';
 import Modal from './modal/Modal';
 import DeviceStatus from './preview/DeviceStatus';
 import Preview from './preview/Preview';

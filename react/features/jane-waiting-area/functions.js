@@ -12,7 +12,6 @@ import { getBrowserSessionId } from '../app/functions';
 import {
     getLocalParticipantType
 } from '../base/participants/functions';
-import { doGetJSON } from '../base/util';
 
 import { UPDATE_REMOTE_PARTICIPANT_STATUSES } from './actionTypes';
 import { updateRemoteParticipantsStatuses } from './actions';
@@ -122,9 +121,16 @@ export function isJaneWaitingAreaPageVisible(state: Object): boolean {
     return isJaneWaitingAreaPageEnabled(state) && state['features/jane-waiting-area']?.showJaneWaitingArea;
 }
 
-export async function checkRoomStatus(): Promise<Object> {
+export async function checkRoomStatus(jwtToken): Promise<Object> {
     try {
-        const { jwt } = window.APP.store.getState()['features/base/jwt'];
+        let jwt;
+
+        if (navigator.product === 'ReactNative') {
+            jwt = jwtToken;
+        } else {
+            jwt = window.APP.store.getState()['features/base/jwt'].jwt;
+        }
+
         const jwtPayload = (jwt && jwtDecode(jwt)) || {};
         const roomStatusUrl = _.get(jwtPayload, 'context.room_status_url') ?? '';
 
@@ -133,7 +139,17 @@ export async function checkRoomStatus(): Promise<Object> {
 
         url.search = new URLSearchParams(params).toString();
 
-        return doGetJSON(url, true);
+        return fetch(url)
+            .then(response => {
+                const jsonify = response.json();
+
+                if (response.ok) {
+                    return jsonify;
+                }
+
+                return jsonify
+                    .then(result => Promise.reject(result));
+            });
     } catch (e) {
         notifyBugsnag('Unable to retrieve the room state.');
         throw Error(e);

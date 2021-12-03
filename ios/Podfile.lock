@@ -294,6 +294,9 @@ PODS:
     - React
   - RNWatch (0.4.3):
     - React
+  - Socket.IO-Client-Swift (16.0.1):
+    - Starscream (~> 4.0)
+  - Starscream (4.0.4)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -342,6 +345,7 @@ DEPENDENCIES:
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNWatch (from `../node_modules/react-native-watch-connectivity`)
+  - Socket.IO-Client-Swift (~> 16.0.1)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -353,6 +357,8 @@ SPEC REPOS:
     - GTMAppAuth
     - GTMSessionFetcher
     - ObjectiveDropboxOfficial
+    - Socket.IO-Client-Swift
+    - Starscream
 
 EXTERNAL SOURCES:
   DoubleConversion:
@@ -489,8 +495,10 @@ SPEC CHECKSUMS:
   RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNWatch: a5320c959c75e72845c07985f3e935e58998f1d3
+  Socket.IO-Client-Swift: c116d6dc9fd6be9c259bacfe143f8725bce7d79e
+  Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   Yoga: 96b469c5e81ff51b917b92e8c3390642d4ded30c
 
-PODFILE CHECKSUM: 1d264a193eda031958694625d2b6d240f4adf526
+PODFILE CHECKSUM: 07c2e5e40f41bdfe53c128ad31b9ff5c3ff9cc5c
 
 COCOAPODS: 1.10.1
