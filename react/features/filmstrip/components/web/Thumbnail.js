@@ -302,7 +302,7 @@ class Thumbnail extends Component<Props, State> {
      * @returns {void}
      */
     componentDidMount() {
-        this._listenForAudioUpdates();
+        // this._listenForAudioUpdates();
         this._onDisplayModeChanged();
     }
 
@@ -316,8 +316,9 @@ class Thumbnail extends Component<Props, State> {
     componentDidUpdate(prevProps: Props, prevState: State) {
         if (prevProps._audioTrack !== this.props._audioTrack) {
             this._stopListeningForAudioUpdates(prevProps._audioTrack);
-            this._listenForAudioUpdates();
-            this._updateAudioLevel(0);
+
+            // this._listenForAudioUpdates();
+            // this._updateAudioLevel(0);
         }
 
         if (prevState.displayMode !== this.state.displayMode) {
