@@ -3,7 +3,7 @@
 import jwtDecode from 'jwt-decode';
 import _ from 'lodash';
 import moment from 'moment';
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import { Image, Linking, Text, View, Clipboard } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -32,6 +32,8 @@ type DialogTitleProps = {
     t: Function
 }
 
+const JOIN_SESSION_DELAY = 2000;
+
 type DialogBoxProps = {
     joinConferenceAction: Function,
     startConferenceAction: Function,
@@ -46,6 +48,10 @@ type DialogBoxProps = {
     authState: string,
     localParticipantCanJoin: boolean,
     t: Function
+};
+
+type DialogBoxState = {
+    connectSocket: boolean,
 };
 
 type SocketWebViewProps = {
@@ -69,6 +75,11 @@ const SocketWebView = (props: SocketWebViewProps) => {
           };
         })()`;
 
+    useEffect(() => () => {
+        sendAnalytics(
+            createWaitingAreaPageEvent('socket.disconnected', undefined));
+    }, []);
+
     return (<View
         style = { styles.socketView }>
         <WebView
@@ -80,7 +91,7 @@ const SocketWebView = (props: SocketWebViewProps) => {
     </View>);
 };
 
-class DialogBox extends Component<DialogBoxProps> {
+class DialogBox extends Component<DialogBoxProps, DialogBoxState> {
 
     _joinConference: Function;
     _webviewOnError: Function;
@@ -93,6 +104,9 @@ class DialogBox extends Component<DialogBoxProps> {
         this._webviewOnError = this._webviewOnError.bind(this);
         this._return = this._return.bind(this);
         this._onMessageUpdate = this._onMessageUpdate.bind(this);
+        this.state = {
+            connectSocket: true
+        };
     }
 
     componentDidMount() {
@@ -123,9 +137,7 @@ class DialogBox extends Component<DialogBoxProps> {
         if (prevProps.localParticipantCanJoin !== localParticipantCanJoin
             && participantType === 'Patient'
             && localParticipantCanJoin) {
-            setTimeout(() => {
-                this._joinConference();
-            }, 1000);
+            this._joinConference();
         }
     }
 
@@ -138,9 +150,15 @@ class DialogBox extends Component<DialogBoxProps> {
     _joinConference() {
         const { startConferenceAction, enableJaneWaitingAreaAction, jwt } = this.props;
 
-        updateParticipantReadyStatus(jwt, 'joined');
-        enableJaneWaitingAreaAction(false);
-        startConferenceAction();
+        this.setState({
+            connectSocket: false
+        });
+
+        setTimeout(() => {
+            updateParticipantReadyStatus(jwt, 'joined');
+            enableJaneWaitingAreaAction(false);
+            startConferenceAction();
+        }, JOIN_SESSION_DELAY);
     }
 
     _getStartDate() {
@@ -266,6 +284,7 @@ class DialogBox extends Component<DialogBoxProps> {
             authState,
             t
         } = this.props;
+        const { connectSocket } = this.state;
 
         return (<View style = { styles.janeWaitingAreaContainer }>
             <View style = { styles.janeWaitingAreaDialogBoxWrapper }>
@@ -319,7 +338,8 @@ class DialogBox extends Component<DialogBoxProps> {
                             authState !== 'failed'
                         && <ActionButton
                             containerStyle = { styles.joinButtonContainer }
-                            disabled = { !localParticipantCanJoin }
+                            disabled = { !localParticipantCanJoin || !connectSocket }
+                            loading = { !connectSocket }
                             onPress = { this._joinConference }
                             title = { this._getBtnText() }
                             titleStyle = { styles.joinButtonText } />
@@ -341,10 +361,12 @@ class DialogBox extends Component<DialogBoxProps> {
                     </View>
                 }
             </View>
-            <SocketWebView
-                locationURL = { locationURL }
-                onError = { this._webviewOnError }
-                onMessageUpdate = { this._onMessageUpdate } />
+            {
+                connectSocket && <SocketWebView
+                    locationURL = { locationURL }
+                    onError = { this._webviewOnError }
+                    onMessageUpdate = { this._onMessageUpdate } />
+            }
         </View>);
 
     }
