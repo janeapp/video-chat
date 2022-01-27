@@ -1,6 +1,5 @@
 // @flow
 /* eslint-disable */
-
 import { Component } from 'react';
 
 import { notifyBugsnag } from '../../../../bugsnag';
@@ -70,6 +69,7 @@ class SocketConnection extends Component<Props> {
 
         if (isRNWebViewPage) {
             sendMessageToIosApp({ message: 'webview page is ready' });
+            this._pollingRN();
         } else {
             window.APP.waitingArea.status = 'initialized';
             updateParticipantReadyStatus('waiting');
@@ -89,8 +89,8 @@ class SocketConnection extends Component<Props> {
 
             window.addEventListener('beforeunload', unloadHandler);
             window.addEventListener('unload', unloadHandler);
+            this._fetchDataAndconnectSocket();
         }
-        this._fetchDataAndconnectSocket();
     }
 
     componentDidUpdate() {
@@ -145,7 +145,7 @@ class SocketConnection extends Component<Props> {
         if (status && status.event === 'connected' && this.interval) {
             sendAnalytics(createWaitingAreaModalEvent('polling.stoped'));
             clearInterval(this.interval);
-            this.interval = undefined
+            this.interval = undefined;
             this.connectionAttempts = 0;
         }
     }
@@ -157,6 +157,34 @@ class SocketConnection extends Component<Props> {
         setTimeout(() => {
             redirectToWelcomePage();
         }, REDIRECT_TO_WELCOME_PAGE_DELAY);
+    }
+
+    async fetchDataRN() {
+        try {
+            const { participantType, updateRemoteParticipantsStatuses } = this.props;
+
+            // fetch data
+            const response = await checkRoomStatus();
+            const remoteParticipantsStatuses
+                = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
+
+            // This action will update the remote participant states in reducer
+            updateRemoteParticipantsStatuses(remoteParticipantsStatuses);
+        } catch (error) {
+            sendMessageToIosApp({ message: error });
+
+            // send event to datadog
+            sendAnalytics(createWaitingAreaModalEvent('polling.stoped'));
+        }
+    }
+
+    _pollingRN(){
+        this.interval
+            = setInterval(
+            () => {
+                this.fetchDataRN();
+            },
+            POLL_INTERVAL);
     }
 
     _polling() {
@@ -209,7 +237,8 @@ class SocketConnection extends Component<Props> {
                 // send event to datadog
                 sendAnalytics(createWaitingAreaModalEvent('polling.stoped'));
                 clearInterval(this.interval);
-                this.interval = undefined
+                this.interval = undefined;
+
                 return this._redirectToWelcomePage();
             }
             this.connectionAttempts++;
