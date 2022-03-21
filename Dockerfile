@@ -36,8 +36,6 @@ RUN \
   && ln -s /config/nginx/sites/jitsi-meet/.well-known/apple-app-site-association /config/nginx/sites/jitsi-meet/apple-app-site-association \
   && chmod 0755 /start-nginx.sh
 
-RUN install-all-stubs
-
 EXPOSE 80
 
 CMD ["/start-nginx.sh"]
