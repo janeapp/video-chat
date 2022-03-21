@@ -4,6 +4,7 @@ missing_vars=( )
 [ -z "$PUBLIC_URL" ] && missing_vars+=( "PUBLIC_URL" )
 [ -z "$GOOGLE_ANALYTICS_ID" ] && missing_vars+=( "GOOGLE_ANALYTICS_ID" )
 [ -z "$AMPLITUDE_KEY" ] && missing_vars+=( "AMPLITUDE_KEY" )
+[ -z "$VIDEO_STREAM_LIMIT" ] && missing_vars+=( "VIDEO_STREAM_LIMIT" )
 
 if [ ${#missing_vars[@]} -gt 0 ]; then
   echo "Missing environment variables: ${missing_vars[*]}"
