@@ -12,7 +12,7 @@ RUN \
   && make \
   && make source-package
 
-FROM base:universal-focal
+FROM ubuntu:focal
 
 RUN \
   apt-get update \
@@ -40,4 +40,4 @@ RUN install-all-stubs
 
 EXPOSE 80
 
-CMD ["/usr/local/bin/ssm_env", "/start-nginx.sh"]
+CMD ["/start-nginx.sh"]
