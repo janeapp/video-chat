@@ -12,16 +12,9 @@ RUN \
   && make \
   && make source-package
 
-FROM ubuntu:focal
+FROM nginx:stable-alpine
 
-RUN \
-  apt-get update \
-  && apt-get install -y \
-    nginx-extras \
-    socat \
-    python3-pip \
-  && rm -rf /var/lib/apt/lists/* \
-  && pip3 install j2cli
+RUN apk add --no-cache bash gettext
 
 COPY --from=builder /app/jitsi-meet.tar.bz2 /
 
@@ -29,7 +22,6 @@ COPY docker-configs /config
 COPY start-nginx.sh /
 RUN \
   mkdir /config/nginx/sites \
-  && mkdir /config/nginx/site-confs \
   && tar xjf /jitsi-meet.tar.bz2 -C /config/nginx/sites \
   && mkdir /config/nginx/sites/jitsi-meet/.well-known \
   && cp /config/apple-app-site-association /config/nginx/sites/jitsi-meet/.well-known/ \
