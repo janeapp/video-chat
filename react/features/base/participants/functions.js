@@ -1,4 +1,5 @@
 // @flow
+// import { getGravatarURL } from '@jitsi/js-utils/avatar';
 import jwtDecode from 'jwt-decode';
 import _ from 'lodash';
 import type { Store } from 'redux';
@@ -12,6 +13,8 @@ import { createDeferred } from '../util';
 import {
     MAX_DISPLAY_NAME_LENGTH,
     PARTICIPANT_ROLE
+
+    // JIGASI_PARTICIPANT_ICON,
 } from './constants';
 
 // import { preloadImage } from './preloadImage';
@@ -438,19 +441,6 @@ export function getLocalParticipantInfoFromJwt(state: Object | Function): Object
 }
 
 /**
- * Returns participant type from the participant info.
- *
- * @param {Object|Function} state - Object or function that can be resolved
- * to the Redux state.
- * @returns {string|null}
- */
-export function getLocalParticipantType(state: Object | Function): string {
-    const participant = getLocalParticipantInfoFromJwt(state);
-
-    return (participant && participant.participant_type) || null;
-}
-
-/**
  * Resolves the first loadable avatar URL for a participant.
  *
  * @param {Object} participant - The participant to resolve avatars for.
@@ -537,4 +527,31 @@ export function getRaiseHandsQueue(stateful: Object | Function): Array<string> {
     const { raisedHandsQueue } = toState(stateful)['features/base/participants'];
 
     return raisedHandsQueue;
+}
+
+/**
+ * Returns participant info from the jwt token.
+ *
+ * @param {Object|Function} state - Object or function that can be resolved
+ * to the Redux state.
+ * @returns {string|null}
+ */
+export function getLocalParticipantFromJwt(state: Object | Function): Object {
+    const { jwt } = state['features/base/jwt'];
+    const jwtPayload = (jwt && jwtDecode(jwt)) || null;
+
+    return (jwtPayload && jwtPayload.context && jwtPayload.context.user) || null;
+}
+
+/**
+ * Returns participant type from the participant info.
+ *
+ * @param {Object|Function} state - Object or function that can be resolved
+ * to the Redux state.
+ * @returns {string|null}
+ */
+export function getLocalParticipantType(state: Object | Function): string {
+    const participant = getLocalParticipantFromJwt(state);
+
+    return (participant && participant.participant_type) || null;
 }

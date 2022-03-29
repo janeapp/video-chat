@@ -8,10 +8,11 @@ import {
 } from '../../base/participants';
 import { getRemoteTracks, isHdQualityEnabled } from '../../base/tracks';
 import { NotificationsContainer } from '../../notifications/components';
-import HdVideoAlert
-    from '../../notifications/components/web/HdVideoAlert';
 import { shouldDisplayTileView } from '../../video-layout';
 import { shouldDisplayNotifications } from '../functions';
+
+// import HdVideoAlert
+//     from '../../notifications/components/web/HdVideoAlert';
 
 /**
  * The type of the React {@code Component} props of {@link AbstractLabels}.
@@ -101,11 +102,11 @@ export class AbstractConference<P: AbstractProps, S>
      * @returns {React$Element}
      */
     renderHdVideoAlert() {
-        if (this.props._hdVideoEnabled
-            && this.props._isStaffMember
-            && this.props._conferenceHasStarted) {
-            return <HdVideoAlert />;
-        }
+        // if (this.props._hdVideoEnabled
+        //     && this.props._isStaffMember
+        //     && this.props._conferenceHasStarted) {
+        //     return <HdVideoAlert />;
+        // }
 
         return null;
     }

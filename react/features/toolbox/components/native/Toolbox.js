@@ -7,7 +7,6 @@ import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { ChatButton } from '../../../chat';
-import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
 import { ReactionsMenuButton } from '../../../reactions/components';
 import { isReactionsEnabled } from '../../../reactions/functions.any';
 import { TileViewButton } from '../../../video-layout';
@@ -20,6 +19,8 @@ import OverflowMenuButton from './OverflowMenuButton';
 import RaiseHandButton from './RaiseHandButton';
 import ToggleCameraButton from './ToggleCameraButton';
 import styles from './styles';
+
+// import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
 
 /**
  * The type of {@link Toolbox}'s React {@code Component} props.
@@ -49,7 +50,8 @@ type Props = {
     /**
      * The redux {@code dispatch} function.
      */
-    dispatch: Function
+    dispatch: Function,
+    _janeWaitingAreaEnabled: boolean
 };
 
 /**
@@ -63,9 +65,9 @@ function Toolbox(props: Props) {
         return null;
     }
 
-    const { _styles, _width, _reactionsEnabled } = props;
+    const { _styles, _width, _reactionsEnabled, _janeWaitingAreaEnabled } = props;
     const { buttonStylesBorderless, hangupButtonStyles, toggledButtonStyles } = _styles;
-    const additionalButtons = getMovableButtons(_width);
+    const additionalButtons = getMovableButtons(_width, _janeWaitingAreaEnabled);
     const backgroundToggledStyle = {
         ...toggledButtonStyles,
         style: [
@@ -85,6 +87,8 @@ function Toolbox(props: Props) {
                 <AudioMuteButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />
+                <HangupButton
+                    styles = { hangupButtonStyles } />
                 <VideoMuteButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />
@@ -101,19 +105,19 @@ function Toolbox(props: Props) {
                         styles = { buttonStylesBorderless }
                         toggledStyles = { backgroundToggledStyle } />)}
                 {additionalButtons.has('tileview') && <TileViewButton styles = { buttonStylesBorderless } />}
-                {additionalButtons.has('participantspane')
-                && <ParticipantsPaneButton
-                    styles = { buttonStylesBorderless } />
-                }
+                {/* {additionalButtons.has('participantspane')*/}
+                {/* && <ParticipantsPaneButton*/}
+                {/*    styles = { buttonStylesBorderless } />*/}
+                {/* }*/}
                 {additionalButtons.has('togglecamera')
                       && <ToggleCameraButton
                           styles = { buttonStylesBorderless }
                           toggledStyles = { backgroundToggledStyle } />}
-                <OverflowMenuButton
-                    styles = { buttonStylesBorderless }
-                    toggledStyles = { toggledButtonStyles } />
-                <HangupButton
-                    styles = { hangupButtonStyles } />
+                {
+                    !_janeWaitingAreaEnabled && <OverflowMenuButton
+                        styles = { buttonStylesBorderless }
+                        toggledStyles = { toggledButtonStyles } />
+                }
             </SafeAreaView>
         </View>
     );
@@ -129,11 +133,14 @@ function Toolbox(props: Props) {
  * @returns {Props}
  */
 function _mapStateToProps(state: Object): Object {
+    const { janeWaitingAreaEnabled } = state['features/jane-waiting-area'];
+
     return {
         _styles: ColorSchemeRegistry.get(state, 'Toolbox'),
         _visible: isToolboxVisible(state),
         _width: state['features/base/responsive-ui'].clientWidth,
-        _reactionsEnabled: isReactionsEnabled(state)
+        _reactionsEnabled: isReactionsEnabled(state),
+        _janeWaitingAreaEnabled: janeWaitingAreaEnabled
     };
 }
 

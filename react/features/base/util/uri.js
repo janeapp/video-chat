@@ -33,6 +33,31 @@ const _URI_AUTHORITY_PATTERN = '(//[^/?#]+)';
 const _URI_PATH_PATTERN = '([^?#]*)';
 
 /**
+ * The {@link RegExp} pattern of the following jane universal link domains (jwt servers only).
+ * "videochat-jwt.jane.qa",
+ * "videochat-us.janeapp.com",
+ * "videochat-ca.janeapp.com",
+ * "videochat-ca2.janeapp.com",
+ * "videochat.janeapp.com.au",
+ * "videochat.janeapp.co.uk";
+ * 'videochat-chrisw.jane.qa',
+ * 'jitsi2.jane.qa',
+ * 'conference-pod-cac1-j1.janeapp.net',
+ * 'conference-pod-usw2-j2.janeapp.net',
+ * 'conference-pod-euw2-j3.janeapp.net',
+ * 'conference-pod-apse2-j4.janeapp.net',
+ * 'video-conference-ca.janeapp.net',
+ * 'video-conference-us.janeapp.net',
+ * 'video-conference-uk.janeapp.net',
+ * 'video-conference-au.janeapp.net',
+ * 'video-conference.jane.qa'
+ *
+ * @private
+ * @type {string}
+ */
+const _JANE_UNIVERSAL_LINK_DOMAINS_PATTERN = '([a-z0-9]+[.])*(jane|janeapp).(qa|com|com.au|co.uk|net)';
+
+/**
  * The {@link RegExp} pattern of the protocol of a URI.
  *
  * FIXME: The URL class exposed by JavaScript will not include the colon in
@@ -596,4 +621,19 @@ export function addHashParamsToURL(url: URL, hashParamsToAdd: Object = {}) {
  */
 export function getDecodedURI(uri: string) {
     return decodeURI(uri.replace(/^https?:\/\//i, ''));
+}
+
+/**
+ * Checks whether a url param matches the _JANE_UNIVERSAL_LINK_DOMAINS_PATTERN regex pattern.
+ *
+ * @param {string} url - The video chat url
+ * function.
+ * @returns {boolean} If a url matches the _JANE_UNIVERSAL_LINK_DOMAINS_PATTERN regex pattern.
+ * {@code true}; otherwise, {@code false}.
+ */
+export function isJaneVideoChatLink(url: string) {
+    const regExp = new RegExp(_JANE_UNIVERSAL_LINK_DOMAINS_PATTERN);
+
+    return regExp.exec(url) && url.includes('?jwt=');
+
 }

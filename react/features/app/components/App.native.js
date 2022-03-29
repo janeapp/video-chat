@@ -6,7 +6,7 @@ import SplashScreen from 'react-native-splash-screen';
 import { setColorScheme } from '../../base/color-scheme';
 import { DialogContainer } from '../../base/dialog';
 import { updateFlags } from '../../base/flags/actions';
-import { CALL_INTEGRATION_ENABLED, SERVER_URL_CHANGE_ENABLED } from '../../base/flags/constants';
+import { SERVER_URL_CHANGE_ENABLED } from '../../base/flags/constants';
 import { getFeatureFlag } from '../../base/flags/functions';
 import { Platform } from '../../base/react';
 import { DimensionsDetector, clientResized } from '../../base/responsive-ui';
@@ -63,6 +63,7 @@ export class App extends AbstractApp {
      * which the new instance is to be initialized.
      */
     constructor(props: Props) {
+
         super(props);
 
         // In the Release configuration, React Native will (intentionally) throw
@@ -75,6 +76,7 @@ export class App extends AbstractApp {
         this._onDimensionsChanged = this._onDimensionsChanged.bind(this);
     }
 
+    // eslint-disable-next-line no-use-before-defin
     /**
      * Initializes the color scheme.
      *
@@ -111,7 +113,8 @@ export class App extends AbstractApp {
             dispatch(updateSettings(this.props.userInfo || {}));
 
             // Update settings with feature-flag.
-            const callIntegrationEnabled = this.props.flags[CALL_INTEGRATION_ENABLED];
+            // const callIntegrationEnabled = this.props.flags[CALL_INTEGRATION_ENABLED];
+            const callIntegrationEnabled = false;
 
             if (typeof callIntegrationEnabled !== 'undefined') {
                 dispatch(updateSettings({ disableCallIntegration: !callIntegrationEnabled }));

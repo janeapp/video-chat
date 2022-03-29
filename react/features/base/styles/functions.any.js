@@ -37,6 +37,7 @@ const RGBA_COLOR_FORMAT
  */
 const _WELL_KNOWN_NUMBER_PROPERTIES = [ 'height', 'width' ];
 
+
 /**
  * Function to convert complex StyleType styles into a single flat object,
  * so then they can be deconstructed for further processing.
