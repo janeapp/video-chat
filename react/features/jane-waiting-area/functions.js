@@ -12,7 +12,6 @@ import { getBrowserSessionId } from '../app/functions';
 import {
     getLocalParticipantType
 } from '../base/participants/functions';
-import { doGetJSON } from '../base/util';
 
 import { UPDATE_REMOTE_PARTICIPANT_STATUSES } from './actionTypes';
 import { updateRemoteParticipantsStatuses } from './actions';
@@ -107,12 +106,12 @@ export function isJaneWaitingAreaVideoDisabled(state: Object): Object {
 }
 
 export function getJaneWaitingAreaPageDisplayName(state: Object): string {
-    return state['features/base/participants'][0].name || '';
+    return state['features/base/participants'].local.name || '';
 }
 
 export function isJaneWaitingAreaPageEnabled(state: Object): boolean {
     const { jwt } = state['features/base/jwt'];
-    const jwtPayload = jwt && jwtDecode(jwt) ?? {};
+    const jwtPayload = (jwt && jwtDecode(jwt)) || {};
     const shouldEnableJaneWaitingAreaPage = _.get(jwtPayload, 'context.waiting_area_enabled');
 
     return state['features/base/config'].janeWaitingAreaPageEnabled || shouldEnableJaneWaitingAreaPage;
@@ -122,22 +121,37 @@ export function isJaneWaitingAreaPageVisible(state: Object): boolean {
     return isJaneWaitingAreaPageEnabled(state) && state['features/jane-waiting-area']?.showJaneWaitingArea;
 }
 
-export async function checkRoomStatus(): Promise<Object> {
-    try {
-        const { jwt } = window.APP.store.getState()['features/base/jwt'];
-        const jwtPayload = jwt && jwtDecode(jwt) ?? {};
-        const roomStatusUrl = _.get(jwtPayload, 'context.room_status_url') ?? '';
+export async function checkRoomStatus(jwtToken: string = ''): Promise<Object> {
+    let jwt;
 
-        const url = new URL(roomStatusUrl);
-        const params = { jwt };
-
-        url.search = new URLSearchParams(params).toString();
-
-        return doGetJSON(url, true);
-    } catch (e) {
-        notifyBugsnag('Unable to retrieve the room state.');
-        throw Error(e);
+    if (navigator.product === 'ReactNative' && jwtToken) {
+        jwt = jwtToken;
+    } else {
+        jwt = window.APP.store.getState()['features/base/jwt'].jwt;
     }
+
+    const jwtPayload = (jwt && jwtDecode(jwt)) || {};
+    const roomStatusUrl = _.get(jwtPayload, 'context.room_status_url') ?? '';
+
+    const url = new URL(roomStatusUrl);
+    const params = { jwt };
+
+    url.search = new URLSearchParams(params).toString();
+
+    return fetch(url)
+            .then(response => {
+                const jsonify = response.json();
+
+                if (response.ok) {
+                    return jsonify;
+                }
+
+                return jsonify
+                    .then(error => {
+                        notifyBugsnag('Unable to retrieve the room state.');
+                        throw Error(error);
+                    });
+            });
 }
 
 export function getRemoteParticipantsStatuses(participantStatuses: Array<Object>, participantType: string): Array<Object> {
@@ -153,11 +167,17 @@ export function getRemoteParticipantsStatuses(participantStatuses: Array<Object>
     return remoteParticipantStatuses;
 }
 
-export function updateParticipantReadyStatus(status: string): void {
-    const { jwt } = window.APP.store.getState()['features/base/jwt'];
-    const jwtPayload = jwt && jwtDecode(jwt) ?? {};
+export function updateParticipantReadyStatus(status: string, jwt: string = ''): void {
+    let jwtToken;
 
-    const updateParticipantStatusUrl = _.get(jwtPayload, 'context.update_participant_status_url') ?? '';
+    if (navigator.product === 'ReactNative') {
+        jwtToken = jwt;
+    } else {
+        jwtToken = window.APP.store.getState()['features/base/jwt'].jwt;
+    }
+
+    const jwtPayload = (jwtToken && jwtDecode(jwtToken)) || {};
+    const updateParticipantStatusUrl = _.get(jwtPayload, 'context.update_participant_status_url') || '';
     const browserSessionId = getBrowserSessionId();
     const info = { status };
 
@@ -167,7 +187,7 @@ export function updateParticipantReadyStatus(status: string): void {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            'jwt': jwt,
+            'jwt': jwtToken,
             'info': info,
             'browser_session_id': browserSessionId
         })
@@ -192,20 +212,20 @@ export function updateParticipantReadyStatus(status: string): void {
 }
 
 export function isRNSocketWebView(locationURL: Object): boolean {
-    return String(locationURL && locationURL.href ?? '').includes('RNsocket=true');
+    return String(locationURL && locationURL.href).includes('RNsocket=true');
 }
 
 export function checkLocalParticipantCanJoin(state: Object | Function): boolean {
     const { remoteParticipantsStatuses } = state['features/jane-waiting-area'];
     const participantType = getLocalParticipantType(state);
 
-    return remoteParticipantsStatuses && remoteParticipantsStatuses.length > 0 && remoteParticipantsStatuses.some(v => {
+    return (remoteParticipantsStatuses && remoteParticipantsStatuses.length > 0 && remoteParticipantsStatuses.some(v => {
         if (participantType === 'StaffMember') {
             return v.info && (v.info.status === 'joined' || v.info.status === 'waiting');
         }
 
         return v.info && v.info.status === 'joined';
-    }) ?? false;
+    })) || false;
 }
 
 export function detectLegacyMobileApp(remoteParticipantsStatuses: Array<Object>) {
@@ -254,4 +274,12 @@ export function hasRemoteParticipantInBeginStatus(remoteParticipantsStatuses: Ar
 
 export function sendMessageToIosApp(message: Object) {
     window.ReactNativeWebView.postMessage(JSON.stringify(message));
+}
+
+export function isJaneWaitingAreaEnabled(state: Object): boolean {
+    const { jwt } = state['features/base/jwt'];
+    const jwtPayload = (jwt && jwtDecode(jwt)) || null;
+    const janeWaitingAreaEnabled = _.get(jwtPayload, 'context.waiting_area_enabled') ?? false;
+
+    return state['features/base/config'].janeWaitingAreaEnabled || janeWaitingAreaEnabled;
 }

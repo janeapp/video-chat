@@ -1,11 +1,16 @@
 // @flow
 /* eslint-disable require-jsdoc,camelcase*/
 import { createLocalTrack } from '../base/lib-jitsi-meet';
+import { isVideoMutedByUser } from '../base/media';
+import {
+    createLocalTracksF,
+    getLocalAudioTrack,
+    getLocalVideoTrack,
+    replaceLocalTrack,
+    trackAdded
+} from '../base/tracks';
 
 import {
-    ADD_JANE_WAITING_AREA_AUDIO_TRACK,
-    ADD_JANE_WAITING_AREA_CONTENT_SHARING_TRACK,
-    ADD_JANE_WAITING_AREA_VIDEO_TRACK,
     JANE_WAITING_AREA_START_CONFERENCE,
     SET_DEVICE_STATUS,
     SET_JANE_WAITING_AREA_AUDIO_DISABLED,
@@ -16,35 +21,16 @@ import {
     SET_JANE_WAITING_AREA_VIDEO_MUTED,
     CONNECT_JANE_SOCKET_SERVER,
     UPDATE_REMOTE_PARTICIPANT_STATUSES,
-    SET_JANE_WAITING_AREA_AUTH_STATE, ADD_CONNECTION_TO_JANE_WAITING_AREA
+    ADD_CONNECTION_TO_JANE_WAITING_AREA,
+    ENABLE_JANE_WAITING_AREA_PAGE,
+    SET_JANE_WAITING_AREA_AUTH_STATE
 } from './actionTypes';
 import {
     detectLegacyMobileApp,
-    getAudioTrack,
-    getVideoTrack, hasRemoteParticipantInBeginStatus
+    hasRemoteParticipantInBeginStatus
 } from './functions';
 import logger from './logger';
 
-export function addJaneWaitingAreaAudioTrack(value: Object) {
-    return {
-        type: ADD_JANE_WAITING_AREA_AUDIO_TRACK,
-        value
-    };
-}
-
-export function addJaneWaitingAreaVideoTrack(value: Object) {
-    return {
-        type: ADD_JANE_WAITING_AREA_VIDEO_TRACK,
-        value
-    };
-}
-
-export function addJaneWaitingAreaContentSharingTrack(value: Object) {
-    return {
-        type: ADD_JANE_WAITING_AREA_CONTENT_SHARING_TRACK,
-        value
-    };
-}
 
 export function addConnectionToJaneWaitingArea(connection: Object) {
     return {
@@ -55,28 +41,8 @@ export function addConnectionToJaneWaitingArea(connection: Object) {
 
 export function initJaneWaitingArea(tracks: Object[], connection: Object[], errors: Object) {
     return async function(dispatch: Function) {
-        const audioTrack = tracks.find(t => t.isAudioTrack());
-        const videoTrack = tracks.find(t => t.isVideoTrack());
-
         dispatch(setJaneWaitingAreaDeviceErrors(errors));
-
-        if (audioTrack) {
-            dispatch(addJaneWaitingAreaAudioTrack(audioTrack));
-        } else {
-            dispatch(setAudioDisabled());
-        }
-
-        if (videoTrack) {
-            if (videoTrack.videoType === 'desktop') {
-                dispatch(addJaneWaitingAreaContentSharingTrack(videoTrack));
-                dispatch(setJaneWaitingAreaVideoDisabled(true));
-            } else {
-                dispatch(addJaneWaitingAreaVideoTrack(videoTrack));
-            }
-        } else {
-            dispatch(setJaneWaitingAreaVideoDisabled(true));
-        }
-
+        tracks.forEach(track => dispatch(trackAdded(track)));
         setTimeout(() => {
             dispatch(addConnectionToJaneWaitingArea(connection));
         });
@@ -90,21 +56,14 @@ export function joinConference() {
     };
 }
 
-export function replaceJaneWaitingAreaAudioTrack(track: Object) {
-    return async (dispatch: Function, getState: Function) => {
-        const oldTrack = getAudioTrack(getState());
-
-        oldTrack && await oldTrack.dispose();
-        dispatch(addJaneWaitingAreaAudioTrack(track));
-    };
-}
-
 export function replaceAudioTrackById(deviceId: string) {
-    return async (dispatch: Function) => {
+    return async (dispatch: Function, getState: Function) => {
         try {
-            const track = await createLocalTrack('audio', deviceId);
+            const tracks = getState()['features/base/tracks'];
+            const newTrack = await createLocalTrack('audio', deviceId);
+            const oldTrack = getLocalAudioTrack(tracks)?.jitsiTrack;
 
-            dispatch(replaceJaneWaitingAreaAudioTrack(track));
+            dispatch(replaceLocalTrack(oldTrack, newTrack));
         } catch (err) {
             dispatch(setDeviceStatusWarning('janeWaitingArea.audioTrackError'));
             logger.log('Error replacing audio track', err);
@@ -112,23 +71,23 @@ export function replaceAudioTrackById(deviceId: string) {
     };
 }
 
-export function replaceJaneWaitingAreaVideoTrack(track: Object) {
-    return async (dispatch: Function, getState: Function) => {
-        const oldTrack = getVideoTrack(getState());
-
-        oldTrack && await oldTrack.dispose();
-        dispatch(addJaneWaitingAreaVideoTrack(track));
-    };
-}
-
 export function replaceVideoTrackById(deviceId: Object) {
-    return async (dispatch: Function) => {
+    return async (dispatch: Function, getState: Function) => {
         try {
-            const track = await createLocalTrack('video', deviceId);
+            const tracks = getState()['features/base/tracks'];
+            const wasVideoMuted = isVideoMutedByUser(getState());
+            const [ newTrack ] = await createLocalTracksF(
+                { cameraDeviceId: deviceId,
+                    devices: [ 'video' ] },
+                { dispatch,
+                    getState }
+            );
+            const oldTrack = getLocalVideoTrack(tracks)?.jitsiTrack;
 
-            dispatch(replaceJaneWaitingAreaVideoTrack(track));
+            dispatch(replaceLocalTrack(oldTrack, newTrack));
+            wasVideoMuted && newTrack.mute();
         } catch (err) {
-            dispatch(setDeviceStatusWarning('janeWaitingArea.videoTrackError'));
+            dispatch(setDeviceStatusWarning('prejoin.videoTrackError'));
             logger.log('Error replacing video track', err);
         }
     };
@@ -192,6 +151,14 @@ export function setJaneWaitingAreaPageVisibility(value: boolean) {
     return {
         type: SET_JANE_WAITING_AREA_PAGE_VISIBILITY,
         value
+    };
+}
+
+// eslint-disable-next-line no-shadow,require-jsdoc
+export function enableJaneWaitingArea(janeWaitingAreaEnabled: ?boolean) {
+    return {
+        type: ENABLE_JANE_WAITING_AREA_PAGE,
+        janeWaitingAreaEnabled
     };
 }
 

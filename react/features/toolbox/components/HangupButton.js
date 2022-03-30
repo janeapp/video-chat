@@ -9,6 +9,7 @@ import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import { AbstractHangupButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
+import { isJaneWaitingAreaEnabled, updateParticipantReadyStatus } from '../../jane-waiting-area/functions';
 
 /**
  * The type of the React {@code Component} props of {@link HangupButton}.
@@ -18,7 +19,11 @@ type Props = AbstractButtonProps & {
     /**
      * The redux {@code dispatch} function.
      */
-    dispatch: Function
+    dispatch: Function,
+    isJaneTestCall: boolean,
+    isJaneWaitingAreaEnabled: boolean,
+    appstate: string,
+    jwt: string
 };
 
 /**
@@ -31,7 +36,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
     accessibilityLabel = 'toolbar.accessibilityLabel.hangup';
     label = 'toolbar.hangup';
-    tooltip = 'toolbar.hangup';
+    tooltip;
 
     /**
      * Initializes a new HangupButton instance.
@@ -42,14 +47,18 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     constructor(props: Props) {
         super(props);
 
+        this.tooltip = props.isJaneTestCall ? 'toolbar.finishedTesting' : 'toolbar.hangup';
         this._hangup = _.once(() => {
             sendAnalytics(createToolbarEvent('hangup'));
 
             // FIXME: these should be unified.
             if (navigator.product === 'ReactNative') {
+                if (props.isJaneWaitingAreaEnabled) {
+                    updateParticipantReadyStatus('left', props.jwt);
+                }
                 this.props.dispatch(appNavigate(undefined));
             } else {
-                this.props.dispatch(disconnect(false));
+                this.props.dispatch(disconnect(true));
             }
         });
     }
@@ -66,4 +75,24 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
 }
 
-export default translate(connect()(HangupButton));
+/**
+ * Maps part of the Redux state to the props of the component.
+ *
+ * @param {Object} state - The Redux state.
+ * @returns {{
+ *     appstate: string,
+ *     jwtPayload: Object
+ * }}
+ */
+function mapStateToProps(state): Object {
+    const appstate = state['features/background'];
+    const { jwt } = state['features/base/jwt'];
+
+    return {
+        appstate,
+        jwt,
+        isJaneWaitingAreaEnabled: isJaneWaitingAreaEnabled(state)
+    };
+}
+
+export default translate(connect(mapStateToProps)(HangupButton));

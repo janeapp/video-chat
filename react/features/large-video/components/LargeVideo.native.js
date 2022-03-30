@@ -3,9 +3,14 @@
 import React, { PureComponent } from 'react';
 
 import { ColorSchemeRegistry } from '../../base/color-scheme';
-import { ParticipantView } from '../../base/participants';
+import { ParticipantView, getParticipantById } from '../../base/participants';
+import PreCallMessage
+    from '../../base/react/components/native/PreCallMessage.js';
 import { connect } from '../../base/redux';
+import { DimensionsDetector } from '../../base/responsive-ui';
 import { StyleType } from '../../base/styles';
+import { isLocalVideoTrackDesktop } from '../../base/tracks/functions';
+
 
 import { AVATAR_SIZE } from './styles';
 
@@ -13,6 +18,11 @@ import { AVATAR_SIZE } from './styles';
  * The type of the React {@link Component} props of {@link LargeVideo}.
  */
 type Props = {
+
+    /**
+     * Whether video should be disabled.
+     */
+    _disableVideo: boolean,
 
     /**
      * Application's viewport height.
@@ -76,6 +86,8 @@ class LargeVideo extends PureComponent<Props, State> {
         ...DEFAULT_STATE
     };
 
+    _onDimensionsChanged
+
     /**
      * Handles dimension changes. In case we deem it's too
      * small, the connectivity indicator won't be rendered and the avatar
@@ -118,15 +130,19 @@ class LargeVideo extends PureComponent<Props, State> {
         } = this.props;
 
         return (
-            <ParticipantView
-                avatarSize = { avatarSize }
-                onPress = { onClick }
-                participantId = { _participantId }
-                style = { _styles.largeVideo }
-                testHintId = 'org.jitsi.meet.LargeVideo'
-                useConnectivityInfoLabel = { useConnectivityInfoLabel }
-                zOrder = { 0 }
-                zoomEnabled = { true } />
+            <DimensionsDetector
+                onDimensionsChanged = { this._onDimensionsChanged }>
+                <ParticipantView
+                    avatarSize = { avatarSize }
+                    onPress = { onClick }
+                    participantId = { _participantId }
+                    style = { _styles.largeVideo }
+                    testHintId = 'org.jitsi.meet.LargeVideo'
+                    useConnectivityInfoLabel = { useConnectivityInfoLabel }
+                    zOrder = { 0 }
+                    zoomEnabled = { true } />
+                <PreCallMessage />
+            </DimensionsDetector>
         );
     }
 }
@@ -139,11 +155,19 @@ class LargeVideo extends PureComponent<Props, State> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
+    const { participantId } = state['features/large-video'];
+    const participant = getParticipantById(state, participantId);
     const { clientHeight: height, clientWidth: width } = state['features/base/responsive-ui'];
+    let disableVideo = false;
+
+    if (participant?.local) {
+        disableVideo = isLocalVideoTrackDesktop(state);
+    }
 
     return {
+        _disableVideo: disableVideo,
         _height: height,
-        _participantId: state['features/large-video'].participantId,
+        _participantId: participantId,
         _styles: ColorSchemeRegistry.get(state, 'LargeVideo'),
         _width: width
     };

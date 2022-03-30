@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
+
 import androidx.annotation.Nullable;
 
 import org.jitsi.meet.sdk.JitsiMeet;
@@ -37,7 +38,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Map;
+import java.util.HashMap;
 
 /**
  * The one and only Activity that the Jitsi Meet app needs. The
@@ -77,6 +78,12 @@ public class MainActivity extends JitsiMeetActivity {
 
     // JitsiMeetActivity overrides
     //
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        JitsiMeet.showSplashScreen(this);
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     protected boolean extraInitialize() {
@@ -176,8 +183,8 @@ public class MainActivity extends JitsiMeetActivity {
     }
 
     @Override
-    public void onConferenceTerminated(Map<String, Object> data) {
-        Log.d(TAG, "Conference terminated: " + data);
+    protected void onConferenceTerminated(HashMap<String, Object> extraData) {
+        Log.d(TAG, "Conference terminated: " + extraData);
     }
 
     // Activity lifecycle method overrides

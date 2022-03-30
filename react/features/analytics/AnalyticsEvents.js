@@ -187,7 +187,7 @@ export function createRecentClickedEvent(eventName, attributes = {}) {
 }
 
 /**
- * Creates an event which indicate an action occured in the chrome extension banner.
+ * Creates an event which indicate an action occurred in the chrome extension banner.
  *
  * @param {boolean} installPressed - Whether the user pressed install or `x` - cancel.
  * @param {Object} attributes - Attributes to attach to the event.
@@ -462,7 +462,7 @@ export function createLocalTracksDurationEvent(duration) {
 
 /**
  * Creates an event which indicates that an action related to recording has
- * occured.
+ * occurred.
  *
  * @param {string} action - The action (e.g. 'start' or 'stop').
  * @param {string} type - The recording type (e.g. 'file' or 'live').
@@ -506,15 +506,17 @@ export function createRejoinedEvent({ url, lastConferenceDuration, timeSinceLeft
  *
  * @param {string} participantId - The ID of the participant that was remotely
  * muted.
+ * @param {string} mediaType - The media type of the channel to mute.
  * @returns {Object} The event in a format suitable for sending via
  * sendAnalytics.
  */
-export function createRemoteMuteConfirmedEvent(participantId) {
+export function createRemoteMuteConfirmedEvent(participantId, mediaType) {
     return {
         action: 'clicked',
         actionSubject: 'remote.mute.dialog.confirm.button',
         attributes: {
-            'participant_id': participantId
+            'participant_id': participantId,
+            'media_type': mediaType
         },
         source: 'remote.mute.dialog',
         type: TYPE_UI
@@ -587,6 +589,19 @@ export function createScreenSharingEvent(action) {
     return {
         action,
         actionSubject: 'screen.sharing'
+    };
+}
+
+/**
+ * Creates an event which indicates the screen sharing video is not displayed when it needs to be displayed.
+ *
+ * @param {Object} attributes - Additional information that describes the issue.
+ * @returns {Object} The event in a format suitable for sending via sendAnalytics.
+ */
+export function createScreenSharingIssueEvent(attributes) {
+    return {
+        action: 'screen.sharing.issue',
+        attributes
     };
 }
 
@@ -684,6 +699,36 @@ export function createStartSilentEvent() {
 }
 
 /**
+ * Creates an event which indicates that HTMLAudioElement.play has failed.
+ *
+ * @param {sting} elementID - The ID of the HTMLAudioElement.
+ * @returns {Object} The event in a format suitable for sending via sendAnalytics.
+ */
+export function createAudioPlayErrorEvent(elementID) {
+    return {
+        action: 'audio.play.error',
+        attributes: {
+            elementID
+        }
+    };
+}
+
+/**
+ * Creates an event which indicates that HTMLAudioElement.play has succeded after a prior failure.
+ *
+ * @param {sting} elementID - The ID of the HTMLAudioElement.
+ * @returns {Object} The event in a format suitable for sending via sendAnalytics.
+ */
+export function createAudioPlaySuccessEvent(elementID) {
+    return {
+        action: 'audio.play.success',
+        attributes: {
+            elementID
+        }
+    };
+}
+
+/**
  * Creates an event which indicates the "start muted" configuration.
  *
  * @param {string} source - The source of the configuration, 'local' or
@@ -753,6 +798,23 @@ export function createToolbarEvent(buttonName, attributes = {}) {
 }
 
 /**
+ * Creates an event associated with a reaction button being clicked/pressed.
+ *
+ * @param {string} buttonName - The identifier of the reaction button which was
+ * clicked/pressed.
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
+ */
+export function createReactionMenuEvent(buttonName) {
+    return {
+        action: 'clicked',
+        actionSubject: buttonName,
+        source: 'reaction.button',
+        type: TYPE_UI
+    };
+}
+
+/**
  * Creates an event which indicates that a local track was muted.
  *
  * @param {string} mediaType - The track's media type ('audio' or 'video').
@@ -775,6 +837,22 @@ export function createTrackMutedEvent(mediaType, reason, muted = true) {
 }
 
 /**
+ * Creates an event for joining a vpaas conference.
+ *
+ * @param {string} tenant - The conference tenant.
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
+ */
+export function createVpaasConferenceJoinedEvent(tenant) {
+    return {
+        action: 'vpaas.conference.joined',
+        attributes: {
+            tenant
+        }
+    };
+}
+
+/**
  * Creates an event for an action on the welcome page.
  *
  * @param {string} action - The action that the event represents.
@@ -789,6 +867,18 @@ export function createWelcomePageEvent(action, actionSubject, attributes = {}) {
         actionSubject,
         attributes,
         source: 'welcomePage'
+    };
+}
+
+/**
+ * Creates an event which indicates a screenshot of the screensharing has been taken.
+ *
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
+ */
+export function createScreensharingCaptureTakenEvent() {
+    return {
+        action: 'screen.sharing.capture'
     };
 }
 
@@ -856,5 +946,37 @@ export function createWaitingAreaModalEvent(action) {
     return {
         action,
         actionSubject: 'waiting.area.modal'
+    };
+}
+
+/**
+ * Creates an event for an action on the waiting area page.
+ *
+ * @param {string} action - The action that the event represents.
+ * @param {boolean} attributes - Additional attributes to attach to the event.
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
+ */
+export function createWaitingAreaPageEvent(action, attributes = {}) {
+    return {
+        action,
+        attributes,
+        source: 'waiting.area'
+    };
+}
+
+/**
+ * Creates an event which indicates if the app is in the foreground or background.
+ *
+ * @param {string} action - The action that the event represents.
+ * @param {boolean} attributes - Additional attributes to attach to the event.
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
+ */
+export function createAppStateChangedEvent(action, attributes = {}) {
+    return {
+        action,
+        attributes,
+        source: 'app.state.changed'
     };
 }

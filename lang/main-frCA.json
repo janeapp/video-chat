@@ -53,10 +53,12 @@
         "noMessagesMessage": "Il n'y a pas encore de messages dans cette réunion. Démarrez une conversation ici !",
         "nickname": {
             "popover": "Choisissez un nom d'affichage",
-            "title": "Entrer un nom d'affichage pour utiliser le clavardage"
+            "title": "Entrer un nom d'affichage pour utiliser le clavardage",
+            "titleWithPolls": "Entrer un nom d'affichage pour utiliser le clavardage"
         },
         "privateNotice": "Message privé à {{recipient}}",
         "title": "Clavardage",
+        "titleWithPolls": "Clavardage",
         "you": "vous"
     },
     "connectingOverlay": {
@@ -490,12 +492,13 @@
         "youMayTest" : "Vous pouvez tester votre audio et votre vidéo pendant que vous attendez",
         "callWillBegin" : "Votre appel commencera automatiquement dans un instant.",
         "authenticationExpired" : "Votre prise de rendez-vous a expiré",
-        "minutes": "{{duration}} Minutes"
+        "minutes": "{{duration}} Minutes",
+        "keepAppOpen": "Veuillez garder votre application ouverte pour rester sur l'appel."
     },
     "preCallMessage" : {
         "sitBack" : "Asseyez-vous, détendez-vous et prenez un moment pour vous.",
         "WaitingforOthers" : "En attendant que l'autre participant se joigne à nous...",
-        "willBeginAt" : "Votre rendez-vous commencera à {{time}}",
+        "willBeginAt" : "Votre rendez-vous commencera à {{time}}.",
         "testing" : "Test de votre audio et vidéo...",
         "waitingForPractitioner" : "En attendant le praticien...",
         "hangUpToClose" : "Quand vous aurez fini de tester votre audio et votre vidéo, Raccrochez pour fermer cet écran. Commencez votre rendez-vous en ligne à partir de votre page de rendez-vous à venir."
@@ -753,7 +756,7 @@
             "join": "Toucher pour rejoindre",
             "roomname": "Entrer le nom de la salle"
         },
-        "appDescription": "Profitez de la conversation vidéo avec toute votre équipe. Allez-y, invitez tous ceux que vous connaissez. {{app}} est une solution 100 % libre de conférence vidéo entièrement cryptée que vous pouvez utiliser en tout temps et gratuitement, sans avoir besoin de compte.",
+        "appDescription": "Profitez de la conversation vidéo avec toute votre équipe. Allez-y, invitez tous ceux que vous connaissez. {{app}} est une solution 100 % libre de conférence vidéo entièrement chiffrée que vous pouvez utiliser en tout temps et gratuitement, sans avoir besoin de compte.",
         "audioVideoSwitch": {
             "audio": "Téléphone",
             "video": "Vidéo"
@@ -778,6 +781,30 @@
         "terms": "Termes",
         "title": "Conférence vidéo sécurisée, pleinement fonctionnelle et entièrement gratuite",
         "getHelp": "Obtenir de l'aide",
-        "welcomeToJaneVideoChat": "Bienvenue à Jane Video Chat"
+        "welcomeToJaneVideoChat": "Bienvenue à Jane Video Chat",
+        "gotAppInstalled" : "Nice ! L'application est installée.",
+        "howToJoin" : "Nous allons vous expliquer rapidement comment rejoindre votre rendez-vous en ligne.",
+        "joinAsStaff" : "Rejoindre en tant que membre du personnel...",
+        "watchGuidedTour" : "Regardez une visite guidée sur la façon de joindre votre appel.",
+        "doYouHaveAccess" : "Avez-vous accès à votre messagerie sur cet appareil ?",
+        "confirmNo": "Non",
+        "confirmYes": "Oui",
+        "confirmNext" : "Suivant",
+        "youWillBeEmailed" : "Vous recevrez un lien par courriel.",
+        "youWillBeEmailedBefore" : "Vous recevrez par e-mail un lien pour vous joindre à votre appel 30 minutes avant votre rendez-vous",
+        "checkYourEmail" : "Vérifiez votre e-mail sur cet appareil et appuyez sur le lien. C'est tout",
+        "allSet" : "Great. Vous êtes prêt.",
+        "remindMe" : "Rappelez-moi comment joindre mon appel",
+        "noEmail" : "Pas d'email ?",
+        "signInToJoin" : "Connectez-vous pour rejoindre votre appel",
+        "loginToJoin" : "Vous pouvez rejoindre votre appel en vous connectant à votre compte sur le site Jane de votre clinique, en utilisant le bouton Sign In en haut de la page.",
+        "somethingLike" : "L'URL du site Jane de la clinique ressemblera à quelque chose comme :",
+        "willIncludeDirectLink" : "Les cliniques incluront souvent un lien direct vers leur site de réservation en ligne Jane sur leur site Web, mais vous pouvez toujours demander si vous n'êtes pas sûr !",
+        "gotIt" : "OK. Je l'ai eu !",
+        "joinAsStaffMember" : "Adhérer en tant que membre du personnel",
+        "toOpenYourApp": "Pour ouvrir votre rendez-vous en ligne :",
+        "pleaseNote": "*Remarque : cette application sert à ouvrir les rendez-vous de télésanté dans Jane à l'aide d'un appareil iOS (iPhone ou iPad). Une fois téléchargée de l'App Store, vous n'aurez plus besoin d'accéder à l'application.",
+        "firstStep": "Connectez-vous à votre compte de la clinique (exemple : nom de la clinique ici.janeapp.com/admin) via Safari, votre navigateur Web par défaut.",
+        "secondStep": "Sélectionnez votre rendez-vous en ligne et cliquez sur Commencer."
     }
 }

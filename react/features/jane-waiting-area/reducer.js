@@ -1,9 +1,6 @@
 import { ReducerRegistry } from '../base/redux';
 
 import {
-    ADD_JANE_WAITING_AREA_AUDIO_TRACK,
-    ADD_JANE_WAITING_AREA_CONTENT_SHARING_TRACK,
-    ADD_JANE_WAITING_AREA_VIDEO_TRACK,
     SET_DEVICE_STATUS,
     SET_JANE_WAITING_AREA_AUDIO_DISABLED,
     SET_JANE_WAITING_AREA_AUDIO_MUTED,
@@ -13,7 +10,8 @@ import {
     SET_JANE_WAITING_AREA_VIDEO_MUTED,
     UPDATE_REMOTE_PARTICIPANT_STATUSES,
     SET_JANE_WAITING_AREA_AUTH_STATE,
-    ADD_CONNECTION_TO_JANE_WAITING_AREA
+    ADD_CONNECTION_TO_JANE_WAITING_AREA,
+    ENABLE_JANE_WAITING_AREA_PAGE
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -32,7 +30,8 @@ const DEFAULT_STATE = {
     videoMuted: false,
     remoteParticipantsStatuses: [],
     authState: '',
-    connection: undefined
+    connection: undefined,
+    janeWaitingAreaEnabled: false
 };
 
 /**
@@ -41,27 +40,6 @@ const DEFAULT_STATE = {
 ReducerRegistry.register(
     'features/jane-waiting-area', (state = DEFAULT_STATE, action) => {
         switch (action.type) {
-        case ADD_JANE_WAITING_AREA_AUDIO_TRACK: {
-            return {
-                ...state,
-                audioTrack: action.value
-            };
-        }
-
-        case ADD_JANE_WAITING_AREA_CONTENT_SHARING_TRACK: {
-            return {
-                ...state,
-                contentSharingTrack: action.value
-            };
-        }
-
-        case ADD_JANE_WAITING_AREA_VIDEO_TRACK: {
-            return {
-                ...state,
-                videoTrack: action.value
-            };
-        }
-
         case SET_JANE_WAITING_AREA_PAGE_VISIBILITY:
             return {
                 ...state,
@@ -117,6 +95,12 @@ ReducerRegistry.register(
                 remoteParticipantsStatuses: action.value
             };
         }
+
+        case ENABLE_JANE_WAITING_AREA_PAGE:
+            return {
+                ...state,
+                janeWaitingAreaEnabled: action.janeWaitingAreaEnabled
+            };
 
         case SET_JANE_WAITING_AREA_AUTH_STATE: {
             return {
@@ -177,3 +161,4 @@ function getStatusFromErrors(errors) {
         rawError: ''
     };
 }
+

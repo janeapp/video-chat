@@ -16,12 +16,9 @@
  */
 
 #import "AppDelegate.h"
-#import "FIRUtilities.h"
 #import "Types.h"
 #import "ViewController.h"
-
-@import Firebase;
-@import JitsiMeet;
+@import JitsiMeetSDK;
 
 @implementation AppDelegate
 
@@ -30,12 +27,13 @@
     JitsiMeet *jitsiMeet = [JitsiMeet sharedInstance];
 
     jitsiMeet.conferenceActivityType = JitsiMeetConferenceActivityType;
-    jitsiMeet.customUrlScheme = @"org.jitsi.meet";
-    jitsiMeet.universalLinkDomains = @[@"meet.jit.si", @"alpha.jitsi.net", @"beta.meet.jit.si", @'videochat-jwt.jane.qa'];
+    jitsiMeet.customUrlScheme = @"janeoa";
+    jitsiMeet.universalLinkDomains = @[@"videochat-jwt.jane.qa",@"videochat.jane.qa",@"videochat-chrisw.jane.qa",@"videochat-us.janeapp.com",@"videochat-ca.janeapp.com",@"videochat-ca2.janeapp.com",@"videochat.janeapp.com.au",@"videochat.janeapp.co.uk",@"jitsi2.jane.qa",@"conference-pod-cac1-j1.janeapp.net",@"conference-pod-usw2-j2.janeapp.net",@"conference-pod-euw2-j3.janeapp.net",@"conference-pod-apse2-j4.janeapp.net",@"video-conference-ca.janeapp.net",@"video-conference-us.janeapp.net",@"video-conference-uk.janeapp.net",@"video-conference-au.janeapp.net",@"video-conference.jane.qa"];
 
     jitsiMeet.defaultConferenceOptions = [JitsiMeetConferenceOptions fromBuilder:^(JitsiMeetConferenceOptionsBuilder *builder) {
         [builder setFeatureFlag:@"resolution" withValue:@(360)];
-        builder.serverURL = [NSURL URLWithString:@"https://meet.jit.si"];
+        [builder setFeatureFlag:@"ios.screensharing.enabled" withBoolean:YES];
+        builder.serverURL = [NSURL URLWithString:@"https://videochat.jane.qa"];
         builder.welcomePageEnabled = YES;
 
         // Apple rejected our app because they claim requiring a
@@ -45,15 +43,10 @@
 #endif
     }];
 
-    // Initialize Crashlytics and Firebase if a valid GoogleService-Info.plist file was provided.
-  if ([FIRUtilities appContainsRealServiceInfoPlist]) {
-        NSLog(@"Enabling Firebase");
-        [FIRApp configure];
-        // Crashlytics defaults to disabled wirth the FirebaseCrashlyticsCollectionEnabled Info.plist key.
-        [[FIRCrashlytics crashlytics] setCrashlyticsCollectionEnabled:![jitsiMeet isCrashReportingDisabled]];
-    }
+  [jitsiMeet application:application didFinishLaunchingWithOptions:launchOptions];
 
-    [jitsiMeet application:application didFinishLaunchingWithOptions:launchOptions];
+    ViewController *rootController = (ViewController *)self.window.rootViewController;
+    [jitsiMeet showSplashScreen:rootController.view];
 
     return YES;
 }
@@ -70,28 +63,6 @@
 -    (BOOL)application:(UIApplication *)application
   continueUserActivity:(NSUserActivity *)userActivity
     restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler {
-
-    if ([FIRUtilities appContainsRealServiceInfoPlist]) {
-        // 1. Attempt to handle Universal Links through Firebase in order to support
-        //    its Dynamic Links (which we utilize for the purposes of deferred deep
-        //    linking).
-        BOOL handled
-          = [[FIRDynamicLinks dynamicLinks]
-                handleUniversalLink:userActivity.webpageURL
-                         completion:^(FIRDynamicLink * _Nullable dynamicLink, NSError * _Nullable error) {
-           NSURL *firebaseUrl = [FIRUtilities extractURL:dynamicLink];
-           if (firebaseUrl != nil) {
-             userActivity.webpageURL = firebaseUrl;
-             [[JitsiMeet sharedInstance] application:application
-                                continueUserActivity:userActivity
-                                  restorationHandler:restorationHandler];
-           }
-        }];
-
-        if (handled) {
-          return handled;
-        }
-    }
 
     // 2. Default to plain old, non-Firebase-assisted Universal Links.
     return [[JitsiMeet sharedInstance] application:application
@@ -110,15 +81,6 @@
     }
 
     NSURL *openUrl = url;
-
-    if ([FIRUtilities appContainsRealServiceInfoPlist]) {
-        // Process Firebase Dynamic Links
-        FIRDynamicLink *dynamicLink = [[FIRDynamicLinks dynamicLinks] dynamicLinkFromCustomSchemeURL:url];
-        NSURL *firebaseUrl = [FIRUtilities extractURL:dynamicLink];
-        if (firebaseUrl != nil) {
-            openUrl = firebaseUrl;
-        }
-    }
 
     return [[JitsiMeet sharedInstance] application:app
                                            openURL:openUrl

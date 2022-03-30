@@ -1,11 +1,12 @@
 // @flow
 
 import React from 'react';
-import { NativeModules, SafeAreaView, StatusBar } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import { NativeModules, SafeAreaView, StatusBar, View, Clipboard } from 'react-native';
 
 import { appNavigate } from '../../../app/actions';
-import { PIP_ENABLED, getFeatureFlag } from '../../../base/flags';
+import { isJaneTestCall } from '../../../base/conference/functions';
+import { PIP_ENABLED, FULLSCREEN_ENABLED, getFeatureFlag } from '../../../base/flags';
+import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../base/participants';
 import { Container, LoadingIndicator, TintedView } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
@@ -21,9 +22,12 @@ import {
     TileView
 } from '../../../filmstrip';
 import { AddPeopleDialog, CalleeInfoContainer } from '../../../invite';
+import JaneWaitingArea from '../../../jane-waiting-area/components/native/JaneWaitingArea';
 import { LargeVideo } from '../../../large-video';
-import { KnockingParticipantList } from '../../../lobby';
+import { LobbyScreen } from '../../../lobby/components/native';
+import { getIsLobbyVisible } from '../../../lobby/functions';
 import { BackButtonRegistry } from '../../../mobile/back-button';
+import { ParticipantsPane } from '../../../participants-pane/components/native';
 import { Captions } from '../../../subtitles';
 import { setToolboxVisible } from '../../../toolbox/actions';
 import { Toolbox } from '../../../toolbox/components/native';
@@ -34,11 +38,15 @@ import {
 } from '../AbstractConference';
 import type { AbstractProps } from '../AbstractConference';
 
-import Labels from './Labels';
-import LonelyMeetingExperience from './LonelyMeetingExperience';
 import NavigationBar from './NavigationBar';
-import styles, { NAVBAR_GRADIENT_COLORS } from './styles';
+import styles from './styles';
 
+// import Labels from './Labels';
+// import LonelyMeetingExperience from './LonelyMeetingExperience';
+// import { KnockingParticipantList } from '../../../lobby';
+
+
+// import LonelyMeetingExperience from './LonelyMeetingExperience';
 
 /**
  * The type of the React {@code Component} props of {@link Conference}.
@@ -69,6 +77,16 @@ type Props = AbstractProps & {
     _filmstripVisible: boolean,
 
     /**
+     * The indicator which determines whether fullscreen (immersive) mode is enabled.
+     */
+    _fullscreenEnabled: boolean,
+
+    /**
+     * The indicator which determines if the participants pane is open.
+     */
+    _isParticipantsPaneOpen: boolean,
+
+    /**
      * The ID of the participant currently on stage (if any)
      */
     _largeVideoParticipantId: string,
@@ -90,9 +108,16 @@ type Props = AbstractProps & {
     _toolboxVisible: boolean,
 
     /**
+     * Indicates whether the lobby screen should be visible.
+     */
+    _showLobby: boolean,
+
+    /**
      * The redux {@code dispatch} function.
      */
-    dispatch: Function
+    dispatch: Function,
+    _janeWaitingAreaEnabled: boolean,
+    _isJaneTestCall: boolean
 };
 
 /**
@@ -123,6 +148,7 @@ class Conference extends AbstractConference<Props, *> {
      */
     componentDidMount() {
         BackButtonRegistry.addListener(this._onHardwareBackPress);
+        this.clearClipboardContents();
     }
 
     /**
@@ -134,8 +160,21 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {void}
      */
     componentWillUnmount() {
+
         // Tear handling any hardware button presses for back navigation down.
         BackButtonRegistry.removeListener(this._onHardwareBackPress);
+
+    }
+
+    /**
+     * Clear the video chat universal link copied from Jane here to
+     * avoid users rejoin the call on the welcome page after hanging up
+     * the call.
+     *
+     * @returns {void}
+     */
+    async clearClipboardContents() {
+        await Clipboard.setString('');
     }
 
     /**
@@ -145,12 +184,18 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {ReactElement}
      */
     render() {
+        const { _fullscreenEnabled, _showLobby } = this.props;
+
+        if (_showLobby) {
+            return <LobbyScreen />;
+        }
+
         return (
             <Container style = { styles.conference }>
                 <StatusBar
                     barStyle = 'light-content'
-                    hidden = { true }
-                    translucent = { true } />
+                    hidden = { _fullscreenEnabled }
+                    translucent = { _fullscreenEnabled } />
                 { this._renderContent() }
             </Container>
         );
@@ -231,17 +276,14 @@ class Conference extends AbstractConference<Props, *> {
      */
     _renderContent() {
         const {
-            _aspectRatio,
             _connecting,
-            _filmstripVisible,
+            _isParticipantsPaneOpen,
             _largeVideoParticipantId,
             _reducedUI,
             _shouldDisplayTileView,
-            _toolboxVisible
+            _janeWaitingAreaEnabled,
+            _isJaneTestCall
         } = this.props;
-        const showGradient = _toolboxVisible;
-        const applyGradientStretching
-            = _filmstripVisible && _aspectRatio === ASPECT_RATIO_NARROW && !_shouldDisplayTileView;
 
         if (_reducedUI) {
             return this._renderContentForReducedUi();
@@ -273,27 +315,9 @@ class Conference extends AbstractConference<Props, *> {
                         </TintedView>
                 }
 
-                <SafeAreaView
+                <View
                     pointerEvents = 'box-none'
                     style = { styles.toolboxAndFilmstripContainer }>
-
-                    { showGradient && <LinearGradient
-                        colors = { NAVBAR_GRADIENT_COLORS }
-                        end = {{
-                            x: 0.0,
-                            y: 0.0
-                        }}
-                        pointerEvents = 'none'
-                        start = {{
-                            x: 0.0,
-                            y: 1.0
-                        }}
-                        style = { [
-                            styles.bottomGradient,
-                            applyGradientStretching ? styles.gradientStretchBottom : undefined
-                        ] } />}
-
-                    <Labels />
 
                     <Captions onPress = { this._onClick } />
 
@@ -301,38 +325,28 @@ class Conference extends AbstractConference<Props, *> {
                         <DisplayNameLabel participantId = { _largeVideoParticipantId } />
                     </Container> }
 
-                    <LonelyMeetingExperience />
+                    {/* <LonelyMeetingExperience />*/}
 
-                    {/*
-                      * The Toolbox is in a stacking layer below the Filmstrip.
-                      */}
-                    <Toolbox />
-
-                    {/*
-                      * The Filmstrip is in a stacking layer above the
-                      * LargeVideo. The LargeVideo and the Filmstrip form what
-                      * the Web/React app calls "videospace". Presumably, the
-                      * name and grouping stem from the fact that these two
-                      * React Components depict the videos of the conference's
-                      * participants.
-                      */
-                        _shouldDisplayTileView ? undefined : <Filmstrip />
-                    }
-                </SafeAreaView>
+                    {!_isJaneTestCall && _janeWaitingAreaEnabled && <JaneWaitingArea />}
+                    { _shouldDisplayTileView || <><Filmstrip /><Toolbox /></> }
+                </View>
 
                 <SafeAreaView
                     pointerEvents = 'box-none'
                     style = { styles.navBarSafeView }>
                     <NavigationBar />
                     { this._renderNotificationsContainer() }
-                    <KnockingParticipantList />
+                    {/* <KnockingParticipantList />*/}
                 </SafeAreaView>
 
                 <TestConnectionInfo />
-
                 { this._renderConferenceNotification() }
-
                 { this._renderConferenceModals() }
+
+                {_shouldDisplayTileView && <Toolbox />}
+
+                { _isParticipantsPaneOpen && <ParticipantsPane /> }
+
             </>
         );
     }
@@ -423,7 +437,11 @@ function _mapStateToProps(state) {
         membersOnly,
         leaving
     } = state['features/base/conference'];
+    const { isOpen } = state['features/participants-pane'];
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
+    const {
+        janeWaitingAreaEnabled
+    } = state['features/jane-waiting-area'];
 
     // XXX There is a window of time between the successful establishment of the
     // XMPP connection and the subsequent commencement of joining the MUC during
@@ -436,6 +454,7 @@ function _mapStateToProps(state) {
     //   are leaving one.
     const connecting_
         = connecting || (connection && (!membersOnly && (joining || (!conference && !leaving))));
+    const { jwt } = state['features/base/jwt'];
 
     return {
         ...abstractMapStateToProps(state),
@@ -443,10 +462,18 @@ function _mapStateToProps(state) {
         _calendarEnabled: isCalendarEnabled(state),
         _connecting: Boolean(connecting_),
         _filmstripVisible: isFilmstripVisible(state),
+        _fullscreenEnabled: getFeatureFlag(state, FULLSCREEN_ENABLED, true),
+        _isParticipantsPaneOpen: isOpen,
         _largeVideoParticipantId: state['features/large-video'].participantId,
         _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),
         _reducedUI: reducedUI,
-        _toolboxVisible: isToolboxVisible(state)
+        _showLobby: getIsLobbyVisible(state),
+        _toolboxVisible: isToolboxVisible(state),
+        _janeWaitingAreaEnabled: janeWaitingAreaEnabled,
+        _jwt: jwt,
+        _participantType: getLocalParticipantType(state),
+        _participant: getLocalParticipantFromJwt(state),
+        _isJaneTestCall: isJaneTestCall(state)
     };
 }
 

@@ -10,6 +10,7 @@ import {
     setAudioOutputDevice as setAudioOutputDeviceAction
 } from '../../../../base/devices';
 import { connect } from '../../../../base/redux';
+import { SMALL_MOBILE_WIDTH } from '../../../../base/responsive-ui/constants';
 import {
     getCurrentMicDeviceId,
     getCurrentOutputDeviceId, getCurrentWaitingAreaMicDeviceId
@@ -37,6 +38,11 @@ type Props = AudioSettingsContentProps & {
     * Callback executed when the popup closes.
     */
     onClose: Function,
+
+    /**
+     * The popup placement enum value.
+     */
+    popupPlacement: string
 }
 
 /**
@@ -53,7 +59,8 @@ function AudioSettingsPopup({
     setAudioInputDevice,
     setAudioOutputDevice,
     onClose,
-    outputDevices
+    outputDevices,
+    popupPlacement
 }: Props) {
     return (
         <div className = 'audio-preview'>
@@ -67,7 +74,7 @@ function AudioSettingsPopup({
                     setAudioOutputDevice = { setAudioOutputDevice } /> }
                 isOpen = { isOpen }
                 onClose = { onClose }
-                position = 'top left'>
+                placement = { popupPlacement }>
                 {children}
             </InlineDialog>
         </div>
@@ -81,10 +88,12 @@ function AudioSettingsPopup({
  * @returns {Object}
  */
 function mapStateToProps(state) {
+    const { clientWidth } = state['features/base/responsive-ui'];
     const currentMicDeviceId = isJaneWaitingAreaPageVisible(state)
         ? getCurrentWaitingAreaMicDeviceId(state) : getCurrentMicDeviceId(state);
 
     return {
+        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top-start',
         currentMicDeviceId,
         currentOutputDeviceId: getCurrentOutputDeviceId(state),
         isOpen: getAudioSettingsVisibility(state),

@@ -18,6 +18,7 @@ import logger from './logger';
  * }}
  */
 export function setPreferredVideoQuality(preferredVideoQuality: number) {
+
     return {
         type: SET_PREFERRED_VIDEO_QUALITY,
         preferredVideoQuality

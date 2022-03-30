@@ -8,7 +8,7 @@ import {
     sendAnalytics
 } from '../../analytics';
 import { translate } from '../../base/i18n';
-import { AbstractPage } from '../../base/react';
+import { Icon, IconPlusCalendar } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { openSettingsDialog, SETTINGS_TABS } from '../../settings';
 import { refreshCalendar } from '../actions';
@@ -27,7 +27,7 @@ type Props = {
      * The error object containing details about any error that has occurred
      * while interacting with calendar integration.
      */
-    _calendarError: ?Object,
+    _calendarError: any,
 
     /**
      * Whether or not a calendar may be connected for fetching calendar events.
@@ -58,7 +58,7 @@ type Props = {
 /**
  * Component to display a list of events from the user's calendar.
  */
-class CalendarList extends AbstractPage<Props> {
+class CalendarList extends React.Component<Props> {
     /**
      * Initializes a new {@code CalendarList} instance.
      *
@@ -71,6 +71,7 @@ class CalendarList extends AbstractPage<Props> {
         this._getRenderListEmptyComponent
             = this._getRenderListEmptyComponent.bind(this);
         this._onOpenSettings = this._onOpenSettings.bind(this);
+        this._onKeyPressOpenSettings = this._onKeyPressOpenSettings.bind(this);
         this._onRefreshEvents = this._onRefreshEvents.bind(this);
     }
 
@@ -185,16 +186,26 @@ class CalendarList extends AbstractPage<Props> {
 
         return (
             <div className = 'meetings-list-empty'>
-                <p className = 'description'>
+                <div className = 'meetings-list-empty-image'>
+                    <img
+                        alt = { t('welcomepage.logo.calendar') }
+                        src = './images/calendar.svg' />
+                </div>
+                <div className = 'description'>
                     { t('welcomepage.connectCalendarText', {
                         app: interfaceConfig.APP_NAME,
                         provider: interfaceConfig.PROVIDER_NAME
                     }) }
-                </p>
+                </div>
                 <div
-                    className = 'button'
-                    onClick = { this._onOpenSettings }>
-                    { t('welcomepage.connectCalendarButton') }
+                    className = 'meetings-list-empty-button'
+                    onClick = { this._onOpenSettings }
+                    onKeyPress = { this._onKeyPressOpenSettings }
+                    role = 'button'>
+                    <Icon
+                        className = 'meetings-list-empty-icon'
+                        src = { IconPlusCalendar } />
+                    <span>{ t('welcomepage.connectCalendarButton') }</span>
                 </div>
             </div>
         );
@@ -212,6 +223,22 @@ class CalendarList extends AbstractPage<Props> {
         sendAnalytics(createCalendarClickedEvent('calendar.connect'));
 
         this.props.dispatch(openSettingsDialog(SETTINGS_TABS.CALENDAR));
+    }
+
+    _onKeyPressOpenSettings: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onKeyPressOpenSettings(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._onOpenSettings();
+        }
     }
 
     _onRefreshEvents: () => void;

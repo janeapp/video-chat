@@ -1,14 +1,13 @@
 // @flow
-/* eslint-disable */
 import { Component } from 'react';
 
 import { renderConferenceTimer } from '../';
+import { setConferenceStartTime } from '../../base/conference';
 import { getConferenceTimestamp } from '../../base/conference/functions';
 import { getLocalizedDurationFormatter } from '../../base/i18n';
+import { getParticipantCount } from '../../base/participants';
 import { connect } from '../../base/redux';
 import { getRemoteTracks } from '../../base/tracks';
-import { getParticipantCount } from '../../base/participants';
-import { setConferenceStartTime } from '../../base/conference';
 
 /**
  * The type of the React {@code Component} props of {@link ConferenceTimer}.
@@ -22,9 +21,15 @@ type Props = {
     conferenceHasStarted: boolean,
 
     /**
+     * Style to be applied to the rendered text.
+     */
+    textStyle: ?Object,
+
+    /**
      * The redux {@code dispatch} function.
      */
-    dispatch: Function
+    dispatch: Function,
+    conferenceHasStarted: boolean
 };
 
 /**
@@ -75,7 +80,8 @@ class ConferenceTimer extends Component<Props, State> {
         this._stopTimer();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    // eslint-disable-next-line require-jsdoc
+    componentDidUpdate(prevProps) {
         if (prevProps.conferenceHasStarted !== this.props.conferenceHasStarted && !prevProps.conferenceHasStarted) {
             this.props.dispatch(setConferenceStartTime(new Date()));
             this._startTimer();
@@ -93,13 +99,13 @@ class ConferenceTimer extends Component<Props, State> {
      */
     render() {
         const { timerValue } = this.state;
-        const { _startTimestamp } = this.props;
+        const { _startTimestamp, textStyle } = this.props;
 
         if (!_startTimestamp) {
             return null;
         }
 
-        return renderConferenceTimer(timerValue);
+        return renderConferenceTimer(timerValue, textStyle);
     }
 
     /**
@@ -111,7 +117,6 @@ class ConferenceTimer extends Component<Props, State> {
      * @returns {void}
      */
     _setStateFromUTC(refValueUTC, currentValueUTC) {
-
         if (!refValueUTC || !currentValueUTC) {
             return;
         }
@@ -169,10 +174,8 @@ class ConferenceTimer extends Component<Props, State> {
  * }}
  */
 export function _mapStateToProps(state: Object) {
-
     const participantCount = getParticipantCount(state);
     const remoteTracks = getRemoteTracks(state['features/base/tracks']);
-
 
     return {
         _startTimestamp: getConferenceTimestamp(state),

@@ -3,11 +3,10 @@
 
 import React from 'react';
 
-import { isMobileBrowser } from '../../base/environment/utils';
-import { translate, translateToHTML } from '../../base/i18n';
-import { Icon, IconWarning } from '../../base/icons';
+import { translate } from '../../base/i18n';
 import { Watermarks } from '../../base/react';
 import { connect } from '../../base/redux';
+import { isMobileBrowser } from '../../base/environment/utils';
 import { CalendarList } from '../../calendar-sync';
 import { RecentList } from '../../recent-list';
 import { SettingsButton, SETTINGS_TABS } from '../../settings';
@@ -159,8 +158,8 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns {ReactElement|null}
      */
     render() {
-        const { _moderatedRoomServiceUrl, t } = this.props;
-        const { APP_NAME, DEFAULT_WELCOME_PAGE_LOGO_URL } = interfaceConfig;
+        const { t } = this.props;
+        const { APP_NAME } = interfaceConfig;
         const showAdditionalContent = this._shouldShowAdditionalContent();
         const showAdditionalToolbarContent = this._shouldShowAdditionalToolbarContent();
         const showResponsiveText = this._shouldShowResponsiveText();
@@ -174,12 +173,12 @@ class WelcomePage extends AbstractWelcomePage {
                     <Watermarks isWelcomePage/>
                 </div>
                 <div className = 'header'>
-                    <div className = 'welcome-page-settings'>
+                    {/*<div className = 'welcome-page-settings'>*/}
                         {/* <SettingsButton
                             defaultTab = { SETTINGS_TABS.CALENDAR } /> */}
-                    </div>
+                    {/*</div>*/}
                     {/* <div className = 'header-image' /> */}
-                    <div className = 'header-text'>
+                    <div className = 'header-container'>
                         <h1 className = 'header-text-title'>
                             {t('welcomepage.welcomeToJaneVideoChat')}
                         </h1>
@@ -205,7 +204,6 @@ class WelcomePage extends AbstractWelcomePage {
                                     title = { t('welcomepage.roomNameAllowedChars') }
                                     type = 'text'
                                     value = { this.state.room } />
-                                { this._renderInsecureRoomNameWarning() }
                             </form>
                         </div>
                         <div
@@ -218,41 +216,14 @@ class WelcomePage extends AbstractWelcomePage {
                                     : t('welcomepage.go')
                             }
                         </div>
-                    </div>
-                    { _moderatedRoomServiceUrl && (
-                        <div id = 'moderated-meetings'>
-                            <p>
-                                {
-                                    translateToHTML(
-                                        t, 'welcomepage.moderatedMessage', { url: _moderatedRoomServiceUrl })
-                                }
-                            </p>
-                        </div>
-                    ) }
-                    { this._renderTabs() }
                     </div> */}
+                    {/* { this._renderTabs() } */}
                 </div>
                 { showAdditionalContent
                     ? <div
                         className = 'welcome-page-content'
                         ref = { this._setAdditionalContentRef } />
                     : null }
-            </div>
-        );
-    }
-
-    /**
-     * Renders the insecure room name warning.
-     *
-     * @inheritdoc
-     */
-    _doRenderInsecureRoomNameWarning() {
-        return (
-            <div className = 'insecure-room-name-warning'>
-                <Icon src = { IconWarning } />
-                <span>
-                    { this.props.t('security.insecureRoomNameWarning') }
-                </span>
             </div>
         );
     }
@@ -296,6 +267,51 @@ class WelcomePage extends AbstractWelcomePage {
      */
     _onTabSelected(tabIndex) {
         this.setState({ selectedTab: tabIndex });
+    }
+
+    /**
+     * Renders the footer.
+     *
+     * @returns {ReactElement}
+     */
+    _renderFooter() {
+        const { t } = this.props;
+        const {
+            MOBILE_DOWNLOAD_LINK_ANDROID,
+            MOBILE_DOWNLOAD_LINK_F_DROID,
+            MOBILE_DOWNLOAD_LINK_IOS
+        } = interfaceConfig;
+
+        return (<footer className = 'welcome-footer'>
+            <div className = 'welcome-footer-centered'>
+                <div className = 'welcome-footer-padded'>
+                    <div className = 'welcome-footer-row-block welcome-footer--row-1'>
+                        <div className = 'welcome-footer-row-1-text'>{t('welcomepage.jitsiOnMobile')}</div>
+                        <a
+                            className = 'welcome-badge'
+                            href = { MOBILE_DOWNLOAD_LINK_IOS }>
+                            <img
+                                alt = { t('welcomepage.mobileDownLoadLinkIos') }
+                                src = './images/app-store-badge.png' />
+                        </a>
+                        <a
+                            className = 'welcome-badge'
+                            href = { MOBILE_DOWNLOAD_LINK_ANDROID }>
+                            <img
+                                alt = { t('welcomepage.mobileDownLoadLinkAndroid') }
+                                src = './images/google-play-badge.png' />
+                        </a>
+                        <a
+                            className = 'welcome-badge'
+                            href = { MOBILE_DOWNLOAD_LINK_F_DROID }>
+                            <img
+                                alt = { t('welcomepage.mobileDownLoadLinkFDroid') }
+                                src = './images/f-droid-badge.png' />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>);
     }
 
     /**

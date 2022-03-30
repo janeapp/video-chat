@@ -1,11 +1,8 @@
 /* @flow */
-/* eslint-disable require-jsdoc,max-len*/
 import React, { Component } from 'react';
 
 import { translate } from '../../../i18n';
-import {
-    getParticipantCount
-} from '../../../participants';
+import { getParticipantCount } from '../../../participants';
 import { connect } from '../../../redux';
 import { getRemoteTracks } from '../../../tracks';
 import { shouldShowPreCallMessage } from '../../functions';
@@ -14,14 +11,26 @@ import PreCallMessage from './PreCallMessage';
 
 declare var interfaceConfig: Object;
 
+//
+// /**
+//  * The CSS style of the element with CSS class {@code rightwatermark}.
+//  *
+//  * @private
+//  */
+// const _RIGHT_WATERMARK_STYLE = {
+//     backgroundImage: 'url(images/rightwatermark.png)'
+// };
+/* eslint-disable require-jsdoc,max-len*/
+
 /**
  * The type of the React {@code Component} props of {@link Watermarks}.
  */
 type Props = {
 
     /**
-     * Whether or not the current user is logged in through a JWT.
+     * The default value for the Jitsi logo URL.
      */
+    defaultJitsiLogoURL: ?string,
     _isGuest: boolean,
     conferenceHasStarted: boolean,
 
@@ -29,6 +38,7 @@ type Props = {
      * Invoked to obtain translated strings.
      */
     t: Function,
+    conferenceHasStarted: boolean,
     showPreCallMessage: boolean,
     hasPreCallMessage: boolean,
     isWelcomePage: boolean,
@@ -44,26 +54,11 @@ type State = {
      */
     brandWatermarkLink: string,
 
-    /**
-     * The url to open when clicking the Jitsi watermark.
-     */
-    jitsiWatermarkLink: string,
 
     /**
      * Whether or not the brand watermark should be displayed.
      */
     showBrandWatermark: boolean,
-
-    /**
-     * Whether or not the Jitsi watermark should be displayed.
-     */
-    showJitsiWatermark: boolean,
-
-    /**
-     * Whether or not the Jitsi watermark should be displayed for users not
-     * logged in through a JWT.
-     */
-    showJitsiWatermarkForGuests: boolean,
 
     /**
      * Whether or not the show the "powered by Jitsi.org" link.
@@ -85,30 +80,12 @@ class Watermarks extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        let showBrandWatermark;
-        let showJitsiWatermark;
-        let showJitsiWatermarkForGuests;
-
-        if (interfaceConfig.filmStripOnly) {
-            showBrandWatermark = false;
-            showJitsiWatermark = false;
-            showJitsiWatermarkForGuests = false;
-        } else {
-            showBrandWatermark = interfaceConfig.SHOW_BRAND_WATERMARK;
-            showJitsiWatermark = interfaceConfig.SHOW_JITSI_WATERMARK;
-            showJitsiWatermarkForGuests
-                = interfaceConfig.SHOW_WATERMARK_FOR_GUESTS;
-        }
+        const showBrandWatermark = interfaceConfig.SHOW_BRAND_WATERMARK;
 
         this.state = {
             brandWatermarkLink:
                 showBrandWatermark ? interfaceConfig.BRAND_WATERMARK_LINK : '',
-            jitsiWatermarkLink:
-                showJitsiWatermark || showJitsiWatermarkForGuests
-                    ? interfaceConfig.JITSI_WATERMARK_LINK : '',
             showBrandWatermark,
-            showJitsiWatermark,
-            showJitsiWatermarkForGuests,
             showPoweredBy: interfaceConfig.SHOW_POWERED_BY
         };
     }

@@ -33,6 +33,31 @@ const _URI_AUTHORITY_PATTERN = '(//[^/?#]+)';
 const _URI_PATH_PATTERN = '([^?#]*)';
 
 /**
+ * The {@link RegExp} pattern of the following jane universal link domains (jwt servers only).
+ * "videochat-jwt.jane.qa",
+ * "videochat-us.janeapp.com",
+ * "videochat-ca.janeapp.com",
+ * "videochat-ca2.janeapp.com",
+ * "videochat.janeapp.com.au",
+ * "videochat.janeapp.co.uk";
+ * 'videochat-chrisw.jane.qa',
+ * 'jitsi2.jane.qa',
+ * 'conference-pod-cac1-j1.janeapp.net',
+ * 'conference-pod-usw2-j2.janeapp.net',
+ * 'conference-pod-euw2-j3.janeapp.net',
+ * 'conference-pod-apse2-j4.janeapp.net',
+ * 'video-conference-ca.janeapp.net',
+ * 'video-conference-us.janeapp.net',
+ * 'video-conference-uk.janeapp.net',
+ * 'video-conference-au.janeapp.net',
+ * 'video-conference.jane.qa'
+ *
+ * @private
+ * @type {string}
+ */
+const _JANE_UNIVERSAL_LINK_DOMAINS_PATTERN = '([a-z0-9]+[.])*(jane|janeapp).(qa|com|com.au|co.uk|net)';
+
+/**
  * The {@link RegExp} pattern of the protocol of a URI.
  *
  * FIXME: The URL class exposed by JavaScript will not include the colon in
@@ -45,17 +70,18 @@ const _URI_PATH_PATTERN = '([^?#]*)';
 export const URI_PROTOCOL_PATTERN = '^([a-z][a-z0-9\\.\\+-]*:)';
 
 /**
- * Excludes/removes certain characters from a specific room (name) which are
- * incompatible with Jitsi Meet on the client and/or server sides.
+ * Excludes/removes certain characters from a specific path part which are
+ * incompatible with Jitsi Meet on the client and/or server sides. The main
+ * use case for this method is to clean up the room name and the tenant.
  *
- * @param {?string} room - The room (name) to fix.
+ * @param {?string} pathPart - The path part to fix.
  * @private
  * @returns {?string}
  */
-function _fixRoom(room: ?string) {
-    return room
-        ? room.replace(new RegExp(_ROOM_EXCLUDE_PATTERN, 'g'), '')
-        : room;
+function _fixPathPart(pathPart: ?string) {
+    return pathPart
+        ? pathPart.replace(new RegExp(_ROOM_EXCLUDE_PATTERN, 'g'), '')
+        : pathPart;
 }
 
 /**
@@ -335,6 +361,11 @@ export function parseURIString(uri: ?string) {
 
     const obj = parseStandardURIString(_fixURIStringScheme(uri));
 
+    // XXX While the components/segments of pathname are URI encoded, Jitsi Meet
+    // on the client and/or server sides still don't support certain characters.
+    obj.pathname = obj.pathname.split('/').map(pathPart => _fixPathPart(pathPart))
+        .join('/');
+
     // Add the properties that are specific to a Jitsi Meet resource (location)
     // such as contextRoot, room:
 
@@ -344,24 +375,14 @@ export function parseURIString(uri: ?string) {
     // The room (name) is the last component/segment of pathname.
     const { pathname } = obj;
 
-    // XXX While the components/segments of pathname are URI encoded, Jitsi Meet
-    // on the client and/or server sides still don't support certain characters.
     const contextRootEndIndex = pathname.lastIndexOf('/');
-    let room = pathname.substring(contextRootEndIndex + 1) || undefined;
 
-    if (room) {
-        const fixedRoom = _fixRoom(room);
+    obj.room = pathname.substring(contextRootEndIndex + 1) || undefined;
 
-        if (fixedRoom !== room) {
-            room = fixedRoom;
-
-            // XXX Drive fixedRoom into pathname (because room is derived from
-            // pathname).
-            obj.pathname
-                = pathname.substring(0, contextRootEndIndex + 1) + (room || '');
-        }
+    if (contextRootEndIndex > 1) {
+        // The part of the pathname from the beginning to the room name is the tenant.
+        obj.tenant = pathname.substring(1, contextRootEndIndex);
     }
-    obj.room = room;
 
     return obj;
 }
@@ -546,7 +567,7 @@ export function urlObjectToString(o: Object): ?string {
 
     let { hash } = url;
 
-    for (const urlPrefix of [ 'config', 'interfaceConfig', 'devices', 'userInfo' ]) {
+    for (const urlPrefix of [ 'config', 'interfaceConfig', 'devices', 'userInfo', 'appData' ]) {
         const urlParamsArray
             = _objectToURLParamsArray(
                 o[`${urlPrefix}Overwrite`]
@@ -600,4 +621,19 @@ export function addHashParamsToURL(url: URL, hashParamsToAdd: Object = {}) {
  */
 export function getDecodedURI(uri: string) {
     return decodeURI(uri.replace(/^https?:\/\//i, ''));
+}
+
+/**
+ * Checks whether a url param matches the _JANE_UNIVERSAL_LINK_DOMAINS_PATTERN regex pattern.
+ *
+ * @param {string} url - The video chat url
+ * function.
+ * @returns {boolean} If a url matches the _JANE_UNIVERSAL_LINK_DOMAINS_PATTERN regex pattern.
+ * {@code true}; otherwise, {@code false}.
+ */
+export function isJaneVideoChatLink(url: string) {
+    const regExp = new RegExp(_JANE_UNIVERSAL_LINK_DOMAINS_PATTERN);
+
+    return regExp.exec(url) && url.includes('?jwt=');
+
 }

@@ -11,7 +11,12 @@ import { StatelessAvatar } from '.';
 export type Props = {
 
     /**
-     * The string we base the initials on (this is generated from a list of precendences).
+     * Custom avatar backgrounds from branding.
+     */
+    _customAvatarBackgrounds: Array<string>,
+
+    /**
+     * The string we base the initials on (this is generated from a list of precedences).
      */
     _initialsBase: ?string,
 
@@ -36,6 +41,11 @@ export type Props = {
      * an avatar for a non-participasnt entity (e.g. a recent list item).
      */
     displayName?: string,
+
+    /**
+     * Whether or not to update the background color of the avatar
+     */
+    dynamicColor?: Boolean,
 
     /**
      * ID of the element, if any.
@@ -79,6 +89,15 @@ export const DEFAULT_SIZE = 65;
  */
 class Avatar<P: Props> extends PureComponent<P, State> {
     /**
+     * Default values for {@code Avatar} component's properties.
+     *
+     * @static
+     */
+    static defaultProps = {
+        dynamicColor: true
+    };
+
+    /**
      * Instantiates a new {@code Component}.
      *
      * @inheritdoc
@@ -119,10 +138,12 @@ class Avatar<P: Props> extends PureComponent<P, State> {
      */
     render() {
         const {
+            _customAvatarBackgrounds,
             _initialsBase,
             _loadableAvatarUrl,
             className,
             colorBase,
+            dynamicColor,
             id,
             size,
             status,
@@ -156,7 +177,10 @@ class Avatar<P: Props> extends PureComponent<P, State> {
         const initials = getInitials(_initialsBase);
 
         if (initials) {
-            avatarProps.color = getAvatarColor(colorBase || _initialsBase);
+            if (dynamicColor) {
+                avatarProps.color = getAvatarColor(colorBase || _initialsBase, _customAvatarBackgrounds);
+            }
+
             avatarProps.initials = initials;
         }
 
@@ -193,6 +217,7 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
     const _initialsBase = _participant?.name ?? displayName;
 
     return {
+        _customAvatarBackgrounds: state['features/dynamic-branding'].avatarBackgrounds,
         _initialsBase,
         _loadableAvatarUrl: _participant?.loadableAvatarUrl,
         colorBase: !colorBase && _participant ? _participant.id : colorBase

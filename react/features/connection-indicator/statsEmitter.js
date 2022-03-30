@@ -157,7 +157,7 @@ const statsEmitter = {
         if (modifiedLocalStats.connectionQuality) {
             const modifiedLocalConnectionStrength = this._getConnectionQuality(modifiedLocalStats.connectionQuality)
                 .strength;
-            const modifiedLocalConnectionBitrate = this._getBandWidthBitrate(modifiedLocalStats.bandwidth);
+            const modifiedLocalConnectionBitrate = this._getBandWidthBitrate(modifiedLocalStats.bitrate);
 
             if (modifiedLocalConnectionStrength === 'good' && modifiedLocalConnectionBitrate > 2500) {
                 // Enables the hd video alert only if connection strength is "good"
@@ -216,8 +216,8 @@ const statsEmitter = {
         return CONNECTION_QUALITY_STRENGTH.find(x => connectionQuality >= x.connectionQuality) || {};
     },
 
-    _getBandWidthBitrate(bandwidth: Object): number {
-        return bandwidth.download + bandwidth.upload;
+    _getBandWidthBitrate(bitrate: Object): number {
+        return bitrate.download + bitrate.upload;
     }
 };
 
