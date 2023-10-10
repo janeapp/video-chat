@@ -1,6 +1,6 @@
 {
   "name": "jitsi-meet",
-  "version": "0.0.0",
+  "version": "23.10.1.0",
   "description": "A sample app for the Jitsi Videobridge",
   "repository": {
     "type": "git",
