@@ -44,7 +44,7 @@ export default class JaneHandler extends AbstractHandler {
             'participant_type': participant.participant_type,
             'uid': this.uid,
             'browser_session_id': this.browserSessionId,
-            'jitsi_client_version': this.jitsiClientVersion
+            'app_version': this.jitsiClientVersion
         };
 
         if (navigator.product === 'ReactNative') {
