@@ -6,6 +6,7 @@ const process = require('process');
 const webpack = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
+const { version } = require('./package.json');
 const cacheVersionNumber = Math.random().toString(36)
 .substr(2, 5);
 
@@ -189,6 +190,9 @@ const config = {
             allowAsyncCycles: false,
             exclude: /node_modules/,
             failOnError: false
+        }),
+        new webpack.DefinePlugin({
+            'process.env.APP_VERSION': JSON.stringify(version)
         }),
         new HtmlWebpackPlugin({
             jitsiLib: `libs/lib-jitsi-meet.min.js?v=${cacheVersionNumber}`,
