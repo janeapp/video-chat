@@ -17,5 +17,9 @@ initSentry();
 export const ErrorBoundary = (props: Props) => {
     const { children } = props;
 
+    if (navigator.product === 'ReactNative') {
+        return children;
+    }
+
     return <SentryErrorBoundary fallback = { <p>An error has occurred</p> }>{children}</SentryErrorBoundary>;
 };
