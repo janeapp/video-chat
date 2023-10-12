@@ -9,15 +9,15 @@ type Props = {
     /**
      * The React {@code Component} children which represents the app.
      */
-    children: ?React$Node,
+    children: React$Node | null,
 };
 
-initSentry();
+window.hasSentryInitialized = initSentry();
 
 export const ErrorBoundary = (props: Props) => {
     const { children } = props;
 
-    if (navigator.product === 'ReactNative') {
+    if (navigator.product === 'ReactNative' || !window.hasSentryInitialized) {
         return children;
     }
 
