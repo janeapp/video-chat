@@ -2,12 +2,9 @@ FROM node:16 as builder
 
 RUN mkdir /app
 
-ARG BUGSNAG_API_KEY
-
 ADD . /app
 RUN \
   cd /app \
-  && sed -i'' "/const BUGSNAG_API_KEY/s/''/'$BUGSNAG_API_KEY'/" bugsnag.js \
   && npm install \
   && make \
   && make source-package
