@@ -9,6 +9,8 @@ const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { webAppVersion } = require('./package.json');
 const cacheVersionNumber = Math.random().toString(36)
 .substr(2, 5);
+require("dotenv").config({ path: ".env.sentry" })
+const { webAppVersion } = require("./package.json")
 
 /**
  * The URL of the Jitsi Meet deployment to be proxy to in the context of
@@ -23,6 +25,8 @@ const detectCircularDeps = process.argv.indexOf('--detect-circular-deps') !== -1
 const minimize
     = process.argv.indexOf('-p') !== -1
     || process.argv.indexOf('--optimize-minimize') !== -1;
+
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 
 /**
  * Build a Performance configuration object for the given size.
@@ -201,6 +205,12 @@ const config = {
             template: 'index.html',
             minify: false,
             inject: false
+        }),
+        sentryWebpackPlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: "jane-app",
+            project: "jitsi-frontend",
+            release: webAppVersion,
         })
     ].filter(Boolean),
     resolve: {
