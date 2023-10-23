@@ -130,6 +130,7 @@
     "@babel/preset-flow": "7.0.0",
     "@babel/preset-react": "7.0.0",
     "@babel/runtime": "7.9.0",
+    "@sentry/webpack-plugin": "^2.9.0",
     "babel-eslint": "10.0.1",
     "babel-loader": "8.0.4",
     "babel-plugin-optional-require": "0.3.1",
