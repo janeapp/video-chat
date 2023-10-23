@@ -3,8 +3,12 @@ FROM node:16 as builder
 RUN mkdir /app
 
 ADD . /app
+
+ARG SENTRY_AUTH_TOKEN
+
 RUN \
   cd /app \
+  && sed -i~ '/^SENTRY_AUTH_TOKEN=/s/=.*/="${SENTRY_AUTH_TOKEN}"/' .env.sentry \
   && npm install \
   && make \
   && make source-package
