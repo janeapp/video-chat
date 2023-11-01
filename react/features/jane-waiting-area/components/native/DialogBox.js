@@ -10,6 +10,7 @@ import { WebView } from 'react-native-webview';
 import { createWaitingAreaModalEvent, createWaitingAreaPageEvent, sendAnalytics } from '../../../analytics';
 import { connect as startConference } from '../../../base/connection';
 import { getLocalizedDateFormatter, translate } from '../../../base/i18n';
+import { overwriteLocalParticipantWithJitsiDetails } from '../../../base/jwt';
 import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import {
@@ -167,8 +168,12 @@ class DialogBox extends Component<DialogBoxProps> {
 
         try {
             const response = await checkRoomStatus(jwt);
+            const jitsiDetails = response ? response.jitsi_details : {};
+
             const remoteParticipantsStatuses
                 = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
+
+            overwriteLocalParticipantWithJitsiDetails(jitsiDetails);
 
             updateRemoteParticipantsStatusesAction(remoteParticipantsStatuses);
         } catch (error) {

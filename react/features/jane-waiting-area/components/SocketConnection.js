@@ -188,7 +188,7 @@ class SocketConnection extends Component<Props> {
             // fetch data
             const response = await checkRoomStatus();
             const remoteParticipantsStatuses = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
-            const jitsiDetails = response && response.jitsi_details || {}
+            const jitsiDetails = response ? response.jitsi_details : {}
 
             overwriteLocalParticipantWithJitsiDetails(jitsiDetails)
 
