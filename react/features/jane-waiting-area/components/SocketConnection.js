@@ -34,6 +34,9 @@ import {
 import {
     WAITING_AREA_NOTIFICATION_SOUND_ID
 } from '../sound';
+import {
+    overwriteLocalParticipantWithJitsiDetails,
+} from '../../base/jwt/functions';
 
 
 type Props = {
@@ -185,6 +188,9 @@ class SocketConnection extends Component<Props> {
             // fetch data
             const response = await checkRoomStatus();
             const remoteParticipantsStatuses = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
+            const jitsiDetails = response && response.jitsi_details || {}
+
+            overwriteLocalParticipantWithJitsiDetails(jitsiDetails)
 
             // This action will update the remote participant states in reducer
             updateRemoteParticipantsStatuses(remoteParticipantsStatuses);
