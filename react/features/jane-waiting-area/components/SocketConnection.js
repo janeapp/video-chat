@@ -20,6 +20,7 @@ import { playSound as playSoundAction } from '../../base/sounds';
 import { sleep } from '../../base/util/helpers';
 import { showErrorNotification as showErrorNotificationAction } from '../../notifications';
 import {
+    setJaneAppointmentDetails,
     setJaneWaitingAreaAuthState as setJaneWaitingAreaAuthStateAction,
     updateRemoteParticipantsStatuses as updateRemoteParticipantsStatusesAction,
     updateRemoteParticipantsStatusesFromSocket as updateRemoteParticipantsStatusesFromSocketAction
@@ -189,6 +190,8 @@ class SocketConnection extends Component<Props> {
             const response = await checkRoomStatus();
             const remoteParticipantsStatuses = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
             const jitsiDetails = response ? response.jitsi_details : {}
+
+            setJaneAppointmentDetails(jitsiDetails)
 
             overwriteLocalParticipantWithJitsiDetails(jitsiDetails)
 
