@@ -252,7 +252,7 @@ class DialogBox extends Component<DialogBoxProps> {
 
     _getStartDate() {
         const { janeAppointmentDetails } = this.props;
-        const startAt = janeAppointmentDetails.start_at ?? '';
+        const startAt = _.get(janeAppointmentDetails, 'start_at') ?? '';
 
         if (startAt) {
             return (<Text style = { styles.msgText }>
@@ -268,9 +268,9 @@ class DialogBox extends Component<DialogBoxProps> {
 
     _getStartTimeAndEndTime() {
         const { janeAppointmentDetails } = this.props;
-        const startAt = janeAppointmentDetails.start_at ?? '';
-        let endAt = janeAppointmentDetails.end_at ?? '';
-        const treatmentDuration = janeAppointmentDetails.treatment_duration;
+        const startAt = _.get(janeAppointmentDetails, 'start_at') ?? '';
+        let endAt = _.get(janeAppointmentDetails, 'end_at') ?? '';
+        const treatmentDuration = _.get(janeAppointmentDetails, 'treatment_duration') ?? '';
 
         if (!startAt || !endAt) {
             return null;
@@ -292,9 +292,9 @@ class DialogBox extends Component<DialogBoxProps> {
 
     _getDuration() {
         const { janeAppointmentDetails, t } = this.props;
-        const startAt = janeAppointmentDetails.start_at;
-        const endAt = janeAppointmentDetails.end_at;
-        const treatmentDuration = janeAppointmentDetails.treatment_duration;
+        const startAt = _.get(janeAppointmentDetails, 'start_at') ?? '';
+        const endAt = _.get(janeAppointmentDetails, 'end_at') ?? '';
+        const treatmentDuration = _.get(janeAppointmentDetails, 'treatment_duration') ?? '';
         let duration;
 
         if (treatmentDuration) {

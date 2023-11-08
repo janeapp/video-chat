@@ -214,7 +214,7 @@ function _mapStateToProps(state) {
     const participantType = getLocalParticipantType(state);
     const isWaitingAreaPageEnabled = isJaneWaitingAreaEnabled(state);
     const { janeAppointmentDetails } = state['features/jane-waiting-area'];
-    const appointmentStartAt =  janeAppointmentDetails.start_at || '';
+    const appointmentStartAt =  _.get(janeAppointmentDetails, 'start_at') || '';
     const showPreCallMessage = shouldShowPreCallMessage(state);
 
     return {
