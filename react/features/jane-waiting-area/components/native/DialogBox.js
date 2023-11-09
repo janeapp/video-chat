@@ -10,6 +10,7 @@ import { WebView } from 'react-native-webview';
 import { createWaitingAreaModalEvent, createWaitingAreaPageEvent, sendAnalytics } from '../../../analytics';
 import { connect as startConference } from '../../../base/connection';
 import { getLocalizedDateFormatter, translate } from '../../../base/i18n';
+import { overwriteLocalParticipantWithJitsiDetails } from '../../../base/jwt/functions';
 import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import {
@@ -26,7 +27,6 @@ import {
 
 import { ActionButton } from './ActionButton';
 import styles from './styles';
-import { overwriteLocalParticipantWithJitsiDetails } from '../../../base/jwt/functions';
 
 type DialogTitleProps = {
     participantType: string,
@@ -172,7 +172,7 @@ class DialogBox extends Component<DialogBoxProps> {
             const response = await checkRoomStatus(jwt);
             const remoteParticipantsStatuses
                 = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
-            const jitsiDetails = response ? response.jitsi_details : {}
+            const jitsiDetails = response ? response.jitsi_details : {};
 
             setJaneAppointmentDetails(jitsiDetails);
             overwriteLocalParticipantWithJitsiDetails(jitsiDetails);
