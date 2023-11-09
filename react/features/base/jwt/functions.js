@@ -5,6 +5,8 @@ import jwtDecode from 'jwt-decode';
 import { parseURLParams } from '../util';
 
 import { MEET_FEATURES } from './constants';
+import { user2participant, overwriteLocalParticipant } from './middleware';
+declare var APP: Object;
 
 /**
  * Retrieves the JSON Web Token (JWT), if any, defined by a specific
@@ -144,4 +146,53 @@ export function validateJwt(jwt: string) {
     }
 
     return errors;
+}
+
+
+/**
+ * Check whether the JWT token has expired.
+ *
+ * @param {string} jwt - Jwt token.
+ * @returns {boolean} - Whether JWT token has expired.
+ */
+export function isJwtTokenExpired(jwt: string) {
+    try {
+        // we need to *1000 here since jwtDecode(jwt).exp returns seconds not miliseconds
+        return Date.now() >= jwtDecode(jwt).exp * 1000;
+    } catch (error) {
+        return true;
+    }
+}
+
+// eslint-disable-next-line require-jsdoc
+export function overwriteLocalParticipantWithJitsiDetails(jitsiDetails: Object) {
+    const store = APP.store.getState();
+    const { jwt } = store['features/base/jwt'];
+    const { local } = store['features/base/participants'];
+
+
+    // Return if JWT or jitsiDetails are missing, or if the local user name already exists in the store.
+    if (!jwt || !jitsiDetails || local.name) {
+        return;
+    }
+
+    const jwtPayload = jwtDecode(jwt);
+    const localUserInfoFromJwt = jwtPayload && jwtPayload.context && jwtPayload.context.user;
+    const participants = jitsiDetails.participants;
+    const localUserInfoFromJitsiDetails
+        = findLocalParticipantFromjitsiDetailsParticipants(participants, localUserInfoFromJwt);
+
+    if (localUserInfoFromJitsiDetails) {
+        localUserInfoFromJitsiDetails.id = localUserInfoFromJwt.id;
+        const user = user2participant(localUserInfoFromJitsiDetails || {});
+
+        user && overwriteLocalParticipant(
+            APP.store, { ...user });
+    }
+}
+
+// eslint-disable-next-line require-jsdoc
+function findLocalParticipantFromjitsiDetailsParticipants(participants, localUserInfoFromJwt) {
+    return participants.find(v => v.participant_type === localUserInfoFromJwt.participant_type
+        && v.participant_id === localUserInfoFromJwt.participant_id);
 }
