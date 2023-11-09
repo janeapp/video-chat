@@ -14,6 +14,7 @@ import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../ba
 import { connect } from '../../../base/redux';
 import {
     enableJaneWaitingArea,
+    setJaneAppointmentDetails,
     setJaneWaitingAreaAuthState,
     updateRemoteParticipantsStatuses
 } from '../../actions';
@@ -25,6 +26,7 @@ import {
 
 import { ActionButton } from './ActionButton';
 import styles from './styles';
+import { overwriteLocalParticipantWithJitsiDetails } from '../../../base/jwt/functions';
 
 type DialogTitleProps = {
     participantType: string,
@@ -170,7 +172,10 @@ class DialogBox extends Component<DialogBoxProps> {
             const response = await checkRoomStatus(jwt);
             const remoteParticipantsStatuses
                 = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
+            const jitsiDetails = response ? response.jitsi_details : {}
 
+            setJaneAppointmentDetails(jitsiDetails);
+            overwriteLocalParticipantWithJitsiDetails(jitsiDetails);
             updateRemoteParticipantsStatusesAction(remoteParticipantsStatuses);
         } catch (error) {
             sendAnalytics(
