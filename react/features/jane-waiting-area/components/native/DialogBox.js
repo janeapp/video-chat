@@ -10,10 +10,12 @@ import { WebView } from 'react-native-webview';
 import { createWaitingAreaModalEvent, createWaitingAreaPageEvent, sendAnalytics } from '../../../analytics';
 import { connect as startConference } from '../../../base/connection';
 import { getLocalizedDateFormatter, translate } from '../../../base/i18n';
+import { overwriteLocalParticipantWithJitsiDetails } from '../../../base/jwt/functions';
 import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import {
     enableJaneWaitingArea,
+    setJaneAppointmentDetails,
     setJaneWaitingAreaAuthState,
     updateRemoteParticipantsStatuses
 } from '../../actions';
@@ -46,7 +48,8 @@ type DialogBoxProps = {
     remoteParticipantsStatuses: Array<Object>,
     authState: string,
     localParticipantCanJoin: boolean,
-    t: Function
+    t: Function,
+    janeAppointmentDetails: Object
 };
 
 type SocketWebViewProps = {
@@ -169,7 +172,10 @@ class DialogBox extends Component<DialogBoxProps> {
             const response = await checkRoomStatus(jwt);
             const remoteParticipantsStatuses
                 = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
+            const jitsiDetails = response ? response.jitsi_details : {};
 
+            setJaneAppointmentDetails(jitsiDetails);
+            overwriteLocalParticipantWithJitsiDetails(jitsiDetails);
             updateRemoteParticipantsStatusesAction(remoteParticipantsStatuses);
         } catch (error) {
             sendAnalytics(
@@ -245,8 +251,8 @@ class DialogBox extends Component<DialogBoxProps> {
     }
 
     _getStartDate() {
-        const { jwtPayload } = this.props;
-        const startAt = _.get(jwtPayload, 'context.start_at') ?? '';
+        const { janeAppointmentDetails } = this.props;
+        const startAt = _.get(janeAppointmentDetails, 'start_at') ?? '';
 
         if (startAt) {
             return (<Text style = { styles.msgText }>
@@ -261,10 +267,10 @@ class DialogBox extends Component<DialogBoxProps> {
     }
 
     _getStartTimeAndEndTime() {
-        const { jwtPayload } = this.props;
-        const startAt = _.get(jwtPayload, 'context.start_at') ?? '';
-        let endAt = _.get(jwtPayload, 'context.end_at') ?? '';
-        const treatmentDuration = Number(_.get(jwtPayload, 'context.treatment_duration'));
+        const { janeAppointmentDetails } = this.props;
+        const startAt = _.get(janeAppointmentDetails, 'start_at') ?? '';
+        let endAt = _.get(janeAppointmentDetails, 'end_at') ?? '';
+        const treatmentDuration = _.get(janeAppointmentDetails, 'treatment_duration');
 
         if (!startAt || !endAt) {
             return null;
@@ -285,10 +291,10 @@ class DialogBox extends Component<DialogBoxProps> {
     }
 
     _getDuration() {
-        const { jwtPayload, t } = this.props;
-        const startAt = _.get(jwtPayload, 'context.start_at');
-        const endAt = _.get(jwtPayload, 'context.end_at');
-        const treatmentDuration = _.get(jwtPayload, 'context.treatment_duration');
+        const { janeAppointmentDetails, t } = this.props;
+        const startAt = _.get(janeAppointmentDetails, 'start_at');
+        const endAt = _.get(janeAppointmentDetails, 'end_at');
+        const treatmentDuration = _.get(janeAppointmentDetails, 'treatment_duration');
         let duration;
 
         if (treatmentDuration) {
@@ -367,11 +373,11 @@ class DialogBox extends Component<DialogBoxProps> {
     render() {
         const {
             participantType,
-            jwtPayload,
             locationURL,
             localParticipantCanJoin,
             authState,
-            t
+            t,
+            janeAppointmentDetails
         } = this.props;
 
         return (<View style = { styles.janeWaitingAreaContainer }>
@@ -400,12 +406,13 @@ class DialogBox extends Component<DialogBoxProps> {
                         <View style = { styles.infoDetailContainer }>
                             <Text style = { [ styles.msgText, styles.boldText ] }>
                                 {
-                                    jwtPayload && jwtPayload.context && jwtPayload.context.treatment
+                                    janeAppointmentDetails && janeAppointmentDetails.treatment
                                 }
                             </Text>
                             <Text style = { [ styles.msgText, styles.boldText ] }>
                                 {
-                                    jwtPayload && jwtPayload.context && jwtPayload.context.practitioner_name
+
+                                    janeAppointmentDetails && janeAppointmentDetails.practitioner_name
                                 }
                             </Text>
                             {
@@ -465,7 +472,7 @@ function mapStateToProps(state): Object {
     const participant = getLocalParticipantFromJwt(state);
     const participantType = getLocalParticipantType(state);
     const { locationURL } = state['features/base/connection'];
-    const { remoteParticipantsStatuses, authState } = state['features/jane-waiting-area'];
+    const { remoteParticipantsStatuses, authState, janeAppointmentDetails } = state['features/jane-waiting-area'];
     const localParticipantCanJoin = checkLocalParticipantCanJoin(state);
 
     return {
@@ -476,7 +483,8 @@ function mapStateToProps(state): Object {
         locationURL,
         remoteParticipantsStatuses,
         authState,
-        localParticipantCanJoin
+        localParticipantCanJoin,
+        janeAppointmentDetails
     };
 }
 
