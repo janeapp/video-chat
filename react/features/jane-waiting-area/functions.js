@@ -285,7 +285,7 @@ export function isJaneWaitingAreaEnabled(state: Object): boolean {
 }
 
 // eslint-disable-next-line require-jsdoc
-export function findLocalParticipantFromjitsiDetailsParticipants(participants: Array, localUserInfoFromJwt: Object) {
+export function findLocalParticipantFromjitsiDetailsParticipants(participants: Array<Object>, localUserInfoFromJwt: Object) {
     return participants.find(v => v.participant_type === localUserInfoFromJwt.participant_type
         && v.participant_id === localUserInfoFromJwt.participant_id);
 }
