@@ -240,10 +240,9 @@ export function overwriteLocalParticipantWithJitsiDetails(jitsiDetails: Object) 
         }
 
         const { jwt } = store['features/base/jwt'];
-        const { local } = store['features/base/participants'];
 
-        // Early return if JWT, jitsiDetails are missing, or local user name exists.
-        if (!jwt || !jitsiDetails || local.name) {
+        // Early return if JWT, jitsiDetails are missing
+        if (!jwt || !jitsiDetails) {
             return;
         }
 
