@@ -10,11 +10,11 @@ import { WebView } from 'react-native-webview';
 import { createWaitingAreaModalEvent, createWaitingAreaPageEvent, sendAnalytics } from '../../../analytics';
 import { connect as startConference } from '../../../base/connection';
 import { getLocalizedDateFormatter, translate } from '../../../base/i18n';
-import { overwriteLocalParticipantWithJitsiDetails } from '../../../base/jwt/functions';
 import { getLocalParticipantFromJwt, getLocalParticipantType } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import {
     enableJaneWaitingArea,
+    overwriteLocalParticipantWithJitsiDetails,
     setJaneAppointmentDetails,
     setJaneWaitingAreaAuthState,
     updateRemoteParticipantsStatuses
@@ -49,7 +49,9 @@ type DialogBoxProps = {
     authState: string,
     localParticipantCanJoin: boolean,
     t: Function,
-    janeAppointmentDetails: Object
+    janeAppointmentDetails: Object,
+    setJaneAppointmentDetailsAction: Function,
+    overwriteLocalParticipantInfoAction: Function
 };
 
 type SocketWebViewProps = {
@@ -166,7 +168,9 @@ class DialogBox extends Component<DialogBoxProps> {
     }
 
     async fetchRoomStatus() {
-        const { jwt, participantType, updateRemoteParticipantsStatusesAction } = this.props;
+        const { jwt, participantType, updateRemoteParticipantsStatusesAction,
+            overwriteLocalParticipantInfoAction,
+            setJaneAppointmentDetailsAction } = this.props;
 
         try {
             const response = await checkRoomStatus(jwt);
@@ -174,8 +178,8 @@ class DialogBox extends Component<DialogBoxProps> {
                 = getRemoteParticipantsStatuses(response.participant_statuses, participantType);
             const jitsiDetails = response ? response.jitsi_details : {};
 
-            setJaneAppointmentDetails(jitsiDetails);
-            overwriteLocalParticipantWithJitsiDetails(jitsiDetails);
+            setJaneAppointmentDetailsAction(jitsiDetails);
+            overwriteLocalParticipantInfoAction(jitsiDetails);
             updateRemoteParticipantsStatusesAction(remoteParticipantsStatuses);
         } catch (error) {
             sendAnalytics(
@@ -492,7 +496,9 @@ const mapDispatchToProps = {
     startConferenceAction: startConference,
     enableJaneWaitingAreaAction: enableJaneWaitingArea,
     updateRemoteParticipantsStatusesAction: updateRemoteParticipantsStatuses,
-    setJaneWaitingAreaAuthStateAction: setJaneWaitingAreaAuthState
+    setJaneWaitingAreaAuthStateAction: setJaneWaitingAreaAuthState,
+    overwriteLocalParticipantInfoAction: overwriteLocalParticipantWithJitsiDetails,
+    setJaneAppointmentDetailsAction: setJaneAppointmentDetails
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(translate(DialogBox));

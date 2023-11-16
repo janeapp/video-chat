@@ -1,5 +1,8 @@
 // @flow
 /* eslint-disable require-jsdoc,camelcase*/
+import jwtDecode from 'jwt-decode';
+
+import { overwriteLocalParticipant, user2participant } from '../base/jwt/middleware';
 import { createLocalTrack } from '../base/lib-jitsi-meet';
 import { isVideoMutedByUser } from '../base/media';
 import {
@@ -26,7 +29,7 @@ import {
     SET_JANE_WAITING_AREA_AUTH_STATE,
     SET_JANE_APPOINTMENT_DETAILS
 } from './actionTypes';
-import {
+import { findLocalParticipantFromjitsiDetailsParticipants,
     detectLegacyMobileApp,
     hasRemoteParticipantInBeginStatus
 } from './functions';
@@ -225,5 +228,39 @@ export function setJaneAppointmentDetails(jitsiDetails: Object) {
     return {
         type: SET_JANE_APPOINTMENT_DETAILS,
         value: appointmentDetails
+    };
+}
+
+export function overwriteLocalParticipantWithJitsiDetails(jitsiDetails: Object) {
+    return (dispatch: Function, getState: Function) => {
+        const store = getState();
+
+        if (!store) {
+            return;
+        }
+
+        const { jwt } = store['features/base/jwt'];
+        const { local } = store['features/base/participants'];
+
+        // Early return if JWT, jitsiDetails are missing, or local user name exists.
+        if (!jwt || !jitsiDetails || local.name) {
+            return;
+        }
+
+        const jwtPayload = jwtDecode(jwt);
+        const localUserInfoFromJwt = jwtPayload?.context?.user;
+        const participants = jitsiDetails.participants;
+        const localUserInfoFromJitsiDetails
+            = findLocalParticipantFromjitsiDetailsParticipants(participants, localUserInfoFromJwt);
+
+        if (localUserInfoFromJitsiDetails) {
+            localUserInfoFromJitsiDetails.id = localUserInfoFromJwt.id;
+            const user = user2participant(localUserInfoFromJitsiDetails);
+
+            if (user) {
+                overwriteLocalParticipant({ dispatch,
+                    getState }, { ...user });
+            }
+        }
     };
 }
