@@ -5,6 +5,7 @@ import jwtDecode from 'jwt-decode';
 import { overwriteLocalParticipant, user2participant } from '../base/jwt/middleware';
 import { createLocalTrack } from '../base/lib-jitsi-meet';
 import { isVideoMutedByUser } from '../base/media';
+import { getLocalParticipant } from '../base/participants';
 import {
     createLocalTracksF,
     getLocalAudioTrack,
@@ -251,12 +252,14 @@ export function overwriteLocalParticipantWithJitsiDetails(jitsiDetails: Object) 
         const participants = jitsiDetails.participants;
         const localUserInfoFromJitsiDetails
             = findLocalParticipantFromjitsiDetailsParticipants(participants, localUserInfoFromJwt);
+        const localUserInfoFromStore = getLocalParticipant(store);
 
         if (localUserInfoFromJitsiDetails) {
             localUserInfoFromJitsiDetails.id = localUserInfoFromJwt.id;
             const user = user2participant(localUserInfoFromJitsiDetails);
+            const localUserNameFromStore = localUserInfoFromStore?.name;
 
-            if (user) {
+            if (user && localUserNameFromStore !== user?.name) {
                 overwriteLocalParticipant({ dispatch,
                     getState }, { ...user });
             }
