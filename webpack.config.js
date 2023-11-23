@@ -53,6 +53,13 @@ function getBundleAnalyzerPlugin(name) {
     }) ];
 }
 
+/**
+ * Check if SentryAuthToken is Valid
+ */
+function hasVaildSentryAuthToken() {
+    return process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_AUTH_TOKEN !== 'some_value';
+}
+
 
 // The base Webpack configuration to bundle the JavaScript artifacts of
 // jitsi-meet such as app.bundle.js and external_api.js.
@@ -204,7 +211,7 @@ const config = {
             minify: false,
             inject: false
         }),
-        process.env.SENTRY_AUTH_TOKEN && sentryWebpackPlugin({
+        hasVaildSentryAuthToken() && sentryWebpackPlugin({
             authToken: process.env.SENTRY_AUTH_TOKEN,
             org: 'jane-app',
             project: 'jitsi-frontend',
