@@ -204,7 +204,7 @@ const config = {
             minify: false,
             inject: false
         }),
-        sentryWebpackPlugin({
+        process.env.SENTRY_AUTH_TOKEN && sentryWebpackPlugin({
             authToken: process.env.SENTRY_AUTH_TOKEN,
             org: 'jane-app',
             project: 'jitsi-frontend',
