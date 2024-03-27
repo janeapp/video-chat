@@ -9,7 +9,7 @@ ARG SENTRY_AUTH_TOKEN
 RUN \
   cd /app \
   && sed -i~ '/^SENTRY_AUTH_TOKEN=/s/=.*/="${SENTRY_AUTH_TOKEN}"/' .env.sentry \
-  && npm install \
+  && npm --force install \
   && make \
   && make source-package
 
