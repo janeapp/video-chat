@@ -42,11 +42,9 @@
     "@matrix-org/olm": "https://gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.3.tgz",
     "@microsoft/microsoft-graph-client": "1.1.0",
     "@react-native-async-storage/async-storage": "1.15.5",
-    "@react-native-community/google-signin": "5.0.0",
     "@react-native-community/netinfo": "4.1.5",
     "@react-native-community/slider": "3.0.3",
     "@react-native-google-signin/google-signin": "^8.0.0",
-    "@sentry/react": "^7.73.0",
     "@svgr/webpack": "4.3.2",
     "base64-js": "1.3.1",
     "bc-css-flags": "3.0.0",
@@ -54,6 +52,7 @@
     "clsx": "1.1.1",
     "dropbox": "10.7.0",
     "focus-visible": "5.1.0",
+    "fsevents": "^2.3.3",
     "i18n-iso-countries": "6.8.0",
     "i18next": "17.0.6",
     "i18next-browser-languagedetector": "3.0.1",
@@ -131,7 +130,6 @@
     "@babel/preset-flow": "7.0.0",
     "@babel/preset-react": "7.0.0",
     "@babel/runtime": "7.9.0",
-    "@sentry/webpack-plugin": "^2.9.0",
     "babel-eslint": "10.0.1",
     "babel-loader": "8.0.4",
     "babel-plugin-optional-require": "0.3.1",
@@ -182,5 +180,5 @@
     "start": "make dev",
     "android": "react-native run-android"
   },
-  "webAppVersion": "23.11.1.1"
+  "webAppVersion": "23.11.1.1",
 }

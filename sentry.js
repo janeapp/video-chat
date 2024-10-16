@@ -1,11 +1,11 @@
 /* eslint-disable */
-import * as Sentry from "@sentry/react"
+// import * as Sentry from "@sentry/react"
 import logger from './react/features/app/logger';
 
 export const notifySentry = (error)=>{
-    if (Sentry && window.hasSentryInitialized) {
-        Sentry.captureMessage(error)
-    }
+    // if (Sentry && window.hasSentryInitialized) {
+    //     Sentry.captureMessage(error)
+    // }
 }
 
 export const initSentry = () => {
@@ -24,13 +24,13 @@ export const initSentry = () => {
     }
 
     try {
-        Sentry.init({
-            dsn: SENTRY_DSN_KEY,
-            integrations: [new Sentry.BrowserTracing()],
-            environment: releaseStage,
-            release: `jitsi-frontend@${version}`,
-            tracesSampleRate: 0.1,
-        });
+        // Sentry.init({
+        //     dsn: SENTRY_DSN_KEY,
+        //     integrations: [new Sentry.BrowserTracing()],
+        //     environment: releaseStage,
+        //     release: `jitsi-frontend@${version}`,
+        //     tracesSampleRate: 0.1,
+        // });
 
         logger.info('Sentry has been initialized');
     } catch (error) {

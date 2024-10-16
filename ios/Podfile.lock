@@ -214,8 +214,8 @@ PODS:
     - React
   - react-native-splash-screen (3.2.0):
     - React
-  - react-native-version-check (3.4.2):
-    - React
+  - react-native-version-check (3.4.7):
+    - React-Core
   - react-native-video (5.2.0):
     - React-Core
     - react-native-video/Video (= 5.2.0)
@@ -285,8 +285,8 @@ PODS:
     - React
   - RNDeviceInfo (8.4.8):
     - React-Core
-  - RNGoogleSignin (8.0.0):
-    - GoogleSignIn (~> 6.2.2)
+  - RNGoogleSignin (8.2.2):
+    - GoogleSignIn (~> 6.2)
     - React-Core
   - RNSound (0.11.0):
     - React
@@ -475,7 +475,7 @@ SPEC CHECKSUMS:
   react-native-performance: 6bd6cfac80594775fb782405fceaaf206becf53b
   react-native-slider: e99fc201cefe81270fc9d81714a7a0f5e566b168
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
-  react-native-version-check: d8b8900e6ce03ae1568cb22ef9451f2508188883
+  react-native-version-check: 6cd36aad4e30b8e3216747e3b4ddeb09e0647af8
   react-native-video: a4c2635d0802f983594b7057e1bce8f442f0ad28
   react-native-webrtc: 2f20515f3ebb9dbf1f2aad638cc7573396cf948f
   react-native-webview: dfd7202ff115c44d3ea401c2f36122fb3ac79f07
@@ -492,7 +492,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 56a3355a10b5d660c48c6e37325ac85ebfd09885
   RNDefaultPreference: 1f8133ec0bc0f9453cdada578564ba1ef551fb44
   RNDeviceInfo: 0400a6d0c94186d1120c3cbd97b23abc022187a9
-  RNGoogleSignin: b2179ba653c759b936404a7746fc5302f9de6a5a
+  RNGoogleSignin: 81521697b2c8f97f9a586ac7257b1a1d9b51b115
   RNSound: da030221e6ac7e8290c6b43f2b5f2133a8e225b0
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNWatch: a5320c959c75e72845c07985f3e935e58998f1d3
