@@ -64,7 +64,7 @@ const StepOne = (props: Props) => {
             <View style = { tutorialStyles.stepOne.innerUpperContainer }>
                 <Image
                     source = { require('../../../../../images/jane-video-logo-blue.png') }
-                    style = { tutorialStyles.stepOne.logo } />
+                    style = { tutorialStyles.stepOne.logo } resizeMode="contain"/>
                 <WelcomeScreenText
                     style = { tutorialStyles.stepOne.header }>
                     {
@@ -115,7 +115,7 @@ const StepTwo = (props: Props) => {
             <View style = { tutorialStyles.stepTwo.innerUpperContainer }>
                 <Image
                     source = { require('../../../../../images/jane-video-logo-blue.png') }
-                    style = { tutorialStyles.stepTwo.logo } />
+                    style = { tutorialStyles.stepTwo.logo } resizeMode="contain" />
                 <WelcomeScreenText
                     style = { tutorialStyles.stepTwo.header }>
                     {
@@ -195,7 +195,6 @@ const StepThree = (props: Props) => {
                     count = { 5 }
                     currentIndex = { 2 } />
             </View>
-
         </View>
         {
             isPad && <View
@@ -230,7 +229,7 @@ const StepFour = (props: Props) => {
                 </WelcomeScreenText>
                 <Image
                     source = { require('../../../../../images/patient-email-mobile-screen.png') }
-                    style = { tutorialStyles.stepFour.mobileScreen } />
+                    style = { tutorialStyles.stepFour.mobileScreen } resizeMode="contain" />
                 <WelcomeScreenText
                     style = { tutorialStyles.stepFour.message }>
                     {
@@ -281,7 +280,7 @@ const Done = (props: Props) => {
             style = { tutorialStyles.done.mainContainer }>
             <Image
                 source = { require('../../../../../images/jane-video-logo.png') }
-                style = { tutorialStyles.logo } />
+                style = { tutorialStyles.logo } resizeMode="contain" />
             <WelcomeScreenText
                 style = { tutorialStyles.done.header }>
                 {
@@ -329,7 +328,7 @@ const NoEmail = (props: Props) => {
                 </WelcomeScreenText>
                 <Image
                     source = { require('../../../../../images/upcoming-appoiment-email.png') }
-                    style = { tutorialStyles.noEmail.mobileScreen } />
+                    style = { tutorialStyles.noEmail.mobileScreen } resizeMode="contain" />
                 <WelcomeScreenText
                     style = { tutorialStyles.noEmail.regularText }>
                     {
@@ -435,7 +434,7 @@ const Staff = (props: Props) => {
                 </View>
                 <Image
                     source = { require('../../../../../images/staff-mobile-screen.png') }
-                    style = { tutorialStyles.staff.mobileScreen } />
+                    style = { tutorialStyles.staff.mobileScreen } resizeMode="contain" />
             </View>
             <View style = { tutorialStyles.staff.innerLowerContainer }>
                 <JaneButton
@@ -456,7 +455,7 @@ const DefaultScreen = () => (<View
         style = { tutorialStyles.default.mainContainer }>
         <Image
             source = { require('../../../../../images/jane-video-logo.png') }
-            style = { tutorialStyles.logo } />
+            style = { tutorialStyles.logo } resizeMode="contain" />
     </View>
 </View>);
 
