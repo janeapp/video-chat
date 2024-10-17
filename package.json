@@ -180,7 +180,8 @@
     "postinstall": "patch-package && jetify",
     "validate": "npm ls",
     "start": "make dev",
-    "android": "react-native run-android"
+    "android": "react-native run-android",
+    "build-ios-app": "node ./node_modules/.bin/react-native bundle --dev false --entry-file index.ios.js --bundle-output ios/main.jsbundle --platform ios --assets-dest ios"
   },
   "webAppVersion": "23.11.1.2"
 }
