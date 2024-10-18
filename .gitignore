@@ -65,7 +65,7 @@ buck-out/
 */fastlane/Preview.html
 
 # Build artifacts
-*.jsbundle
+#*.jsbundle
 *.framework
 android/app/debug
 android/app/release
