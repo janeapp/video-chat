@@ -26,8 +26,8 @@
 		4E51B76525E5345E0038575A /* ScheenshareEventEmiter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E51B76325E5345E0038575A /* ScheenshareEventEmiter.m */; };
 		6F08DF7D4458EE3CF3F36F6D /* libPods-JitsiMeetSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4376CA6886DE68FD7A4294B /* libPods-JitsiMeetSDK.a */; };
 		A4A934E9212F3ADB001E9388 /* Dropbox.m in Sources */ = {isa = PBXBuildFile; fileRef = A4A934E8212F3ADB001E9388 /* Dropbox.m */; };
-		C246DFCD2CC17A6200CD7740 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = C246DFCC2CC17A6200CD7740 /* main.jsbundle */; };
-		C26EBA582CC1A1150018F84E /* assets in Resources */ = {isa = PBXBuildFile; fileRef = C26EBA572CC1A1150018F84E /* assets */; };
+		C26F822C2CD1A6400095A8F5 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = C246DFCC2CC17A6200CD7740 /* main.jsbundle */; };
+		C26F82302CD1A7E40095A8F5 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = C26F822F2CD1A7E40095A8F5 /* assets */; };
 		C6245F5D2053091D0040BE68 /* image-resize@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C6245F5B2053091D0040BE68 /* image-resize@2x.png */; };
 		C6245F5E2053091D0040BE68 /* image-resize@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = C6245F5C2053091D0040BE68 /* image-resize@3x.png */; };
 		C69EFA0C209A0F660027712B /* JMCallKitEmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69EFA09209A0F650027712B /* JMCallKitEmitter.swift */; };
@@ -85,7 +85,7 @@
 		A4A934E8212F3ADB001E9388 /* Dropbox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Dropbox.m; sourceTree = "<group>"; };
 		A4A934EB21349A06001E9388 /* Dropbox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Dropbox.h; sourceTree = "<group>"; };
 		C246DFCC2CC17A6200CD7740 /* main.jsbundle */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
-		C26EBA572CC1A1150018F84E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
+		C26F822F2CD1A7E40095A8F5 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		C6245F5B2053091D0040BE68 /* image-resize@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "image-resize@2x.png"; path = "src/picture-in-picture/image-resize@2x.png"; sourceTree = "<group>"; };
 		C6245F5C2053091D0040BE68 /* image-resize@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "image-resize@3x.png"; path = "src/picture-in-picture/image-resize@3x.png"; sourceTree = "<group>"; };
 		C69EFA09209A0F650027712B /* JMCallKitEmitter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JMCallKitEmitter.swift; sourceTree = "<group>"; };
@@ -149,7 +149,7 @@
 		0BD906DB1EC0C00300C8C18E = {
 			isa = PBXGroup;
 			children = (
-				C26EBA572CC1A1150018F84E /* assets */,
+				C26F822F2CD1A7E40095A8F5 /* assets */,
 				C246DFCC2CC17A6200CD7740 /* main.jsbundle */,
 				9C3C6FA2341729836589B856 /* Frameworks */,
 				C5E72ADFC30ED96F9B35F076 /* Pods */,
@@ -303,6 +303,7 @@
 				0BD906E01EC0C00300C8C18E /* Sources */,
 				0BD906E11EC0C00300C8C18E /* Frameworks */,
 				0BD906E21EC0C00300C8C18E /* Headers */,
+				C2B308192CD191DD0004C77C /* Run Script */,
 				0BD906E31EC0C00300C8C18E /* Resources */,
 				DE17D0D426E0B86300F77E2E /* Copy sounds */,
 				C7BC10B338C94EEB98048E64 /* [CP] Copy Pods Resources */,
@@ -355,11 +356,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C26EBA582CC1A1150018F84E /* assets in Resources */,
+				C26F82302CD1A7E40095A8F5 /* assets in Resources */,
 				0BC4B8691F8C03A700CE8B21 /* CallKitIcon.png in Resources */,
 				C6245F5D2053091D0040BE68 /* image-resize@2x.png in Resources */,
 				C6245F5E2053091D0040BE68 /* image-resize@3x.png in Resources */,
-				C246DFCD2CC17A6200CD7740 /* main.jsbundle in Resources */,
+				C26F822C2CD1A6400095A8F5 /* main.jsbundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,6 +385,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		C2B308192CD191DD0004C77C /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export NVM_DIR=\"$HOME/.nvm\"\n[ -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\"  # This loads nvm\n[ -s \"$NVM_DIR/bash_completion\" ] && \\. \"$NVM_DIR/bash_completion\"  # This loads nvm bash_completion\n\nnvm use 16\n\nif [ -x \"/opt/homebrew/bin/yarn\" ]; then\n  \"/opt/homebrew/bin/yarn\" run build-ios-app\nelif command -v npx >/dev/null 2>&1; then\n  npx yarn run build-ios-app\nelse\n  \"../node_modules/.bin/yarn\" run build-ios-app\nfi\n";
+		};
 		C7BC10B338C94EEB98048E64 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -393,11 +412,13 @@
 				"${PODS_ROOT}/Target Support Files/Pods-JitsiMeetSDK/Pods-JitsiMeetSDK-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/AppAuth/AppAuthCore_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleSignIn/GoogleSignIn.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNDeviceInfo/RNDeviceInfoPrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AppAuthCore_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleSignIn.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNDeviceInfoPrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

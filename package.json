@@ -44,8 +44,8 @@
     "@react-native-async-storage/async-storage": "1.15.5",
     "@react-native-community/netinfo": "4.1.5",
     "@react-native-community/slider": "3.0.3",
-    "@sentry/react": "^7.73.0",
     "@react-native-google-signin/google-signin": "^8.0.0",
+    "@sentry/react": "^7.73.0",
     "@svgr/webpack": "4.3.2",
     "base64-js": "1.3.1",
     "bc-css-flags": "3.0.0",
@@ -181,7 +181,7 @@
     "validate": "npm ls",
     "start": "make dev",
     "android": "react-native run-android",
-    "build-ios-app": "node ./node_modules/.bin/react-native bundle --dev false --entry-file index.ios.js --bundle-output ios/main.jsbundle --platform ios --assets-dest ios"
+    "build-ios-app": "node ./node_modules/.bin/react-native bundle --dev false --entry-file index.ios.js --bundle-output ios/sdk/main.jsbundle --platform ios --assets-dest ios/sdk"
   },
   "webAppVersion": "23.11.1.2"
 }
